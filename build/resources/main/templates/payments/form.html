@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment Form</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .form-container {
+            max-width: 550px;
+            margin: auto;
+            background: #fff;
+            padding: 30px 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #17a2b8;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        form label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        form input, form select, form textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        form input:focus, form select:focus, form textarea:focus {
+            border-color: #17a2b8;
+            box-shadow: 0 0 5px rgba(23, 162, 184, 0.3);
+            outline: none;
+        }
+
+        .form-actions {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button, a.button-link {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s;
+        }
+
+        button {
+            background-color: #17a2b8;
+            color: white;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: #138496;
+            transform: scale(1.03);
+        }
+
+        a.button-link {
+            background-color: #e9ecef;
+            color: #333;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        a.button-link:hover {
+            background-color: #ced4da;
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h1 th:text="${payment.id != null} ? 'Edit Payment' : 'Add Payment'"></h1>
+
+    <form th:action="@{/payments/save}" th:object="${payment}" method="post">
+        <input type="hidden" th:field="*{id}"/>
+        <input type="hidden" th:field="*{client.id}"/>
+
+        <label>Date:</label>
+        <input type="date" th:field="*{date}" id="paymentDate" required/>
+
+        <label>Dress Count:</label>
+        <input type="number" th:field="*{dressCount}"/>
+
+        <label>Waistcoat Count:</label>
+        <input type="number" th:field="*{waistcoatCount}"/>
+
+        <label>Total Amount:</label>
+        <input type="number" th:field="*{totalAmount}" id="totalAmount" required/>
+
+        <label>Paid Amount:</label>
+        <input type="number" th:field="*{paidAmount}" id="paidAmount" required/>
+
+        <label>Remaining Amount:</label>
+        <input type="number" th:field="*{remainingAmount}" id="remainingAmount" readonly/>
+
+        <label>Status:</label>
+        <select th:field="*{paymentStatus}" >
+            <option value="Unpaid">Unpaid</option>
+            <option value="Partial">Partial</option>
+            <option value="Paid">Paid</option>
+        </select>
+
+        <label>Return Date:</label>
+        <input type="date" th:field="*{returnDate}"
+               th:attr="min=${#temporals.format(payment.date, 'yyyy-MM-dd')}"
+               id="returnDate"/>
+
+        <label>Return Status:</label>
+        <select th:field="*{returnStatus}">
+            <option value="Not yet">Not yet</option>
+            <option value="Returned">Returned</option>
+        </select>
+
+        <label>Remarks:</label>
+        <textarea th:field="*{notes}"></textarea>
+
+        <div class="form-actions">
+            <button type="submit">💾 Save</button>
+            <a th:href="@{'/payments/client/' + ${payment.client.id}}" class="button-link">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const totalInput = document.getElementById("totalAmount");
+    const paidInput = document.getElementById("paidAmount");
+    const remainingInput = document.getElementById("remainingAmount");
+    const statusSelect = document.querySelector("select[name='paymentStatus']");
+
+    function updateRemainingAndStatus() {
+        const total = parseFloat(totalInput.value) || 0;
+        const paid = parseFloat(paidInput.value) || 0;
+        const remaining = Math.max(total - paid, 0); // never negative
+
+        remainingInput.value = remaining;
+
+        // ✅ Auto-update status
+        if (remaining === 0 && total > 0) {
+            statusSelect.value = "Paid";
+        } else if (paid > 0 && remaining > 0) {
+            statusSelect.value = "Partial";
+        } else {
+            statusSelect.value = "Unpaid";
+        }
+    }
+
+    totalInput.addEventListener("input", updateRemainingAndStatus);
+    paidInput.addEventListener("input", updateRemainingAndStatus);
+
+    // Run once on page load (for edit form)
+    document.addEventListener("DOMContentLoaded", updateRemainingAndStatus);
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const paymentDate = document.getElementById("paymentDate");
+      const returnDate = document.getElementById("returnDate");
+
+      paymentDate.addEventListener("change", () => {
+        returnDate.min = paymentDate.value;
+      });
+    });
+</script>
+
+</body>
+</html>

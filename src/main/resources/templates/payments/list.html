@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payments</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-table {
+            width: 100%;
+            background: #fff;
+            padding: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #17a2b8;
+            margin: 25px 0 15px;
+            font-size: 26px;
+        }
+
+        .add-btn-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        a.add-btn {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+        }
+        a.add-btn:hover {
+            background: #218838;
+            transform: scale(1.03);
+        }
+
+        table {
+            width: 95%;
+            margin: 0 auto 40px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        thead {
+            background: #17a2b8;
+            color: white;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        td a {
+            text-decoration: none;
+            font-weight: 500;
+            color: #17a2b8;
+            margin: 0 6px;
+            transition: color 0.2s;
+        }
+        td a:hover {
+            color: #0f6674;
+            text-decoration: underline;
+        }
+        .overdue {
+            color: red;
+            font-weight: bold;
+        }
+        .status-unpaid {
+            color: red;
+            font-weight: bold;
+        }
+        .status-partial {
+            color: orange;
+            font-weight: bold;
+        }
+        .status-paid {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-table">
+    <h1 th:text="'Schedule & Payments for ' + ${client.name}"></h1>
+</div>
+
+<div class="add-btn-container">
+    <a th:href="@{'/payments/new/' + ${client.id}}" class="add-btn">+ Add Schedule & Payment</a>
+    <a href="/clients" class="add-btn" style="background:#17a2b8;">⬅ Back to Home</a>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Dress</th>
+        <th>Waistcoat</th>
+        <th>Total Amount</th>
+        <th>Paid Amount</th>
+        <th>Remaining Amount</th>
+        <th>Amount Status</th>
+        <th>Return Date</th>
+        <th>Return Status</th>
+        <th>Remarks</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="p : ${payments}">
+        <td th:text="${#temporals.format(p.date, 'dd-MMM-yyyy')}"></td>
+        <td th:text="${p.dressCount}"></td>
+        <td th:text="${p.waistcoatCount}"></td>
+        <td th:text="${p.totalAmount}"></td>
+        <td th:text="${p.paidAmount}"></td>
+        <td th:text="${p.remainingAmount}"></td>
+        <td th:switch="${p.paymentStatus}">
+            <span th:case="'Unpaid'" class="status-unpaid" th:text="${p.paymentStatus}"></span>
+            <span th:case="'Partial'" class="status-partial" th:text="${p.paymentStatus}"></span>
+            <span th:case="'Paid'" class="status-paid" th:text="${p.paymentStatus}"></span>
+            <span th:case="*"
+                  th:text="${p.paymentStatus}"></span> <!-- fallback -->
+        </td>
+
+        <td th:if="${p.returnDate != null}"
+            th:text="${#temporals.format(p.returnDate, 'dd-MMM-yyyy')}"
+            th:classappend="${p.returnDate.isBefore(T(java.time.LocalDate).now())} ? 'overdue' : ''">
+        </td>
+        <td th:if="${p.returnDate == null}">-</td>
+        <td th:text="${p.returnStatus}"></td>
+        <td th:text="${p.notes}"></td>
+        <td>
+            <a th:href="@{'/payments/edit/' + ${p.id}}">Edit</a> |
+            <a th:href="@{'/payments/delete/' + ${p.id}}" onclick="return confirm('Delete this payment?')">Delete</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,344 @@
+package com.example.tailorapp.controller;
+
+import com.example.tailorapp.model.Client;
+import com.example.tailorapp.model.DressMeasurement;
+import com.example.tailorapp.model.WaistcoatMeasurement;
+import com.example.tailorapp.service.ClientService;
+import com.example.tailorapp.service.MeasurementService;
+import com.example.tailorapp.service.StorageProperties;
+
+import com.example.tailorapp.service.WaistcoatService;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+@Controller
+@RequestMapping("/clients")
+@EnableConfigurationProperties(StorageProperties.class)
+public class ClientController {
+
+    private final ClientService clientService;
+    private final MeasurementService measurementService;
+    private final StorageProperties storageProperties;
+    private final WaistcoatService waistcoatService;
+
+    public ClientController(ClientService clientService,
+                            MeasurementService measurementService,
+                            StorageProperties storageProperties,
+                            WaistcoatService waistcoatService) {
+        this.clientService = clientService;
+        this.measurementService = measurementService;
+        this.storageProperties = storageProperties;
+        this.waistcoatService = waistcoatService;
+    }
+
+
+    // List clients
+    @GetMapping
+    public String list(@RequestParam(required = false) String q,
+                       @RequestParam(required = false, defaultValue = "name") String sort,
+                       Model model) {
+        List<Client> clients = clientService.search(q);
+
+        if ("name".equalsIgnoreCase(sort)) {
+            clients.sort(Comparator.comparing(Client::getName, String.CASE_INSENSITIVE_ORDER));
+        } else if ("mobile".equalsIgnoreCase(sort)) {
+            clients.sort(Comparator.comparing(Client::getMobile, String.CASE_INSENSITIVE_ORDER));
+        }
+
+        model.addAttribute("clients", clients);
+        model.addAttribute("q", q);
+        model.addAttribute("sort", sort);
+        return "clients/list";
+    }
+
+    // New Client
+    @GetMapping("/new")
+    public String form(Model model) {
+        model.addAttribute("client", new Client());
+        return "clients/form";
+    }
+
+    @PostMapping("/save")
+    public String save(@ModelAttribute Client client,
+                       @RequestParam(value = "pictureFile", required = false) MultipartFile pictureFile,
+                       @RequestParam(value = "imageData", required = false) String imageData,
+                       RedirectAttributes ra) throws IOException {
+
+        String uploadDir = System.getProperty("user.dir") + "/uploads";
+        File uploadPath = new File(uploadDir);
+        if (!uploadPath.exists()) uploadPath.mkdirs();
+
+        // Case 1: normal file upload
+        if (pictureFile != null && !pictureFile.isEmpty()) {
+            String filename = System.currentTimeMillis() + "_" + pictureFile.getOriginalFilename();
+            File dest = new File(uploadPath, filename);
+            pictureFile.transferTo(dest);
+            client.setPictureFilename("/uploads/" + filename);
+        }
+        // Case 2: Base64 image from camera
+        else if (imageData != null && !imageData.isEmpty()) {
+            // Example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...
+            String base64Image = imageData.split(",")[1]; // remove 'data:image/png;base64,' part
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Image);
+
+            String filename = "camera_" + System.currentTimeMillis() + ".png";
+            File outputFile = new File(uploadPath, filename);
+            java.nio.file.Files.write(outputFile.toPath(), imageBytes);
+
+            client.setPictureFilename("/uploads/" + filename);
+        }
+
+        clientService.save(client);
+        ra.addFlashAttribute("message", "Client added successfully");
+        return "redirect:/clients";
+    }
+
+
+    // Edit form
+    @GetMapping("/edit/{id}")
+    public String editForm(@PathVariable Long id, Model model) {
+        Optional<Client> clientOpt = clientService.findById(id);
+        if (clientOpt.isEmpty()) return "redirect:/clients";
+        model.addAttribute("client", clientOpt.get());
+        return "clients/form";
+    }
+
+    // Update client
+    @PostMapping("/update/{id}")
+    public String updateClient(@PathVariable Long id,
+                               @ModelAttribute Client updated,
+                               @RequestParam(value = "pictureFile", required = false) MultipartFile pictureFile,
+                               @RequestParam(value = "imageData", required = false) String imageData,
+                               RedirectAttributes ra) throws IOException {
+        Optional<Client> existingOpt = clientService.findById(id);
+        if (existingOpt.isEmpty()) return "redirect:/clients";
+
+        Client client = existingOpt.get();
+        client.setName(updated.getName());
+        client.setMobile(updated.getMobile());
+        client.setWhatsAppNo(updated.getWhatsAppNo());
+        client.setAddress(updated.getAddress());
+
+        String uploadDir = System.getProperty("user.dir") + "/uploads";
+        File uploadPath = new File(uploadDir);
+        if (!uploadPath.exists()) uploadPath.mkdirs();
+
+        if (pictureFile != null && !pictureFile.isEmpty()) {
+            String filename = System.currentTimeMillis() + "_" + pictureFile.getOriginalFilename();
+            File dest = new File(uploadPath, filename);
+            pictureFile.transferTo(dest);
+            client.setPictureFilename("/uploads/" + filename);
+        } else if (imageData != null && !imageData.isEmpty()) {
+            String base64Image = imageData.split(",")[1];
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Image);
+            String filename = "camera_" + System.currentTimeMillis() + ".png";
+            File outputFile = new File(uploadPath, filename);
+            java.nio.file.Files.write(outputFile.toPath(), imageBytes);
+            client.setPictureFilename("/uploads/" + filename);
+        } else {
+            client.setPictureFilename(existingOpt.get().getPictureFilename());
+        }
+
+        clientService.save(client);
+        ra.addFlashAttribute("message", "Client updated successfully");
+        return "redirect:/clients";
+    }
+
+
+    // View client + measurements
+    @GetMapping("/view/{id}")
+    public String view(@PathVariable Long id,
+                       @RequestParam(required = false) Long edit,
+                       @RequestParam(required = false) Long editWaistcoat,
+                       Model model) {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) return "redirect:/clients";
+
+        Client client = c.get();
+
+        // Dress measurements
+        List<DressMeasurement> dressMeasurements = measurementService.findByClientAndType(id, null);
+        model.addAttribute("dressMeasurements", dressMeasurements);
+
+        // Waistcoat measurements
+        List<WaistcoatMeasurement> waistcoatMeasurements = waistcoatService.findByClient(id);
+        model.addAttribute("waistcoatMeasurements", waistcoatMeasurements);
+
+        // Form handling
+        if (edit != null) {
+            model.addAttribute("dressMeasurement", measurementService.findById(edit).orElse(new DressMeasurement()));
+            model.addAttribute("formAction", "/clients/updateMeasurement/" + edit);
+        } else {
+            model.addAttribute("dressMeasurement", new DressMeasurement());
+            model.addAttribute("formAction", "/clients/addMeasurement/" + client.getId());
+        }
+
+        if (editWaistcoat != null) {
+            model.addAttribute("waistcoatMeasurement", waistcoatService.findById(editWaistcoat).orElse(new WaistcoatMeasurement()));
+            model.addAttribute("waistcoatFormAction", "/clients/updateWaistcoatMeasurement/" + editWaistcoat);
+        } else {
+            model.addAttribute("waistcoatMeasurement", new WaistcoatMeasurement());
+            model.addAttribute("waistcoatFormAction", "/clients/addWaistcoatMeasurement/" + client.getId());
+        }
+
+        model.addAttribute("client", client);
+        return "clients/view";
+    }
+    // Add dressMeasurement
+    @PostMapping("/addMeasurement/{id}")
+    public String addMeasurement(@PathVariable Long id,
+                                 @ModelAttribute("dressMeasurement") DressMeasurement dressMeasurement,
+                                 RedirectAttributes ra) {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) return "redirect:/clients";
+
+        dressMeasurement.setClient(c.get());
+        dressMeasurement.setId(null);
+        measurementService.save(dressMeasurement);
+
+        ra.addFlashAttribute("message", "DressMeasurement added successfully");
+        return "redirect:/clients/view/" + id;
+    }
+
+    // Update dressMeasurement
+    @PostMapping("/updateMeasurement/{measurementId}")
+    public String updateMeasurement(@PathVariable Long measurementId,
+                                    @ModelAttribute("dressMeasurement") DressMeasurement dressMeasurement,
+                                    RedirectAttributes ra) {
+        Optional<DressMeasurement> existing = measurementService.findById(measurementId);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "DressMeasurement not found");
+            return "redirect:/clients";
+        }
+
+        DressMeasurement m = existing.get();
+        m.setType(dressMeasurement.getType());
+        m.setKameezLength(dressMeasurement.getKameezLength());
+        m.setArm(dressMeasurement.getArm());
+        m.setUpperArm(dressMeasurement.getUpperArm());
+        m.setCenterArm(dressMeasurement.getCenterArm());
+        m.setLowerArm(dressMeasurement.getLowerArm());
+        m.setTerra(dressMeasurement.getTerra());
+        m.setTerraDown(dressMeasurement.getTerraDown());
+        m.setShoulderAram(dressMeasurement.getShoulderAram());
+        m.setChest(dressMeasurement.getChest());
+        m.setChestFitting(dressMeasurement.getChestFitting());
+        m.setWaist(dressMeasurement.getWaist());
+        m.setHip(dressMeasurement.getHip());
+        m.setRound(dressMeasurement.getRound());
+        m.setCollarSize(dressMeasurement.getCollarSize());
+        m.setCollarType(dressMeasurement.getCollarType());
+        m.setBainSize(dressMeasurement.getBainSize());
+        m.setBainType(dressMeasurement.getBainType());
+        m.setDamanType(dressMeasurement.getDamanType());
+        m.setDamanStitching(dressMeasurement.getDamanStitching());
+        m.setSidePocket(dressMeasurement.getSidePocket());
+        m.setFrontPocket(dressMeasurement.getFrontPocket());
+        m.setFrontPocketType(dressMeasurement.getFrontPocketType());
+        m.setCuffDesign(dressMeasurement.getCuffDesign());
+        m.setCuffLength(dressMeasurement.getCuffLength());
+        m.setCuffWidth(dressMeasurement.getCuffWidth());
+        m.setCuffType(dressMeasurement.getCuffType());
+        m.setWristType(dressMeasurement.getWristType());
+        m.setShalwarLength(dressMeasurement.getShalwarLength());
+        m.setShalwarRoundLength(dressMeasurement.getShalwarRoundLength());
+        m.setShalwarFitting(dressMeasurement.getShalwarFitting());
+        m.setAsan(dressMeasurement.getAsan());
+        m.setPayncha(dressMeasurement.getPayncha());
+        m.setJali(dressMeasurement.getJali());
+        m.setKanta(dressMeasurement.getKanta());
+        m.setStitchType(dressMeasurement.getStitchType());
+        m.setDesignStitch(dressMeasurement.getDesignStitch());
+        m.setButtonType(dressMeasurement.getButtonType());
+        m.setFrontPattiKaj(dressMeasurement.getFrontPattiKaj());
+        m.setFrontPattiType(dressMeasurement.getFrontPattiType());
+        m.setNotes(dressMeasurement.getNotes());
+        measurementService.save(m);
+
+        ra.addFlashAttribute("message", "DressMeasurement updated successfully");
+        return "redirect:/clients/view/" + m.getClient().getId();
+    }
+
+    // Delete
+    @GetMapping("/deleteMeasurement/{measurementId}")
+    public String deleteMeasurement(@PathVariable Long measurementId, RedirectAttributes ra) {
+        Optional<DressMeasurement> opt = measurementService.findById(measurementId);
+        if (opt.isEmpty()) {
+            ra.addFlashAttribute("error", "DressMeasurement not found");
+            return "redirect:/clients";
+        }
+        DressMeasurement m = opt.get();
+        Long clientId = m.getClient().getId();
+
+        measurementService.deleteById(measurementId);
+        ra.addFlashAttribute("message", "DressMeasurement deleted successfully");
+
+        return "redirect:/clients/view/" + clientId;
+    }
+
+
+    // Waistcoat Add
+    @PostMapping("/addWaistcoatMeasurement/{id}")
+    public String addWaistcoat(@PathVariable Long id,
+                               @ModelAttribute WaistcoatMeasurement waistcoatMeasurement,
+                               RedirectAttributes ra) {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) {
+            ra.addFlashAttribute("error", "Client not found");
+            return "redirect:/clients";
+        }
+
+        waistcoatMeasurement.setClient(c.get());
+        waistcoatService.save(waistcoatMeasurement);
+
+        ra.addFlashAttribute("message", "Waistcoat Measurement added successfully");
+        return "redirect:/clients/view/" + id;
+    }
+
+    // Waistcoat Update
+    @PostMapping("/updateWaistcoatMeasurement/{id}")
+    public String updateWaistcoat(@PathVariable Long id,
+                                  @ModelAttribute WaistcoatMeasurement waistcoatMeasurement,
+                                  RedirectAttributes ra) {
+
+        Optional<WaistcoatMeasurement> existing = waistcoatService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+
+        // Keep the existing client reference
+        WaistcoatMeasurement dbWaistcoat = existing.get();
+        waistcoatMeasurement.setClient(dbWaistcoat.getClient());
+
+        waistcoatService.save(waistcoatMeasurement);
+        ra.addFlashAttribute("message", "Waistcoat Measurement updated successfully");
+
+        return "redirect:/clients/view/" + dbWaistcoat.getClient().getId();
+    }
+
+
+
+    // Waistcoat Delete
+    @GetMapping("/deleteWaistcoatMeasurement/{id}")
+    public String deleteWaistcoat(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<WaistcoatMeasurement> m = waistcoatService.findById(id);
+        if (m.isPresent()) {
+            Long clientId = m.get().getClient().getId();
+            waistcoatService.deleteById(id);
+            ra.addFlashAttribute("message", "Waistcoat Measurement deleted successfully");
+            return "redirect:/clients/view/" + clientId;
+        }
+        return "redirect:/clients";
+    }
+}
