@@ -508,13 +508,13 @@
   <thead>
   <tr class="section-title">
     <th colspan="3">
-      Dress Measurements
+      Dress
       <img src="/images/dress_icon.png" alt="Dress Icon">
     </th>
   </tr>
   <tr class="sub-header">
     <th>Date</th>
-    <th>Kameez / Shalwar / Design</th>
+    <th>Measurements</th>
     <th>Actions</th>
   </tr>
   </thead>
@@ -798,13 +798,13 @@
   <thead>
   <tr class="section-title">
     <th colspan="3">
-      Waistcoat Measurements
+      Waistcoat
       <img src="/images/waistcoat_icon.png" alt="Waistcoat Icon">
     </th>
   </tr>
   <tr class="sub-header">
     <th>Date</th>
-    <th>Measurements / Design / Notes</th>
+    <th>Measurements</th>
     <th>Actions</th>
   </tr>
   </thead>
@@ -817,9 +817,7 @@
 
       <td>
         <div class="accordion-tabs">
-          <button class="accordion-btn" data-target="measurements">Measurements</button>
-          <button class="accordion-btn" data-target="design">Design</button>
-          <button class="accordion-btn" data-target="notes">Notes</button>
+          <button class="accordion-btn" data-target="measurements">Waistcoat</button>
         </div>
       </td>
 
@@ -847,20 +845,8 @@
               <tr><th>Chest Fitting</th><td th:text="${w.chestFitting}"></td></tr>
               <tr><th>Hip</th><td th:text="${w.hip}"></td></tr>
               <tr><th>Bain Width</th><td th:text="${w.bainSize}"></td></tr>
-            </table>
-          </div>
-
-          <!-- Design -->
-          <div class="accordion-content design">
-            <table>
               <tr><th>Bain Style</th><td th:text="${w.bainType}"></td></tr>
               <tr><th>Daman Style</th><td th:text="${w.damanType}"></td></tr>
-            </table>
-          </div>
-
-          <!-- Notes -->
-          <div class="accordion-content notes">
-            <table>
               <tr><th>Notes</th><td th:text="${w.notes}"></td></tr>
             </table>
           </div>
