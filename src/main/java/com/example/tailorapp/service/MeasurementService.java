@@ -19,10 +19,6 @@ public class MeasurementService {
         repo.save(m);
     }
     public List<DressMeasurement> findByClient(Long clientId) { return repo.findByClientId(clientId); }
-    public List<DressMeasurement> findByClientAndType(Long clientId, String type) {
-        if (type == null || type.isBlank()) return repo.findByClientId(clientId);
-        return repo.findByClientIdAndTypeContainingIgnoreCase(clientId, type);
-    }
 
     public Optional<DressMeasurement> findById(Long measurementId) {
         return repo.findById(measurementId);

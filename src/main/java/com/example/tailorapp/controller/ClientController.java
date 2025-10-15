@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -167,11 +168,17 @@ public class ClientController {
         Client client = c.get();
 
         // Dress measurements
-        List<DressMeasurement> dressMeasurements = measurementService.findByClientAndType(id, null);
+        List<DressMeasurement> dressMeasurements = measurementService.findByClient(id)
+                .stream()
+                .sorted(Comparator.comparing(DressMeasurement::getDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
         model.addAttribute("dressMeasurements", dressMeasurements);
 
         // Waistcoat measurements
-        List<WaistcoatMeasurement> waistcoatMeasurements = waistcoatService.findByClient(id);
+        List<WaistcoatMeasurement> waistcoatMeasurements = waistcoatService.findByClient(id)
+                .stream()
+                .sorted(Comparator.comparing(WaistcoatMeasurement::getDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
         model.addAttribute("waistcoatMeasurements", waistcoatMeasurements);
 
         // Form handling
@@ -204,6 +211,7 @@ public class ClientController {
 
         dressMeasurement.setClient(c.get());
         dressMeasurement.setId(null);
+        dressMeasurement.setDate(LocalDate.now());
         measurementService.save(dressMeasurement);
 
         ra.addFlashAttribute("message", "DressMeasurement added successfully");
@@ -222,7 +230,6 @@ public class ClientController {
         }
 
         DressMeasurement m = existing.get();
-        m.setType(dressMeasurement.getType());
         m.setKameezLength(dressMeasurement.getKameezLength());
         m.setArm(dressMeasurement.getArm());
         m.setUpperArm(dressMeasurement.getUpperArm());
@@ -286,6 +293,24 @@ public class ClientController {
         return "redirect:/clients/view/" + clientId;
     }
 
+    @GetMapping("/copyMeasurement/{id}")
+    public String copyMeasurement(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<DressMeasurement> existing = measurementService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+
+        DressMeasurement original = existing.get();
+        DressMeasurement copy = new DressMeasurement();
+        org.springframework.beans.BeanUtils.copyProperties(original, copy, "id", "date");
+        copy.setDate(LocalDate.now());
+        measurementService.save(copy);
+
+        ra.addFlashAttribute("message", "Measurement copied with today’s date");
+        return "redirect:/clients/view/" + original.getClient().getId();
+    }
+
 
     // Waistcoat Add
     @PostMapping("/addWaistcoatMeasurement/{id}")
@@ -299,6 +324,7 @@ public class ClientController {
         }
 
         waistcoatMeasurement.setClient(c.get());
+        waistcoatMeasurement.setDate(LocalDate.now());
         waistcoatService.save(waistcoatMeasurement);
 
         ra.addFlashAttribute("message", "Waistcoat Measurement added successfully");
@@ -327,8 +353,6 @@ public class ClientController {
         return "redirect:/clients/view/" + dbWaistcoat.getClient().getId();
     }
 
-
-
     // Waistcoat Delete
     @GetMapping("/deleteWaistcoatMeasurement/{id}")
     public String deleteWaistcoat(@PathVariable Long id, RedirectAttributes ra) {
@@ -341,4 +365,23 @@ public class ClientController {
         }
         return "redirect:/clients";
     }
+
+    @GetMapping("/copyWaistcoatMeasurement/{id}")
+    public String copyWaistcoat(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<WaistcoatMeasurement> existing = waistcoatService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+
+        WaistcoatMeasurement original = existing.get();
+        WaistcoatMeasurement copy = new WaistcoatMeasurement();
+        org.springframework.beans.BeanUtils.copyProperties(original, copy, "id", "date");
+        copy.setDate(LocalDate.now());
+        waistcoatService.save(copy);
+
+        ra.addFlashAttribute("message", "Waistcoat measurement copied with today’s date");
+        return "redirect:/clients/view/" + original.getClient().getId();
+    }
+
 }

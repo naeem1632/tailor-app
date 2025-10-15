@@ -48,7 +48,7 @@ public class PrintController {
         if (c.isEmpty()) return;
 
         Client client = c.get();
-        List<DressMeasurement> dressMeasurements = measurementService.findByClientAndType(id, null);
+        List<DressMeasurement> dressMeasurements = measurementService.findByClient(id);
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");

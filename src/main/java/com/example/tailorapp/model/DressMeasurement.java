@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -12,7 +14,7 @@ public class DressMeasurement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    String type; // shwalwar kameez
+    LocalDate date;
     Double kameezLength;
     Double arm;
     Double upperArm;

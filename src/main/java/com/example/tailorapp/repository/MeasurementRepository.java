@@ -6,6 +6,4 @@ import java.util.List;
 
 public interface MeasurementRepository extends JpaRepository<DressMeasurement, Long> {
     List<DressMeasurement> findByClientId(Long clientId);
-    List<DressMeasurement> findByTypeContainingIgnoreCase(String type);
-    List<DressMeasurement> findByClientIdAndTypeContainingIgnoreCase(Long clientId, String type);
 }
