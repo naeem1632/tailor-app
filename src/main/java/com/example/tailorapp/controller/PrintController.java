@@ -86,7 +86,7 @@ public class PrintController {
 
         addRow4(table, "Kameez length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
         addRow4(table, "Upper arm", nvl(m.getUpperArm()), "Center aram", nvl(m.getCenterArm()));
-        addRow4(table,  "Lower arm", nvl(m.getLowerArm()), "Shoulder-aram", nvl(m.getShoulderAram()));
+        addRow4(table,  "Lower arm", nvl(m.getLowerArm()), "Shoulder-aram", nvl(m.getShoulderArm()));
         addRow4(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
         addRow4(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
         addRow4(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));

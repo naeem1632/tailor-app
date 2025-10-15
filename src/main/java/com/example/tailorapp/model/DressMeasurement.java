@@ -22,7 +22,7 @@ public class DressMeasurement {
     Double lowerArm;
     Double terra;
     Double terraDown;
-    Double shoulderAram;
+    Double shoulderArm;
     Double chest;
     Double chestFitting;
     Double waist;
@@ -44,12 +44,12 @@ public class DressMeasurement {
     String wristType; // cuff, open
 
     Double shalwarLength;
-    Double shalwarRoundLength;
     Double shalwarFitting;
     Double asan;
     Double payncha;
     String jali; // no, 1, 2
     Boolean kanta; // yes, no
+    Boolean shalwarPocket;
 
     String stitchType; // single, double, simple
     Boolean designStitch;

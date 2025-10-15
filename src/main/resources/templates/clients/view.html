@@ -557,10 +557,10 @@
             <table>
               <tr><th>Kameez Length</th><td th:text="${m.kameezLength}"></td></tr>
               <tr><th>Arm</th><td th:text="${m.arm}"></td></tr>
+              <tr><th>Shoulder-arm</th><td th:text="${m.shoulderArm}"></td></tr>
               <tr><th>Upper Arm</th><td th:text="${m.upperArm}"></td></tr>
               <tr><th>Center Arm</th><td th:text="${m.centerArm}"></td></tr>
               <tr><th>Lower Arm</th><td th:text="${m.lowerArm}"></td></tr>
-              <tr><th>Shoulder-arm</th><td th:text="${m.shoulderAram}"></td></tr>
               <tr><th>Cuff Length</th><td th:text="${m.cuffLength}"></td></tr>
               <tr><th>Cuff Width</th><td th:text="${m.cuffWidth}"></td></tr>
               <tr><th>Terra</th><td th:text="${m.terra}"></td></tr>
@@ -587,22 +587,45 @@
           <!-- DESIGN TAB -->
           <div class="accordion-content design">
             <table>
-              <tr><th>Collar Type</th><td th:text="${m.collarType}"></td></tr>
-              <tr><th>Bain Type</th><td th:text="${m.bainType}"></td></tr>
+              <tr><th>Collar Design</th><td th:text="${m.collarType}"></td></tr>
+              <tr>
+                <th>Bain Design</th>
+                <td>
+                  <img th:if="${m.bainType == 'Round-Bain'}" src="/images/bain_round.png" width="30" title="Round"/>
+                  <img th:if="${m.bainType == 'Square-Bain'}" src="/images/bain_square.png" width="30" title="Square"/>
+                  <img th:if="${m.bainType == 'Cut-Bain'}" src="/images/bain_cut.png" width="30" title="Cut"/>
+                </td>
+              </tr>
               <tr><th>Daman Type</th><td th:text="${m.damanType}"></td></tr>
               <tr><th>Daman Stitching</th><td th:text="${m.damanStitching}"></td></tr>
               <tr><th>Side Pocket</th><td th:text="${m.sidePocket}"></td></tr>
               <tr><th>Front Pocket</th><td th:text="${m.frontPocket} ? 'Yes' : 'No'"></td></tr>
-              <tr><th>Front Pocket Type</th><td th:text="${m.frontPocketType}"></td></tr>
+              <tr>
+                <th>Front Pocket Design</th>
+                <td>
+                  <!-- support both 'Round' and legacy 'Plain' values -->
+                  <img th:if="${m.frontPocketType == 'Round' or m.frontPocketType == 'Plain'}" src="/images/pocket_round.png" width="30" title="Round/Plain"/>
+                  <img th:if="${m.frontPocketType == 'Cut'}" src="/images/pocket_cut.png" width="30" title="Cut"/>
+                  <img th:if="${m.frontPocketType == 'Square'}" src="/images/pocket_square.png" width="30" title="Square"/>
+                </td>
+              </tr>
               <tr><th>Cuff Type</th><td th:text="${m.cuffType}"></td></tr>
-              <tr><th>Cuff Design</th><td th:text="${m.cuffDesign}"></td></tr>
+              <tr>
+                <th>Cuff Design</th>
+                <td>
+                  <img th:if="${m.cuffDesign == 'Round-Cuff'}" src="/images/cuff_round.png" width="30" title="Round"/>
+                  <img th:if="${m.cuffDesign == 'Square-Cuff'}" src="/images/cuff_square.png" width="30" title="Square"/>
+                  <img th:if="${m.cuffDesign == 'Cut-Cuff'}" src="/images/cuff_cut.png" width="30" title="Cut"/>
+                </td>
+              </tr>
               <tr><th>Jali</th><td th:text="${m.jali}"></td></tr>
               <tr><th>Kanta</th><td th:text="${m.kanta} ? 'Yes' : 'No'"></td></tr>
+              <tr><th>Shalwar Pocket</th><td th:text="${m.shalwarPocket} ? 'Yes' : 'No'"></td></tr>
               <tr><th>Stitch Type</th><td th:text="${m.stitchType}"></td></tr>
-              <tr><th>Design Stitch</th><td th:text="${m.designStitch}"></td></tr>
+              <tr><th>Design Stitch</th><td th:text="${m.designStitch} ? 'Yes' : 'No'"></td></tr>
               <tr><th>Button Type</th><td th:text="${m.buttonType}"></td></tr>
               <tr><th>Front Patti Kaj</th><td th:text="${m.frontPattiKaj}"></td></tr>
-              <tr><th>Front Patti Type</th><td th:text="${m.frontPattiType}"></td></tr>
+              <tr><th>Front Patti Design</th><td th:text="${m.frontPattiType}"></td></tr>
               <tr><th>Notes</th><td th:text="${m.notes}"></td></tr>
             </table>
           </div>
@@ -632,10 +655,10 @@
 
     <div><label>Kameez Length:</label><input type="text" th:field="*{kameezLength}" required/></div>
     <div><label>Arm:</label><input type="text" th:field="*{arm}" required/></div>
+    <div><label>Shoulder-arm:</label><input type="text" th:field="*{shoulderArm}"/></div>
     <div><label>Upper Arm:</label><input type="text" th:field="*{upperArm}"/></div>
     <div><label>Center Arm:</label><input type="text" th:field="*{centerArm}"/></div>
     <div><label>Lower Arm:</label><input type="text" th:field="*{lowerArm}"/></div>
-    <div><label>Shoulder-arm:</label><input type="text" th:field="*{shalwarRoundLength}"/></div>
     <div><label>Cuff Length:</label><input type="text" th:field="*{cuffLength}"/></div>
     <div><label>Cuff Width:</label><input type="text" th:field="*{cuffWidth}"/></div>
     <div><label>Terra:</label><input type="text" th:field="*{terra}" required/></div>
@@ -731,7 +754,19 @@
       </div>
     </div>
 
+    <div>
+      <label>Jali:</label>
+      <select th:field="*{jali}">
+        <option value="No">No</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+    </div>
+
     <div><label>Kanta:</label><input type="checkbox" th:field="*{kanta}"/></div>
+
+    <div><label>Shalwar Pocket:</label><input type="checkbox" th:field="*{shalwarPocket}"/></div>
+
     <div>
       <label>Stitch Type:</label>
       <select th:field="*{stitchType}">
@@ -762,15 +797,6 @@
         <option value="Round">Round</option>
         <option value="Square">Square</option>
         <option value="Nock">Nock</option>
-      </select>
-    </div>
-
-    <div>
-      <label>Jali:</label>
-      <select th:field="*{jali}">
-        <option value="No">No</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
       </select>
     </div>
 

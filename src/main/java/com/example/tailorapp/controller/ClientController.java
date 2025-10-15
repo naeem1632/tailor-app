@@ -237,7 +237,7 @@ public class ClientController {
         m.setLowerArm(dressMeasurement.getLowerArm());
         m.setTerra(dressMeasurement.getTerra());
         m.setTerraDown(dressMeasurement.getTerraDown());
-        m.setShoulderAram(dressMeasurement.getShoulderAram());
+        m.setShoulderArm(dressMeasurement.getShoulderArm());
         m.setChest(dressMeasurement.getChest());
         m.setChestFitting(dressMeasurement.getChestFitting());
         m.setWaist(dressMeasurement.getWaist());
@@ -258,7 +258,6 @@ public class ClientController {
         m.setCuffType(dressMeasurement.getCuffType());
         m.setWristType(dressMeasurement.getWristType());
         m.setShalwarLength(dressMeasurement.getShalwarLength());
-        m.setShalwarRoundLength(dressMeasurement.getShalwarRoundLength());
         m.setShalwarFitting(dressMeasurement.getShalwarFitting());
         m.setAsan(dressMeasurement.getAsan());
         m.setPayncha(dressMeasurement.getPayncha());
@@ -270,6 +269,7 @@ public class ClientController {
         m.setFrontPattiKaj(dressMeasurement.getFrontPattiKaj());
         m.setFrontPattiType(dressMeasurement.getFrontPattiType());
         m.setNotes(dressMeasurement.getNotes());
+        m.setShalwarPocket(dressMeasurement.getShalwarPocket());
         measurementService.save(m);
 
         ra.addFlashAttribute("message", "DressMeasurement updated successfully");
