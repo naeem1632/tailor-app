@@ -2,227 +2,398 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Clients</title>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
     <style>
         body {
           font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
           background: #f0f2f5;
           margin: 0;
-          padding: 0;
-        }
-
-        /* Header Section */
-        .header-table {
-          width: 100%;
-          background: #fff;
-          padding: 0;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-          text-align: center;
-        }
-
-        .header-table img {
-          width: 25%;
-          height: 120px;
-          object-fit: contain;
+          padding: 20px;
         }
 
         h1 {
           text-align: center;
-          color: #17a2b8; /* sky blue */
-          margin: 25px 0 15px;
+          color: #17a2b8;
+          margin-bottom: 25px;
           font-size: 26px;
         }
 
-        /* Flash Messages */
-        .alert {
-          max-width: 800px;
-          margin: 15px auto;
-          padding: 12px 15px;
-          border-radius: 6px;
-          font-size: 14px;
-          font-weight: 500;
-        }
-        .alert-success {
-          background: #d4edda;
-          color: #155724;
-          border: 1px solid #c3e6cb;
-        }
-        .alert-danger {
-          background: #f8d7da;
-          color: #721c24;
-          border: 1px solid #f5c6cb;
-        }
-
-        /* Search Form */
-        form.search-form {
-          text-align: center;
-          margin: 15px auto;
-        }
-        form.search-form input[type="text"] {
-          padding: 10px;
-          width: 300px;
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          font-size: 14px;
-        }
-        form.search-form button {
-          padding: 10px 18px;
-          margin-left: 6px;
-          background: #17a2b8; /* sky blue */
-          border: none;
-          border-radius: 6px;
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        form.search-form button:hover {
-          background: #138496; /* darker teal */
-        }
-
-        /* Add Button */
-        a.add-btn {
-          display: inline-block;
-          margin: 10px auto 20px auto;
-          background: #28a745;
-          color: white;
-          padding: 10px 18px;
-          border-radius: 6px;
-          text-decoration: none;
-          font-weight: 600;
-          transition: background 0.2s, transform 0.1s;
-        }
-        a.add-btn:hover {
-          background: #218838;
-          transform: scale(1.03);
-        }
+        /* ===== Add Button ===== */
         .add-btn-container {
           text-align: center;
+          margin-bottom: 20px;
         }
 
-        /* Table */
-        table {
-          width: 95%;
-          margin: 0 auto 40px auto;
-          border-collapse: collapse;
-          background: white;
+        .add-btn {
+          background: #28a745;
+          color: #fff;
+          padding: 10px 24px;
+          border: none;
           border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          cursor: pointer;
+          transition: background 0.2s ease, transform 0.1s;
+        }
+
+        .add-btn:hover {
+          background: #218838;
+          transform: scale(1.05);
+        }
+
+        /* ====== Table ====== */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          background: #fff;
+          border-radius: 10px;
           overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+          font-size: 15px;
         }
+
         thead {
-          background: #17a2b8; /* sky blue */
+          background: linear-gradient(45deg, #17a2b8, #138496);
           color: white;
+          font-size: 14px;
         }
+
         th, td {
           padding: 12px 10px;
           text-align: center;
-          font-size: 14px;
-          border-bottom: 1px solid #eaeaea;
-        }
-        tbody tr:hover {
-          background: #f8f9fa;
-        }
-        td img {
-          border: 1px solid #ccc;
-          border-radius: 6px;
-          max-height: 60px;
+          border-bottom: 1px solid #e0e0e0;
         }
 
-        /* Action Links */
-        td a {
+        tbody tr:nth-child(even) { background: #f8f9fa; }
+        tbody tr:hover { background: #e8f6f9; }
+
+        td img {
+          border-radius: 6px;
+          border: 1px solid #ddd;
+          width: 70px;
+          height: 70px;
+          object-fit: cover;
+        }
+
+        /* ===== Action Buttons ===== */
+        .btn-action {
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 13px;
           text-decoration: none;
-          font-weight: 500;
-          color: #17a2b8; /* sky blue */
-          margin: 0 6px;
+          color: white;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .btn-action:hover { transform: scale(1.08); opacity: 0.9; }
+        .btn-edit { background: #007bff; }
+        .btn-delete { background: #dc3545; }
+        .btn-measure { background: #17a2b8; }
+
+        /* ===== Modal Popup (same as payments) ===== */
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 999;
+          left: 0; top: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.5);
+          justify-content: center;
+          align-items: center;
+          padding: 20px;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+          background: white;
+          border-radius: 10px;
+          padding: 20px 25px;
+          width: 95%;
+          max-width: 950px;
+          max-height: 90%;
+          overflow-y: auto;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+          position: relative;
+          animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content h3 {
+          text-align: center;
+          color: #17a2b8;
+          font-size: 22px;
+          margin-bottom: 15px;
+          letter-spacing: 0.3px;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-btn {
+          position: absolute;
+          right: 12px;
+          top: 10px;
+          font-size: 20px;
+          color: #555;
+          cursor: pointer;
           transition: color 0.2s;
         }
-        td a:hover {
-          color: #0f6674; /* darker teal */
-          text-decoration: underline;
+
+        .close-btn:hover { color: #000; }
+
+        /* ========= Form Table Layout (same structure as payments) ========= */
+        .client-form table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+        }
+
+        .client-form th,
+        .client-form td {
+          padding: 6px 8px;
+          vertical-align: middle;
+        }
+
+        .client-form th {
+          text-align: left;
+          color: #17a2b8;
+          white-space: nowrap;
+          width: 130px;
+        }
+
+        .client-form input,
+        .client-form select,
+        .client-form textarea {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 6px 8px;
+          font-size: 14px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+
+        .client-form input:focus {
+          border-color: #17a2b8;
+          outline: none;
+          box-shadow: 0 0 4px rgba(23,162,184,0.3);
+        }
+
+        .actions {
+          text-align: center;
+          margin-top: 15px;
+        }
+
+        .actions button, .actions a {
+          padding: 8px 18px;
+          border: none;
+          border-radius: 6px;
+          font-weight: 600;
+          cursor: pointer;
+          margin: 5px;
+        }
+
+        .actions button {
+          background: #28a745;
+          color: #fff;
+        }
+
+        .actions a {
+          background: #6c757d;
+          color: #fff;
+          text-decoration: none;
+        }
+
+        /* ===== Camera UI ===== */
+        #cameraContainer {
+          margin-top: 10px;
+          display: none;
+          text-align: center;
+        }
+
+        video, canvas {
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          width: 100%;
+          max-width: 320px;
+          height: auto;
+        }
+
+        @media (max-width: 768px) {
+          .modal-content { padding: 15px; }
+          .client-form table,
+          .client-form tbody,
+          .client-form tr,
+          .client-form th,
+          .client-form td {
+            display: block;
+            width: 100%;
+          }
+
+          .client-form th {
+            margin-top: 8px;
+          }
+
+          .client-form td {
+            margin-bottom: 8px;
+          }
+
+          table { font-size: 13px; }
         }
     </style>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-          const flashMsg = document.getElementById("flashMessage");
-          if (flashMsg) {
-            setTimeout(() => {
-              flashMsg.style.transition = "opacity 0.8s";
-              flashMsg.style.opacity = "0";
-              setTimeout(() => flashMsg.remove(), 800);
-            }, 3000);
-          }
-          const flashErr = document.getElementById("flashError");
-          if (flashErr) {
-            setTimeout(() => {
-              flashErr.style.transition = "opacity 0.8s";
-              flashErr.style.opacity = "0";
-              setTimeout(() => flashErr.remove(), 800);
-            }, 4000);
-          }
-        });
-    </script>
 </head>
 <body>
 
-<!-- Flash Messages -->
-<div th:if="${message}" id="flashMessage" class="alert alert-success">
-    <span th:text="${message}"></span>
-</div>
-<div th:if="${error}" id="flashError" class="alert alert-danger">
-    <span th:text="${error}"></span>
-</div>
-
-<!-- Header -->
-<div class="header-table">
-    <img th:src="@{/images/header.png}" alt="Logo Banner"/>
-</div>
-
 <h1>All Clients</h1>
 
-<!-- Search -->
-<form class="search-form" method="get" action="/clients">
-    <input type="text" name="q" placeholder="Search by name or mobile" th:value="${param.q}">
-    <button type="submit">Search</button>
-</form>
-
-<!-- Add New Client Button -->
 <div class="add-btn-container">
-    <a href="/clients/new" class="add-btn">+ Add New Client</a>
+    <button class="add-btn" onclick="openModal()">+ Add Client</button>
 </div>
 
-<!-- Clients Table -->
 <table>
     <thead>
     <tr>
-        <th>S#</th>
+        <th>ID</th>
         <th>Name</th>
-        <th>Mobile#</th>
-        <th>Whatsapp#</th>
+        <th>Mobile</th>
+        <th>WhatsApp</th>
         <th>Address</th>
         <th>Picture</th>
         <th>Actions</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="client, stat : ${clients}">
-        <td th:text="${client.id}"></td>
-        <td th:text="${client.name}"></td>
-        <td th:text="${client.mobile}"></td>
-        <td th:text="${client.whatsAppNo}"></td>
-        <td th:text="${client.address}"></td>
+    <tr th:each="c : ${clients}">
+        <td th:text="${c.id}"></td>
+        <td th:text="${c.name}"></td>
+        <td th:text="${c.mobile}"></td>
+        <td th:text="${c.whatsAppNo}"></td>
+        <td th:text="${c.address}"></td>
+        <td><img th:if="${c.pictureFilename}" th:src="@{${c.pictureFilename}}" alt="pic"/></td>
         <td>
-            <img th:if="${client.pictureFilename}" th:src="@{${client.pictureFilename}}" width="80"/>
-        </td>
-        <td>
-            <a th:href="@{'/clients/view/' + ${client.id}}">Measurements</a> |
-            <a th:href="@{'/clients/edit/' + ${client.id}}">Edit</a> |
-            <a th:href="@{'/payments/client/' + ${client.id}}">Schedule & Payments</a>
+            <a href="javascript:void(0)"
+               class="btn-action btn-edit"
+               th:attr="data-id=${c.id},
+                  data-name=${c.name},
+                  data-mobile=${c.mobile},
+                  data-whatsapp=${c.whatsAppNo},
+                  data-address=${c.address}"
+               onclick="openModalFromRow(this)">Edit</a>
+            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-measure">Payments</a>
+            <a th:href="@{'/clients/delete/' + ${c.id}}" class="btn-action btn-delete"
+               onclick="return confirm('Delete this client?')">Delete</a>
         </td>
     </tr>
     </tbody>
 </table>
+
+<!-- ✅ MODAL (Styled Same as Payments) -->
+<div id="clientModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Add Client</h3>
+
+        <form class="client-form" th:action="@{/clients/save}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="id" id="clientId"/>
+            <input type="hidden" name="imageData" id="imageData"/>
+
+            <table>
+                <tr>
+                    <th>Name</th><td><input type="text" name="name" id="name" required></td>
+                    <th>Mobile #</th><td><input type="text" name="mobile" id="mobile" required></td>
+                </tr>
+                <tr>
+                    <th>WhatsApp #</th><td><input type="text" name="whatsAppNo" id="whatsAppNo"></td>
+                    <th>Address</th><td><input type="text" name="address" id="address" required></td>
+                </tr>
+                <tr>
+                    <th>Picture</th>
+                    <td colspan="3">
+                        <input type="file" name="pictureFile" accept="image/*">
+                        <button type="button" id="startCamBtn" style="margin-top:8px;">📷 Use Camera</button>
+                        <div id="cameraContainer">
+                            <video id="video" autoplay></video><br>
+                            <button type="button" id="captureBtn">Capture</button>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="actions">
+                <button type="submit">💾 Save</button>
+                <a href="javascript:void(0)" onclick="closeModal()">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById("clientModal");
+    const title = document.getElementById("modalTitle");
+
+    function openModalFromRow(el) {
+      openModal(el.dataset.id, el.dataset.name, el.dataset.mobile, el.dataset.whatsapp, el.dataset.address);
+    }
+
+    function openModal(id, name, mobile, whatsapp, address) {
+      modal.classList.add("show");
+      document.body.style.overflow = "hidden";
+      title.innerText = id ? "Edit Client" : "Add Client";
+
+      document.getElementById("clientId").value = id || "";
+      document.getElementById("name").value = name || "";
+      document.getElementById("mobile").value = mobile || "";
+      document.getElementById("whatsAppNo").value = whatsapp || "";
+      document.getElementById("address").value = address || "";
+    }
+
+    function closeModal() {
+      modal.classList.remove("show");
+      document.body.style.overflow = "auto";
+    }
+
+    // === Camera Logic ===
+    const startCamBtn = document.getElementById('startCamBtn');
+    const cameraContainer = document.getElementById('cameraContainer');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const imageData = document.getElementById('imageData');
+    const captureBtn = document.getElementById('captureBtn');
+    let stream = null;
+
+    startCamBtn.addEventListener('click', async () => {
+      cameraContainer.style.display = 'block';
+      if (!stream) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          video.srcObject = stream;
+        } catch (err) {
+          alert('Error accessing camera: ' + err.message);
+        }
+      }
+    });
+
+    captureBtn.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.style.display = 'block';
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/png');
+      imageData.value = dataUrl;
+
+      // Stop camera after capture
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+      video.style.display = 'none';
+    });
+</script>
 
 </body>
 </html>

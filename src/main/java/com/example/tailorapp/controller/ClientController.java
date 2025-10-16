@@ -42,7 +42,6 @@ public class ClientController {
         this.waistcoatService = waistcoatService;
     }
 
-
     // List clients
     @GetMapping
     public String list(@RequestParam(required = false) String q,
@@ -70,70 +69,23 @@ public class ClientController {
     }
 
     @PostMapping("/save")
-    public String save(@ModelAttribute Client client,
-                       @RequestParam(value = "pictureFile", required = false) MultipartFile pictureFile,
-                       @RequestParam(value = "imageData", required = false) String imageData,
-                       RedirectAttributes ra) throws IOException {
+    public String saveClient(
+            @ModelAttribute Client client,
+            @RequestParam(value = "pictureFile", required = false) MultipartFile pictureFile,
+            @RequestParam(value = "imageData", required = false) String imageData,
+            RedirectAttributes ra) throws IOException {
 
         String uploadDir = System.getProperty("user.dir") + "/uploads";
         File uploadPath = new File(uploadDir);
         if (!uploadPath.exists()) uploadPath.mkdirs();
 
-        // Case 1: normal file upload
-        if (pictureFile != null && !pictureFile.isEmpty()) {
-            String filename = System.currentTimeMillis() + "_" + pictureFile.getOriginalFilename();
-            File dest = new File(uploadPath, filename);
-            pictureFile.transferTo(dest);
-            client.setPictureFilename("/uploads/" + filename);
-        }
-        // Case 2: Base64 image from camera
-        else if (imageData != null && !imageData.isEmpty()) {
-            // Example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...
-            String base64Image = imageData.split(",")[1]; // remove 'data:image/png;base64,' part
-            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Image);
-
-            String filename = "camera_" + System.currentTimeMillis() + ".png";
-            File outputFile = new File(uploadPath, filename);
-            java.nio.file.Files.write(outputFile.toPath(), imageBytes);
-
-            client.setPictureFilename("/uploads/" + filename);
+        // Existing client check (for edit)
+        Client existing = null;
+        if (client.getId() != null) {
+            existing = clientService.findById(client.getId()).orElse(null);
         }
 
-        clientService.save(client);
-        ra.addFlashAttribute("message", "Client added successfully");
-        return "redirect:/clients";
-    }
-
-
-    // Edit form
-    @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        Optional<Client> clientOpt = clientService.findById(id);
-        if (clientOpt.isEmpty()) return "redirect:/clients";
-        model.addAttribute("client", clientOpt.get());
-        return "clients/form";
-    }
-
-    // Update client
-    @PostMapping("/update/{id}")
-    public String updateClient(@PathVariable Long id,
-                               @ModelAttribute Client updated,
-                               @RequestParam(value = "pictureFile", required = false) MultipartFile pictureFile,
-                               @RequestParam(value = "imageData", required = false) String imageData,
-                               RedirectAttributes ra) throws IOException {
-        Optional<Client> existingOpt = clientService.findById(id);
-        if (existingOpt.isEmpty()) return "redirect:/clients";
-
-        Client client = existingOpt.get();
-        client.setName(updated.getName());
-        client.setMobile(updated.getMobile());
-        client.setWhatsAppNo(updated.getWhatsAppNo());
-        client.setAddress(updated.getAddress());
-
-        String uploadDir = System.getProperty("user.dir") + "/uploads";
-        File uploadPath = new File(uploadDir);
-        if (!uploadPath.exists()) uploadPath.mkdirs();
-
+        // Handle image upload
         if (pictureFile != null && !pictureFile.isEmpty()) {
             String filename = System.currentTimeMillis() + "_" + pictureFile.getOriginalFilename();
             File dest = new File(uploadPath, filename);
@@ -146,12 +98,16 @@ public class ClientController {
             File outputFile = new File(uploadPath, filename);
             java.nio.file.Files.write(outputFile.toPath(), imageBytes);
             client.setPictureFilename("/uploads/" + filename);
-        } else {
-            client.setPictureFilename(existingOpt.get().getPictureFilename());
+        } else if (existing != null) {
+            // Keep existing picture
+            client.setPictureFilename(existing.getPictureFilename());
         }
 
         clientService.save(client);
-        ra.addFlashAttribute("message", "Client updated successfully");
+
+        String msg = (existing != null) ? "Client updated successfully" : "Client added successfully";
+        ra.addFlashAttribute("message", msg);
+
         return "redirect:/clients";
     }
 
