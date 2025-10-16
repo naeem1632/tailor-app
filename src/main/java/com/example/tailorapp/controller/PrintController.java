@@ -90,14 +90,14 @@ public class PrintController {
     private void addKameezSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Kameez Measurements");
 
-        addRow4(table, "Kameez length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
-        addRow4(table, "Shoulder-aram", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
-        addRow4(table, "Center aram", nvl(m.getCenterArm()),  "Lower arm", nvl(m.getLowerArm()));
-        addRow4(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
-        addRow4(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
-        addRow4(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));
-        addRow4(table, "Chest", nvl(m.getChest()), "Chest fitting", nvl(m.getChestFitting()));
-        addRow4(table, "Waist", nvl(m.getWaist()), "Hip", nvl(m.getHip()));
+        addRow4IfNotNull(table, "Kameez length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
+        addRow4IfNotNull(table, "Shoulder-aram", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
+        addRow4IfNotNull(table, "Center aram", nvl(m.getCenterArm()),  "Lower arm", nvl(m.getLowerArm()));
+        addRow4IfNotNull(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
+        addRow4IfNotNull(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
+        addRow4IfNotNull(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));
+        addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Chest fitting", nvl(m.getChestFitting()));
+        addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Hip", nvl(m.getHip()));
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
     }
@@ -106,8 +106,8 @@ public class PrintController {
     private void addShalwarSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Shalwar Measurements");
 
-        addRow4(table, "Length", nvl(m.getShalwarLength()),  "Fitting", nvl(m.getShalwarFitting()));
-        addRow4(table,"Asan", nvl(m.getAsan()), "Payncha", nvl(m.getPayncha()));
+        addRow4IfNotNull(table, "Length", nvl(m.getShalwarLength()),  "Fitting", nvl(m.getShalwarFitting()));
+        addRow4IfNotNull(table,"Asan", nvl(m.getAsan()), "Payncha", nvl(m.getPayncha()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
@@ -117,15 +117,15 @@ public class PrintController {
     private void addDesignSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Design & Finishing");
 
-        addRow4(table,"Collar design", nvl(m.getCollarType()), "", null);
+        addRow4IfNotNull(table,"Collar design", nvl(m.getCollarType()), "", null);
         addImageRow4(table, "Bain design", m.getBainType(), "Cuff design", m.getCuffDesign());
         addImageRow4(table, "Front pocket", m.getFrontPocket() ? "Yes" : "No", "Front pocket design", m.getFrontPocketType());
-        addRow4(table, "Side pocket", nvl(m.getSidePocket()), "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No");
-        addRow4(table, "Daman type", m.getDamanType(), "Daman stitching", nvl(m.getDamanStitching()));
-        addRow4(table,  "Cuff type", m.getCuffType(), "Stitching", nvl(m.getStitchType()));
-        addRow4(table, "Button", nvl(m.getButtonType()), "Design Stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
-        addRow4(table, "Front patti type", nvl(m.getFrontPattiType()), "Front patti kaj", nvl(m.getFrontPattiKaj()));
-        addRow4(table, "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No", "Jali", nvl(m.getJali()));
+        addRow4IfNotNull(table, "Side pocket", nvl(m.getSidePocket()), "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No");
+        addRow4IfNotNull(table, "Daman type", m.getDamanType(), "Daman stitching", nvl(m.getDamanStitching()));
+        addRow4IfNotNull(table,  "Cuff type", m.getCuffType(), "Stitching", nvl(m.getStitchType()));
+        addRow4IfNotNull(table, "Button", nvl(m.getButtonType()), "Design Stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
+        addRow4IfNotNull(table, "Front patti type", nvl(m.getFrontPattiType()), "Front patti kaj", nvl(m.getFrontPattiKaj()));
+        addRow4IfNotNull(table, "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No", "Jali", nvl(m.getJali()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
@@ -133,20 +133,25 @@ public class PrintController {
 
     // === Notes Section ===
     private void addNotesSection(Document doc, String note) throws DocumentException {
-        if (note != null && !note.isEmpty()) {
-            Paragraph heading = new Paragraph("Notes:",
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7));
-            heading.setSpacingBefore(3f);
-            heading.setSpacingAfter(1f);
-            doc.add(heading);
+        Paragraph heading = new Paragraph("Notes:",
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7));
+        heading.setSpacingBefore(3f);
+        doc.add(heading);
 
-            Paragraph notes = new Paragraph(note,
-                    FontFactory.getFont(FontFactory.HELVETICA, 6));
-            notes.setIndentationLeft(10f);
-            doc.add(notes);
-            doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
-        }
+        PdfPCell cell = new PdfPCell(new Phrase(nvl(note), FontFactory.getFont(FontFactory.HELVETICA, 6)));
+        cell.setFixedHeight(15f); // roughly 3 lines
+        cell.setVerticalAlignment(Element.ALIGN_TOP);
+        cell.setPadding(4f);
+        cell.setBorder(Rectangle.NO_BORDER); // ✅ remove all borders
+
+        PdfPTable noteTable = new PdfPTable(1);
+        noteTable.setWidthPercentage(100);
+        noteTable.addCell(cell);
+        noteTable.getDefaultCell().setBorder(Rectangle.NO_BORDER); // ensure table has no border too
+
+        doc.add(noteTable);
     }
+
 
     // === Helpers ===
     private PdfPTable createSectionTable(String title) throws DocumentException {
@@ -173,6 +178,28 @@ public class PrintController {
         table.addCell(makeValueCell(v2));
     }
 
+    private void addRow4IfNotNull(PdfPTable table, String l1, String v1, String l2, String v2) {
+        boolean hasFirst = v1 != null && !v1.isEmpty();
+        boolean hasSecond = v2 != null && !v2.isEmpty();
+
+        if (!hasFirst && !hasSecond) return; // skip entire row if both are null/empty
+
+        if (!hasFirst && hasSecond) {
+            // shift second column left (no heading gap)
+            table.addCell(makeLabelCell(l2));
+            table.addCell(makeValueCell(v2));
+            table.addCell(new PdfPCell()); // fill remaining empty cells
+            table.addCell(new PdfPCell());
+        } else if (hasFirst && !hasSecond) {
+            table.addCell(makeLabelCell(l1));
+            table.addCell(makeValueCell(v1));
+            table.addCell(new PdfPCell());
+            table.addCell(new PdfPCell());
+        } else {
+            addRow4(table, l1, v1, l2, v2);
+        }
+    }
+
     private void addImageRow4(PdfPTable table, String l1, String t1, String l2, String t2) {
         table.addCell(makeLabelCell(l1));
         table.addCell(getImageCell(t1));
@@ -185,10 +212,9 @@ public class PrintController {
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 6)));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-        cell.setPadding(1.5f);
+        cell.setPadding(3f); // increased for more readable rows
         return cell;
     }
-
 
     private PdfPCell makeValueCell(String text) {
         PdfPCell cell = new PdfPCell(new Phrase(nvl(text),
@@ -287,16 +313,36 @@ public class PrintController {
 
     // === waistcoat Section ===
     private void addWaistcoatSection(Document doc, WaistcoatMeasurement m) throws DocumentException {
-        PdfPTable table = createSectionTable("Waistcoat Measurements");
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{40f, 60f});
 
-        addRow4(table, "Waistcoat length", nvl(m.getLength()), "Shoulder", nvl(m.getShoulder()));
-        addRow4(table, "Neck", nvl(m.getLength()), "Chest", nvl(m.getChest()));
-        addRow4(table, "Chest fitting", nvl(m.getChestFitting()), "Hip", nvl(m.getHip()));
-        addRow4(table, "Bain size", nvl(m.getBainSize()), "Bain style", nvl(m.getBainType()));
-        addRow4(table, "Daman style", nvl(m.getDamanType()), "Chest",null);
+        PdfPCell headingCell = new PdfPCell(
+                new Phrase("Waistcoat Measurements", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+        headingCell.setBackgroundColor(Color.DARK_GRAY);
+        headingCell.setColspan(2);
+        headingCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        headingCell.setPadding(3f);
+        table.addCell(headingCell);
+
+        addRow2IfNotNull(table, "Length", nvl(m.getLength()));
+        addRow2IfNotNull(table, "Shoulder", nvl(m.getShoulder()));
+        addRow2IfNotNull(table, "Neck", nvl(m.getNeck()));
+        addRow2IfNotNull(table, "Chest", nvl(m.getChest()));
+        addRow2IfNotNull(table, "Chest fitting", nvl(m.getChestFitting()));
+        addRow2IfNotNull(table, "Hip", nvl(m.getHip()));
+        addRow2IfNotNull(table, "Bain size", nvl(m.getBainSize()));
+        addRow2IfNotNull(table, "Bain style", nvl(m.getBainType()));
+        addRow2IfNotNull(table, "Daman style", nvl(m.getDamanType()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+    }
+
+    private void addRow2IfNotNull(PdfPTable table, String label, String value) {
+        if (value == null || value.isEmpty()) return;
+        table.addCell(makeLabelCell(label));
+        table.addCell(makeValueCell(value));
     }
 
 }
