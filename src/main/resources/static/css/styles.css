@@ -1,0 +1,749 @@
+/* ==========================================================
+   GLOBAL BASE STYLES  (Used on all pages)
+========================================================== */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+h1, h2, h3 {
+  text-align: center;
+  color: #14889e;
+  margin: 20px 0;
+  font-weight: 700;
+}
+
+h1 { font-size: 26px; letter-spacing: 0.3px; }
+h2, h3 { font-size: 22px; }
+
+/* ==========================================================
+   BUTTONS
+========================================================== */
+button,
+.add-btn,
+.go-back-btn,
+.actions button,
+.actions a,
+.home-link {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover,
+.add-btn:hover,
+.go-back-btn:hover,
+.actions button:hover,
+.actions a:hover,
+.home-link:hover {
+  background: linear-gradient(135deg, #138496, #0d6efd);
+  transform: scale(1.05);
+}
+
+/* ==========================================================
+   TABLES
+========================================================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  font-size: 15px;
+  margin-bottom: 25px;
+}
+
+thead {
+  background: linear-gradient(45deg, #17a2b8, #138496);
+  color: white;
+}
+
+th, td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+tbody tr:nth-child(even) { background: #f8f9fa; }
+tbody tr:hover { background: #ecf7fa; transition: 0.2s ease; }
+
+thead th {
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  padding: 12px 10px;
+}
+
+table td { vertical-align: middle; }
+
+/* ==========================================================
+   ACTION BUTTONS INSIDE TABLES
+========================================================== */
+.btn-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  text-decoration: none;
+  margin: 0 2px;
+  transition: all 0.15s ease-in-out;
+  display: inline-block;
+  min-width: 70px;
+}
+
+.btn-action:hover {
+  transform: scale(1.07);
+  opacity: 0.9;
+}
+
+.btn-edit { background: #0d6efd; }
+.btn-delete { background: #dc3545; }
+.btn-measure { background: #17a2b8; }
+
+/* ==========================================================
+   MODALS
+========================================================== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal.show { display: flex; }
+
+.modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 20px 25px;
+  width: 95%;
+  max-width: 950px;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-content h3 {
+  text-align: center;
+  color: #17a2b8;
+  font-size: 22px;
+  margin-bottom: 15px;
+  letter-spacing: 0.3px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.close-btn {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  font-size: 22px;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.close-btn:hover { color: #000; }
+
+/* ==========================================================
+   FORMS & INPUTS
+========================================================== */
+input, select, textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #17a2b8;
+  box-shadow: 0 0 4px rgba(23,162,184,0.3);
+  outline: none;
+}
+
+.actions { text-align: center; margin-top: 15px; }
+.actions a { background: #6c757d; }
+
+/* ==========================================================
+   CAMERA CAPTURE CONTAINER (Clients Page)
+========================================================== */
+#cameraContainer { margin-top: 10px; display: none; text-align: center; }
+video, canvas {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+
+/* ==========================================================
+   ALERTS
+========================================================== */
+.alert {
+  max-width: 800px;
+  margin: 15px auto;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.alert-danger  { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+/* ==========================================================
+   MEASUREMENTS PAGE (Accordion + Forms)
+========================================================== */
+.client-photo { text-align: center; margin: 15px 0; }
+.client-photo img {
+  max-width: 150px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+/* ----- Accordion Buttons ----- */
+.accordion-tabs {
+  display: inline-flex;
+  gap: 6px;
+}
+.accordion-btn {
+  white-space: nowrap;
+  flex: 0 1 auto;
+  padding: 5px 8px;
+  background: #e9f8fb;
+  color: #17a2b8;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.accordion-btn:hover,
+.accordion-btn.active {
+  background: #17a2b8;
+  color: #fff;
+}
+
+/* ----- Accordion Content ----- */
+.accordion-row { display: none; background: #fff; }
+.accordion-row.show { display: table-row; }
+.accordion-cell { padding: 0; background: #fff; }
+
+.accordion-content-group {
+  padding: 15px 20px;
+  background: #f9fcff;
+  border-top: 2px solid #17a2b8;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: max-height 0.4s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+.accordion-row.show .accordion-content-group {
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
+}
+.accordion-content { display: none; padding-top: 10px; }
+.accordion-content.show { display: block; }
+
+/* ----- Accordion inner tables ----- */
+.accordion-content table {
+  width: 25%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+.accordion-content th {
+  text-align: left;
+  width: 220px;
+  background: #f1f9ff;
+  padding: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #0d6efd;
+  border-right: 1px solid #e0e0e0;
+}
+.accordion-content td {
+  text-align: left;
+  padding: 8px;
+  font-size: 13px;
+  color: #333;
+  border-bottom: 1px solid #f1f1f1;
+}
+.accordion-content tr:nth-child(even) td { background: #f9fbfc; }
+
+/* ==========================================================
+   MEASUREMENT FORMS
+========================================================== */
+form.measure-form {
+  background: #fff;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: none;
+}
+
+.grid-8 {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #17a2b8;
+}
+
+textarea {
+  grid-column: span 8;
+  height: 60px;
+}
+
+.section-title {
+  grid-column: span 8;
+  background: #17a2b8;
+  color: #fff;
+  padding: 8px 10px;
+  font-weight: bold;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================
+   OPTIONS ROWS (images + checkboxes)
+========================================================== */
+.options-inline {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.options-inline label {
+  display: flex;
+  align-items: center;
+}
+.options-inline img {
+  width: 40px;
+  height: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px;
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+.options-inline img:hover {
+  transform: scale(2);
+  z-index: 10;
+  position: relative;
+}
+.options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.options-row > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================
+   RESPONSIVE FIXES
+========================================================== */
+@media (max-width: 768px) {
+  .modal-content { padding: 15px; }
+  table, tbody, tr, th, td { display: block; width: 100%; }
+  th, td { text-align: left; padding: 8px; }
+  .client-form table, .payment-form table { font-size: 13px; }
+  td .btn-action { display: block; margin: 5px auto; width: 80%; }
+}
+
+/* ==========================================================
+   FIXES: Header height and Add button color
+========================================================== */
+
+/* 1️⃣ Add buttons should be green */
+.add-btn,
+button.add-btn,
+.actions button.add-btn {
+  background: #28a745 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border: none;
+}
+
+.add-btn:hover,
+button.add-btn:hover {
+  background: #218838 !important;
+  transform: scale(1.05);
+}
+
+/* 2️⃣ Limit excessive height on sections with images */
+thead tr.section-title th {
+  position: relative;
+  font-size: 18px;
+  padding: 12px 20px !important;
+  text-align: left;
+  height: auto;
+  line-height: 1.4;
+}
+
+/* Control images in table headers (like dress/waistcoat icons) */
+thead tr.section-title img {
+  position: absolute;
+  right: 20px;
+  top: 6px;
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Prevent large images from stretching the table rows */
+td img, th img {
+  max-height: 70px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Slightly smaller top padding for images in sections */
+.section-title img {
+  height: 48px;
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* 3️⃣ Reduce section bar height in measurement page */
+thead.section-header,
+thead tr.section-title {
+  height: auto !important;
+  min-height: 55px;
+}
+
+/* Keep headers visually neat */
+thead th {
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* 4️⃣ Ensure spacing between measurement tables is consistent */
+.measurement-section {
+  margin-bottom: 25px;
+}
+
+/* 5️⃣ Fix measurement buttons alignment */
+.measurement-actions {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.measurement-actions .add-btn {
+  margin: 5px;
+}
+
+/* ==========================================================
+   FINAL POLISH FOR MEASUREMENTS PAGE
+========================================================== */
+
+/* ✅ 1. Green add buttons (specific to measurement page) */
+.actions button {
+  background: #28a745 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.actions button:hover {
+  background: #218838 !important;
+  transform: scale(1.05);
+}
+
+/* ✅ 2. Fix icon size and alignment in Dress/Waistcoat headers */
+thead tr.section-title th {
+  position: relative;
+  padding: 14px 20px !important;
+  line-height: 1.2;
+}
+
+thead tr.section-title img {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 42px;
+  width: auto;
+  opacity: 0.9;
+  filter: brightness(0) invert(1);
+}
+
+/* ✅ 3. Dull sub-header background for column headings */
+thead tr.sub-header {
+  background: #138496; /* darker dull teal */
+  color: #e9f8fb;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+thead tr.sub-header th {
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+/* ✅ 4. Consistent rounded look for section bars */
+thead tr.section-title {
+  background: #17a2b8; /* bright teal for main title */
+  color: #fff;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+table {
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* ==========================================================
+   BUTTONIZED ACTION LINKS & ICON VISIBILITY FIX
+========================================================== */
+
+/* 1️⃣ Convert inline action links (Print | Edit | Delete | Add new) to buttons */
+td a {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0 3px;
+  transition: all 0.2s ease-in-out;
+  color: #fff !important;
+}
+
+/* Specific button colors */
+td a[href*="print"] {
+  background: #6f42c1; /* purple */
+}
+td a[href*="edit"] {
+  background: #0d6efd; /* blue */
+}
+td a[href*="delete"] {
+  background: #dc3545; /* red */
+}
+td a[href*="copy"],
+td a[href*="add"] {
+  background: #28a745; /* green */
+}
+
+/* Hover effect */
+td a:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* 2️⃣ Fix white dress/waistcoat icons visibility */
+thead tr.section-title img {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
+  width: auto;
+  background: rgba(0, 0, 0, 0.25); /* subtle gray background to make white icons visible */
+  border-radius: 8px;
+  padding: 4px;
+  filter: brightness(1.2); /* slight brightness boost */
+}
+
+/* Optional: small glow for visibility on teal */
+thead tr.section-title img:hover {
+  filter: brightness(1.4) drop-shadow(0 0 4px rgba(255,255,255,0.5));
+}
+
+/* 3️⃣ Slightly tighter header layout */
+thead tr.section-title th {
+  padding: 12px 18px !important;
+  line-height: 1.3;
+}
+
+/* 4️⃣ Balance the table layout overall */
+table {
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================
+   FINAL POLISH: ICONS FOR ACTION BUTTONS (Print/Edit/Delete/Add)
+========================================================== */
+
+/* 1️⃣ Base button style (from previous section) */
+td a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0 3px;
+  transition: all 0.2s ease-in-out;
+  color: #fff !important;
+}
+
+/* 2️⃣ Colors */
+td a[href*="print"] {
+  background: #6f42c1; /* purple */
+}
+td a[href*="edit"] {
+  background: #0d6efd; /* blue */
+}
+td a[href*="delete"] {
+  background: #dc3545; /* red */
+}
+td a[href*="copy"],
+td a[href*="add"] {
+  background: #28a745; /* green */
+}
+
+/* 3️⃣ Hover animation */
+td a:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* 4️⃣ Add icons using pseudo-elements */
+td a[href*="print"]::before {
+  content: "🖨️";
+}
+td a[href*="edit"]::before {
+  content: "✏️";
+}
+td a[href*="delete"]::before {
+  content: "🗑️";
+}
+td a[href*="copy"],
+td a[href*="add"]::before {
+  content: "➕";
+}
+
+/* Fix: ensure icons align properly */
+td a::before {
+  font-size: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 5️⃣ Optional: slightly rounded shadow for subtle depth */
+td a {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+td a:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* 6️⃣ Dress/Waistcoat icons (keep visible and centered) */
+thead tr.section-title img {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 4px;
+  filter: brightness(1.3);
+  height: 42px;
+  width: auto;
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ==========================================================
+   POLISH: ADD ICONS FOR ADD MEASUREMENT BUTTONS
+========================================================== */
+
+/* 1️⃣ Apply to all main Add buttons on measurement pages */
+.actions button {
+  position: relative;
+  background: #28a745 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 10px 24px 10px 42px; /* extra left padding for icon space */
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* 2️⃣ Add ➕ icon before text */
+.actions button::before {
+  content: "➕";
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+/* 3️⃣ Hover and active effects */
+.actions button:hover {
+  background: #218838 !important;
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.actions button:active {
+  transform: scale(0.97);
+}
+
+/* 4️⃣ Make sure multiple add buttons align neatly */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+/* 5️⃣ Optional: subtle glow to match the page’s teal aesthetic */
+.actions button:hover::before {
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.9);
+}
