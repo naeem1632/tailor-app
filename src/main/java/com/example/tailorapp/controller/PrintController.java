@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,7 +49,14 @@ public class PrintController {
         if (c.isEmpty()) return;
 
         Client client = c.get();
-        List<DressMeasurement> dressMeasurements = measurementService.findByClient(id);
+
+        Optional<DressMeasurement> latestMeasurement = measurementService.findByClient(id)
+                .stream()
+                .max(Comparator.comparing(DressMeasurement::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        if (latestMeasurement.isEmpty()) return;
+
+        DressMeasurement dressMeasurement = latestMeasurement.get();
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
@@ -70,12 +78,10 @@ public class PrintController {
         document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
 
         // === Measurements ===
-        for (DressMeasurement m : dressMeasurements) {
-            addKameezSection(document, m);
-            addShalwarSection(document, m);
-            addDesignSection(document, m);
-            addNotesSection(document, m.getNotes());
-        }
+            addKameezSection(document, dressMeasurement);
+            addShalwarSection(document, dressMeasurement);
+            addDesignSection(document, dressMeasurement);
+            addNotesSection(document, dressMeasurement.getNotes());
 
         document.close();
     }
@@ -85,8 +91,8 @@ public class PrintController {
         PdfPTable table = createSectionTable("Kameez Measurements");
 
         addRow4(table, "Kameez length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
-        addRow4(table, "Upper arm", nvl(m.getUpperArm()), "Center aram", nvl(m.getCenterArm()));
-        addRow4(table,  "Lower arm", nvl(m.getLowerArm()), "Shoulder-aram", nvl(m.getShoulderArm()));
+        addRow4(table, "Shoulder-aram", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
+        addRow4(table, "Center aram", nvl(m.getCenterArm()),  "Lower arm", nvl(m.getLowerArm()));
         addRow4(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
         addRow4(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
         addRow4(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));
@@ -100,9 +106,8 @@ public class PrintController {
     private void addShalwarSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Shalwar Measurements");
 
-        addRow4(table, "Length", nvl(m.getShalwarLength()), "", null);
-        addRow4(table, "Fitting", nvl(m.getShalwarFitting()), "Asan", nvl(m.getAsan()));
-        addRow4(table, "Payncha", nvl(m.getPayncha()), "","");
+        addRow4(table, "Length", nvl(m.getShalwarLength()),  "Fitting", nvl(m.getShalwarFitting()));
+        addRow4(table,"Asan", nvl(m.getAsan()), "Payncha", nvl(m.getPayncha()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
@@ -112,14 +117,14 @@ public class PrintController {
     private void addDesignSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Design & Finishing");
 
-        addRow4(table,"Collar design", nvl(m.getCollarType()), "Bain Design", m.getBainType());
-        addImageRow4(table, "Side Pocket", nvl(m.getSidePocket()), "Daman type", m.getDamanType());
-        addRow4(table,"Daman stitching", nvl(m.getDamanStitching()), "Front Pocket", (m.getFrontPocket() != null && m.getFrontPocket()) ? "Yes" : "No");
-        addImageRow4(table, "Front Pocket design", m.getFrontPocketType(), "Cuff type", m.getCuffType());
-        addImageRow4(table,  "Cuff design", m.getCuffDesign(), "","");
-        addRow4(table, "Stitch", nvl(m.getStitchType()), "Design Stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
-        addRow4(table, "Button", nvl(m.getButtonType()), "Front Patti Kaj", nvl(m.getFrontPattiKaj()));
-        addRow4(table, "Patti Type", nvl(m.getFrontPattiType()), "","");
+        addRow4(table,"Collar design", nvl(m.getCollarType()), "", null);
+        addImageRow4(table, "Bain design", m.getBainType(), "Cuff design", m.getCuffDesign());
+        addImageRow4(table, "Front pocket", m.getFrontPocket() ? "Yes" : "No", "Front pocket design", m.getFrontPocketType());
+        addRow4(table, "Side pocket", nvl(m.getSidePocket()), "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No");
+        addRow4(table, "Daman type", m.getDamanType(), "Daman stitching", nvl(m.getDamanStitching()));
+        addRow4(table,  "Cuff type", m.getCuffType(), "Stitching", nvl(m.getStitchType()));
+        addRow4(table, "Button", nvl(m.getButtonType()), "Design Stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
+        addRow4(table, "Front patti type", nvl(m.getFrontPattiType()), "Front patti kaj", nvl(m.getFrontPattiKaj()));
         addRow4(table, "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No", "Jali", nvl(m.getJali()));
 
         doc.add(table);
@@ -143,7 +148,6 @@ public class PrintController {
         }
     }
 
-
     // === Helpers ===
     private PdfPTable createSectionTable(String title) throws DocumentException {
         // 4 columns with custom widths: label(30%), value(20%), label(30%), value(20%)
@@ -161,7 +165,6 @@ public class PrintController {
 
         return table;
     }
-
 
     private void addRow4(PdfPTable table, String l1, String v1, String l2, String v2) {
         table.addCell(makeLabelCell(l1));
@@ -236,11 +239,9 @@ public class PrintController {
         return cell;
     }
 
-
     private String nvl(Object obj) {
         return (obj == null) ? "" : obj.toString();
     }
-
 
     // Print PDF
     @GetMapping("/waistcoat/{id}")
@@ -249,7 +250,14 @@ public class PrintController {
         if (c.isEmpty()) return;
 
         Client client = c.get();
-        List<WaistcoatMeasurement> waistcoatMeasurements = waistcoatService.findByClient(id);
+
+        Optional<WaistcoatMeasurement> latestMeasurement = waistcoatService.findByClient(id)
+                .stream()
+                .max(Comparator.comparing(WaistcoatMeasurement::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        if (latestMeasurement.isEmpty()) return;
+
+        WaistcoatMeasurement waistcoatMeasurements = latestMeasurement.get();
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
@@ -271,10 +279,8 @@ public class PrintController {
         document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
 
         // === Measurements ===
-        for (WaistcoatMeasurement m : waistcoatMeasurements) {
-            addWaistcoatSection(document, m);
-            addNotesSection(document, m.getNotes());
-        }
+            addWaistcoatSection(document, waistcoatMeasurements);
+            addNotesSection(document, waistcoatMeasurements.getNotes());
 
         document.close();
     }
