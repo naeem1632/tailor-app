@@ -104,8 +104,8 @@
 
 <!-- Action Buttons -->
 <div class="actions">
-  <button type="button" th:if="${#lists.isEmpty(dressMeasurements)}" onclick="toggleForm('measurementForm')">+ Add Dress Measurement</button>
-  <button type="button" th:if="${#lists.isEmpty(waistcoatMeasurements)}" onclick="toggleForm('waistcoatForm')">+ Add Waistcoat Measurement</button>
+  <button type="button" th:if="${#lists.isEmpty(dressMeasurements)}" onclick="toggleForm('measurementForm')">Add Dress Measurement</button>
+  <button type="button" th:if="${#lists.isEmpty(waistcoatMeasurements)}" onclick="toggleForm('waistcoatForm')">Add Waistcoat Measurement</button>
 </div>
 
 <!-- ===================== DRESS LIST (Accordion + Edit/Delete) ===================== -->
@@ -488,7 +488,7 @@
   </div>
 
   <div class="actions">
-    <button type="submit">💾 Save Dress Measurement</button>
+    <button type="submit">Save Dress Measurement</button>
     <a th:href="@{/clients/view/{id}(id=${client.id})}"
        style="margin-left:10px; padding:10px 20px; background:#6c757d; color:#fff; border-radius:6px; font-weight:600; text-decoration:none;">
       ✖ Cancel
@@ -632,7 +632,7 @@
   </div>
 
   <div class="actions">
-    <button type="submit">💾 Save Waistcoat Measurement</button>
+    <button type="submit">Save Waistcoat Measurement</button>
     <a th:href="@{/clients/view/{id}(id=${client.id})}"
        style="margin-left:10px; padding:10px 20px; background:#6c757d; color:#fff; border-radius:6px; font-weight:600; text-decoration:none;">
       ✖ Cancel
@@ -640,8 +640,10 @@
   </div>
 </form>
 
-
-<a th:href="@{/clients}" class="home-link">⬅ Back to Home</a>
+<!-- ✅ Go Back Button -->
+<div class="go-back-container">
+  <a th:href="@{/clients}" class="go-back-btn">Go Back Home</a>
+</div>
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {

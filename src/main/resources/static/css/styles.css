@@ -747,3 +747,286 @@ thead tr.section-title img {
 .actions button:hover::before {
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.9);
 }
+
+/* ==========================================================
+   UNIFIED STYLING FOR CLIENTS & PAYMENTS PAGES
+========================================================== */
+
+/* ====== 1️⃣ ADD BUTTONS (Clients / Payments) ====== */
+.add-btn,
+.add-btn-container button {
+  position: relative;
+  background: #28a745 !important;
+  background-image: none !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 10px 24px 10px 42px; /* left space for icon */
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.add-btn::before,
+.add-btn-container button::before {
+  content: "➕";
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+.add-btn:hover,
+.add-btn-container button:hover {
+  background: #218838 !important;
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ====== 2️⃣ TABLE ACTION BUTTONS (Clients + Payments) ====== */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  color: #fff !important;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action:hover {
+  transform: scale(1.07);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ====== 3️⃣ COLOR + ICON MAPPING ====== */
+.btn-edit {
+  background: #0d6efd;
+}
+.btn-edit::before {
+  content: "✏️";
+}
+
+.btn-measure {
+  background: #17a2b8;
+}
+.btn-measure::before {
+  content: "📏";
+}
+
+.btn-delete {
+  background: #dc3545;
+}
+.btn-delete::before {
+  content: "🗑️";
+}
+
+.btn-payment {
+  background: #6f42c1;
+}
+.btn-payment::before {
+  content: "💰";
+}
+
+/* ====== 4️⃣ MODAL ACTION BUTTONS (Save / Cancel) ====== */
+.actions button[type="submit"] {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 10px 20px 10px 40px;
+  position: relative;
+}
+
+.actions button[type="submit"]::before {
+  content: "💾";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.actions button[type="submit"]:hover {
+  background: #218838;
+  transform: scale(1.05);
+}
+
+.actions a {
+  background: #6c757d;
+  color: #fff;
+  border-radius: 6px;
+  padding: 10px 20px 10px 38px;
+  position: relative;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.actions a::before {
+  content: "✖";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.actions a:hover {
+  background: #5a6268;
+  transform: scale(1.05);
+}
+
+/* ====== 5️⃣ GO BACK BUTTON ====== */
+.go-back-btn {
+  background: #17a2b8;
+  font-weight: 600;
+  padding: 10px 20px 10px 36px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.go-back-btn::before {
+  content: "⬅";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.go-back-btn:hover {
+  background: #138496;
+  transform: scale(1.05);
+}
+
+/* ==========================================================
+   POLISH: UNIFY BACK TO HOME / GO BACK BUTTONS
+========================================================== */
+
+/* Applies to both:
+   - <a class="go-back-btn">
+   - <a class="home-link">
+*/
+.go-back-btn,
+.home-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px 10px 40px; /* left padding for icon */
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 🏠 Add home icon automatically */
+.go-back-btn::before,
+.home-link::before {
+  content: "🏠";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+/* Hover effects */
+.go-back-btn:hover,
+.home-link:hover {
+  background: linear-gradient(135deg, #138496, #0d6efd);
+  transform: scale(1.05);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Slight active press feedback */
+.go-back-btn:active,
+.home-link:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Center them nicely */
+.go-back-container,
+.home-link {
+  text-align: center;
+  display: block;
+  margin: 25px auto;
+}
+
+/* ==========================================================
+   POLISH: CONSISTENT CANCEL BUTTONS (All Pages)
+========================================================== */
+
+/* Applies to:
+   - Cancel link in modals
+   - Cancel link in measurement forms
+   - Any .actions a button used as cancel
+*/
+.actions a,
+button.cancel-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #6c757d !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px 10px 40px; /* space for icon */
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease-in-out;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* ❌ Icon */
+.actions a::before,
+button.cancel-btn::before {
+  content: "❌";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+/* Hover & click effects */
+.actions a:hover,
+button.cancel-btn:hover {
+  background: #5a6268 !important;
+  transform: scale(1.05);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.actions a:active,
+button.cancel-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Center align cancel + save buttons */
+.actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}

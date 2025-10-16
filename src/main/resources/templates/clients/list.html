@@ -11,7 +11,7 @@
 <h1>All Clients</h1>
 
 <div class="add-btn-container">
-    <button class="add-btn" onclick="openModal()">+ Add Client</button>
+    <button class="add-btn" onclick="openModal()">Add Client</button>
 </div>
 
 <table>
@@ -43,7 +43,7 @@
                   data-whatsapp=${c.whatsAppNo},
                   data-address=${c.address}"
                onclick="openModalFromRow(this)">Edit</a>
-            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-measure">Payments</a>
+            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-payment">Payments</a>
             <a th:href="@{'/clients/view/' + ${c.id}}" class="btn-action btn-measure">Measurements</a>
         </td>
     </tr>
@@ -84,7 +84,7 @@
             </table>
 
             <div class="actions">
-                <button type="submit">💾 Save</button>
+                <button type="submit">Save</button>
                 <a href="javascript:void(0)" onclick="closeModal()">Cancel</a>
             </div>
         </form>
