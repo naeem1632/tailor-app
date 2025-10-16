@@ -270,6 +270,11 @@ public class ClientController {
         m.setFrontPattiType(dressMeasurement.getFrontPattiType());
         m.setNotes(dressMeasurement.getNotes());
         m.setShalwarPocket(dressMeasurement.getShalwarPocket());
+
+        m.setDressQty(dressMeasurement.getDressQty());
+        m.setWithCollar(dressMeasurement.getWithCollar());
+        m.setWithBain(dressMeasurement.getWithBain());
+        m.setWithDesign(dressMeasurement.getWithDesign());
         measurementService.save(m);
 
         ra.addFlashAttribute("message", "DressMeasurement updated successfully");

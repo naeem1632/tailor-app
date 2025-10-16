@@ -187,15 +187,16 @@
       }
 
       .accordion-btn {
-        flex: 1;
-        padding: 6px 10px;
+        white-space: nowrap;     /* ✅ prevent text wrapping */
+        flex: 0 1 auto;
+        padding: 5px 8px;
         background: #e9f8fb;
         color: #17a2b8;
         border: none;
         border-radius: 4px;
         cursor: pointer;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
         transition: all 0.2s;
       }
 
@@ -584,7 +585,8 @@
         <div class="accordion-tabs">
           <button class="accordion-btn" data-target="kameez">Kameez</button>
           <button class="accordion-btn" data-target="shalwar">Shalwar</button>
-          <button class="accordion-btn" data-target="design">Design</button>
+          <button class="accordion-btn" data-target="design">Design & Finishing</button>
+          <button class="accordion-btn" data-target="quantity">Quantity</button>
         </div>
       </td>
 
@@ -680,6 +682,15 @@
               <tr><th>Front Patti Kaj</th><td th:text="${m.frontPattiKaj}"></td></tr>
               <tr><th>Front Patti Design</th><td th:text="${m.frontPattiType}"></td></tr>
               <tr><th>Notes</th><td th:text="${m.notes}"></td></tr>
+            </table>
+          </div>
+
+          <div class="accordion-content quantity">
+            <table>
+              <tr><th>Dress quantity</th><td th:text="${m.DressQty}"></td></tr>
+              <tr><th>With collar</th><td th:text="${m.withCollar}"></td></tr>
+              <tr><th>With bain</th><td th:text="${m.withBain}"></td></tr>
+              <tr><th>With design</th><td th:text="${m.withDesign}"></td></tr>
             </table>
           </div>
 
@@ -865,7 +876,55 @@
     <div><label>Shalwar Pocket:</label><input type="checkbox" th:field="*{shalwarPocket}"/></div>
     <div><label>Design Stitch:</label><input type="checkbox" th:field="*{designStitch}"/></div>
 
+    <!-- Section: Shalwar -->
+    <div class="section-title">Dress quantity</div>
+    <div>
+      <label>Total quantity:</label>
+      <select th:field="*{DressQty}">
+        <option value="no">No</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select>
+    </div>
 
+    <div>
+      <label>With collar:</label>
+      <select th:field="*{withCollar}">
+        <option value="no">No</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select>
+    </div>
+
+    <div>
+      <label>With bain:</label>
+      <select th:field="*{withBain}">
+        <option value="no">No</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select>
+    </div>
+
+    <div>
+      <label>With design:</label>
+      <select th:field="*{withDesign}">
+        <option value="no">No</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select>
+    </div>
 
     <!-- Notes -->
     <div style="grid-column: span 8;">
