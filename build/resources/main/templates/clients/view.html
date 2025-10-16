@@ -4,350 +4,377 @@
   <title>Client Details</title>
   <meta charset="UTF-8"/>
 
-  <style>
-    /* ========== Base Styles ========== */
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f0f2f5;
-      margin: 0;
-      padding: 20px;
-    }
+  <!DOCTYPE html>
+  <html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Client Details</title>
+    <meta charset="UTF-8"/>
 
-    h1, h2, h3 {
-      text-align: center;
-      color: #17a2b8;
-      margin: 20px 0;
-      font-size: 24px;
-    }
+    <style>
+      /* ========== Base Styles ========== */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+      }
 
-    /* ========== Flash Messages ========== */
-    .alert {
-      max-width: 800px;
-      margin: 15px auto;
-      padding: 12px 15px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-    }
+      h1, h2, h3 {
+        text-align: center;
+        color: #17a2b8;
+        margin: 20px 0;
+        font-size: 24px;
+      }
 
-    .alert-success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
+      /* ========== Flash Messages ========== */
+      .alert {
+        max-width: 800px;
+        margin: 15px auto;
+        padding: 12px 15px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+      }
 
-    .alert-danger {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
 
-    /* ========== Client Info ========== */
-    .client-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
+      .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
 
-    .client-details p {
-      margin: 5px 0;
-      font-size: 15px;
-      color: #495057;
-    }
+      /* ========== Client Info ========== */
+      .client-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
 
-    .client-photo {
-      text-align: center;
-      margin: 15px 0;
-    }
+      .client-details p {
+        margin: 5px 0;
+        font-size: 15px;
+        color: #495057;
+      }
 
-    .client-photo img {
-      max-width: 150px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-    }
+      .client-photo {
+        text-align: center;
+        margin: 15px 0;
+      }
 
-    /* ========== Table Layout ========== */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      margin-bottom: 25px;
-    }
+      .client-photo img {
+        max-width: 150px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+      }
 
-    thead {
-      background: #17a2b8;
-      color: #fff;
-    }
+      /* ========== Table Layout ========== */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 25px;
+      }
 
-    thead tr.section-title th {
-      position: relative;
-      font-size: 18px;
-      padding: 12px 20px;
-      text-align: left;
-    }
+      thead {
+        background: #17a2b8;
+        color: #fff;
+      }
 
-    thead tr.section-title img {
-      position: absolute;
-      right: 20px;
-      top: 4px;
-      height: 40px;
-    }
+      thead tr.section-title th {
+        position: relative;
+        font-size: 18px;
+        padding: 12px 20px;
+        text-align: left;
+      }
 
-    thead tr.sub-header {
-      background: #e9f8fb;
-      color: #17a2b8;
-      font-weight: 600;
-    }
+      thead tr.section-title img {
+        position: absolute;
+        right: 20px;
+        top: 4px;
+        height: 40px;
+      }
 
-    thead tr.sub-header th {
-      padding: 8px 20px;
-    }
+      thead tr.sub-header {
+        background: #e9f8fb;
+        color: #17a2b8;
+        font-weight: 600;
+      }
 
-    tbody tr {
-      border-bottom: 2px solid #dcdcdc;
-      transition: background 0.2s;
-    }
+      thead tr.sub-header th {
+        padding: 8px 20px;
+      }
 
-    tbody tr:last-child {
-      border-bottom: none;
-    }
+      tbody tr {
+        border-bottom: 2px solid #dcdcdc;
+        transition: background 0.2s;
+      }
 
-    tbody tr:hover {
-      background: #f7f9fa;
-    }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
 
-    table th, table td {
-      padding: 10px 12px;
-      vertical-align: middle;
-    }
+      tbody tr:hover {
+        background: #f7f9fa;
+      }
 
-    table th:first-child, table td:first-child {
-      width: 160px;
-      text-align: left;
-    }
+      table th, table td {
+        padding: 10px 12px;
+        vertical-align: middle;
+      }
 
-    table th:nth-child(2), table td:nth-child(2) {
-      text-align: left;
-    }
+      table th:first-child, table td:first-child {
+        width: 160px;
+        text-align: left;
+      }
 
-    table th:last-child, table td:last-child {
-      width: 220px;
-      text-align: right;
-    }
+      table th:nth-child(2), table td:nth-child(2) {
+        text-align: left;
+      }
 
-    /* ========== Accordion Buttons ========== */
-    .accordion-tabs {
-      display: inline-flex;
-      gap: 6px;
-    }
+      table th:last-child, table td:last-child {
+        width: 220px;
+        text-align: right;
+      }
 
-    .accordion-btn {
-      flex: 1;
-      padding: 6px 10px;
-      background: #e9f8fb;
-      color: #17a2b8;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
+      /* ========== Accordion Buttons ========== */
+      .accordion-tabs {
+        display: inline-flex;
+        gap: 6px;
+      }
 
-    .accordion-btn:hover,
-    .accordion-btn.active {
-      background: #17a2b8;
-      color: #fff;
-    }
+      .accordion-btn {
+        flex: 1;
+        padding: 6px 10px;
+        background: #e9f8fb;
+        color: #17a2b8;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
 
-    /* ========== Full-width Accordion ========== */
-    .accordion-row {
-      display: none;
-      background: #fff;
-    }
+      .accordion-btn:hover,
+      .accordion-btn.active {
+        background: #17a2b8;
+        color: #fff;
+      }
 
-    .accordion-row.show {
-      display: table-row;
-    }
+      /* ========== Full-width Accordion ========== */
+      .accordion-row {
+        display: none;
+        background: #fff;
+      }
 
-    .accordion-cell {
-      padding: 0;
-      background: #fff;
-    }
+      .accordion-row.show {
+        display: table-row;
+      }
 
-    .accordion-content-group {
-      padding: 15px 20px;
-      transition: all 0.3s ease-in-out;
-      background: #f9fcff;
-      border-top: 2px solid #17a2b8;
-    }
+      .accordion-cell {
+        padding: 0;
+        background: #fff;
+      }
 
-    .accordion-content {
-      display: none;
-      padding-top: 10px;
-    }
+      .accordion-content-group {
+        padding: 15px 20px;
+        transition: all 0.3s ease-in-out;
+        background: #f9fcff;
+        border-top: 2px solid #17a2b8;
+      }
 
-    .accordion-content.show {
-      display: block;
-    }
+      .accordion-content {
+        display: none;
+        padding-top: 10px;
+      }
 
-    .accordion-content table {
-      width: 25%;
-      border-collapse: collapse;
-      background: #fff;
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-    }
+      .accordion-content.show {
+        display: block;
+      }
 
-    .accordion-content th {
-      text-align: left;
-      width: 220px;
-      background: #f1f9ff;
-      padding: 8px;
-      font-weight: 600;
-      font-size: 13px;
-      color: #0d6efd;
-      border-right: 1px solid #e0e0e0;
-    }
+      .accordion-content table {
+        width: 25%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      }
 
-    .accordion-content td {
-      text-align: left;
-      padding: 8px;
-      font-size: 13px;
-      color: #333;
-      border-bottom: 1px solid #f1f1f1;
-    }
+      .accordion-content th {
+        text-align: left;
+        width: 220px;
+        background: #f1f9ff;
+        padding: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #0d6efd;
+        border-right: 1px solid #e0e0e0;
+      }
 
-    .accordion-content tr:nth-child(even) td {
-      background: #f9fbfc;
-    }
+      .accordion-content td {
+        text-align: left;
+        padding: 8px;
+        font-size: 13px;
+        color: #333;
+        border-bottom: 1px solid #f1f1f1;
+      }
 
-    /* ========== Form Styling ========== */
-    form.measure-form {
-      background: #fff;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      display: none;
-    }
+      .accordion-content tr:nth-child(even) td {
+        background: #f9fbfc;
+      }
 
-    .grid-8 {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 12px;
-    }
+      /* ========== Form Styling ========== */
+      form.measure-form {
+        background: #fff;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        display: none;
+      }
 
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 4px;
-      font-size: 13px;
-      color: #17a2b8;
-    }
+      .grid-8 {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 12px;
+      }
 
-    input, select, textarea {
-      width: 100%;
-      padding: 6px 8px;
-      font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: #17a2b8;
+      }
 
-    input:focus, select:focus, textarea:focus {
-      border-color: #17a2b8;
-      box-shadow: 0 0 3px rgba(23, 162, 184, 0.5);
-      outline: none;
-    }
+      input, select, textarea {
+        width: 100%;
+        padding: 6px 8px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
 
-    textarea {
-      grid-column: span 8;
-      height: 60px;
-    }
+      input:focus, select:focus, textarea:focus {
+        border-color: #17a2b8;
+        box-shadow: 0 0 3px rgba(23, 162, 184, 0.5);
+        outline: none;
+      }
 
-    .section-title {
-      grid-column: span 8;
-      background: #17a2b8;
-      color: #fff;
-      padding: 8px 10px;
-      font-weight: bold;
-      border-radius: 4px;
-      margin-top: 10px;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-    }
+      textarea {
+        grid-column: span 8;
+        height: 60px;
+      }
 
-    /* ========== Buttons & Links ========== */
-    .actions {
-      margin: 20px 0;
-      text-align: center;
-    }
+      .section-title {
+        grid-column: span 8;
+        background: #17a2b8;
+        color: #fff;
+        padding: 8px 10px;
+        font-weight: bold;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
 
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #28a745;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: background 0.2s, transform 0.1s;
-    }
+      /* ========== Buttons & Links ========== */
+      .actions {
+        margin: 20px 0;
+        text-align: center;
+      }
 
-    button:hover {
-      background: #218838;
-      transform: scale(1.03);
-    }
+      button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: background 0.2s, transform 0.1s;
+      }
 
-    a.home-link {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #17a2b8;
-      color: #fff;
-      border-radius: 6px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s, transform 0.1s;
-    }
+      button:hover {
+        background: #218838;
+        transform: scale(1.03);
+      }
 
-    a.home-link:hover {
-      background: #138496;
-      transform: scale(1.03);
-    }
+      a.home-link {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #17a2b8;
+        color: #fff;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.1s;
+      }
 
-    /* ========== Option Images ========== */
-    .options-inline img {
-      width: 40px;
-      height: auto;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 2px;
-      transition: transform 0.2s ease-in-out;
-      cursor: pointer;
-    }
+      a.home-link:hover {
+        background: #138496;
+        transform: scale(1.03);
+      }
 
-    .options-inline img:hover {
-      transform: scale(2);
-      z-index: 10;
-      position: relative;
-    }
+      /* ========== Horizontally Align Images and Checkboxes ========== */
+      .options-inline {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
 
-    /* ===================== Accordion Animation & Polish ===================== */
+      .options-inline label {
+        display: flex;
+        align-items: center;
+      }
 
-      /* smooth expand/collapse animation */
+      .options-inline img {
+        width: 40px;
+        height: auto;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 2px;
+        transition: transform 0.2s ease-in-out;
+        cursor: pointer;
+      }
+
+      .options-inline img:hover {
+        transform: scale(2);
+        z-index: 10;
+        position: relative;
+      }
+
+      .options-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .options-row > div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* ===================== Accordion Animation & Polish ===================== */
       .accordion-content-group {
         max-height: 0;
         overflow: hidden;
@@ -359,14 +386,12 @@
           transform 0.3s ease;
       }
 
-      /* when open */
       .accordion-row.show .accordion-content-group {
-        max-height: 1000px; /* enough space for all content */
+        max-height: 1000px;
         opacity: 1;
         transform: translateY(0);
       }
 
-      /* subtle highlight on active section */
       .accordion-btn.active {
         background: #17a2b8 !important;
         color: #fff !important;
@@ -374,7 +399,6 @@
         transform: scale(1.02);
       }
 
-      /* smoother row border transition */
       tbody tr {
         transition: background 0.25s, border-color 0.25s;
       }
@@ -384,26 +408,22 @@
         border-color: #bce0e8;
       }
 
-      /* section icons larger & visually balanced */
       .section-title img {
         height: 44px;
         width: auto;
         filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
       }
 
-      /* table headers slightly bold and clean */
       thead .sub-header th {
         letter-spacing: 0.3px;
         font-size: 15px;
       }
 
-      /* make accordion table cells feel airy */
       .accordion-content th,
       .accordion-content td {
         padding: 10px 12px;
       }
-
-  </style>
+    </style>
 
   <script>
     function toggleForm(formId) {
@@ -679,25 +699,6 @@
 
     <!-- Section: Design & Finishing -->
     <div class="section-title">Design &amp; Finishing</div>
-    <div>
-      <label>Collar design:</label>
-      <select th:field="*{collarType}">
-        <option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option>
-        <option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option><option value="10">10</option>
-      </select>
-    </div>
-
-    <div class="options-row">
-      <label>Bain Design:</label>
-      <div class="options-inline">
-        <label><input type="radio" th:field="*{bainType}" value="Round-Bain"/><img src="/images/bain_round.png" alt="Round"/> Round</label>
-        <label><input type="radio" th:field="*{bainType}" value="Square-Bain"/><img src="/images/bain_square.png" alt="Square"/> Square</label>
-        <label><input type="radio" th:field="*{bainType}" value="Cut-Bain"/><img src="/images/bain_cut.png" alt="Cut"/> Cut</label>
-      </div>
-    </div>
 
     <div>
       <label>Daman Type:</label>
@@ -724,18 +725,6 @@
       </select>
     </div>
 
-    <div><label>Front Pocket:</label><input type="checkbox" th:field="*{frontPocket}"/></div>
-
-    <div class="options-row">
-      <label>Pocket Design:</label>
-      <div class="options-inline">
-        <!-- keeping your existing values -->
-        <label><input type="radio" th:field="*{frontPocketType}" value="Round"/><img src="/images/pocket_round.png" alt="Round"/> Round</label>
-        <label><input type="radio" th:field="*{frontPocketType}" value="Cut"/><img src="/images/pocket_cut.png" alt="Cut"/> Cut</label>
-        <label><input type="radio" th:field="*{frontPocketType}" value="Square"/><img src="/images/pocket_square.png" alt="Square"/> Square</label>
-      </div>
-    </div>
-
     <div>
       <label>Cuff Type:</label>
       <select th:field="*{cuffType}">
@@ -745,12 +734,88 @@
       </select>
     </div>
 
+    <div>
+      <label>Stitch Type:</label>
+      <select th:field="*{stitchType}">
+        <option value="Single">Single</option>
+        <option value="Double">Double</option>
+        <option value="Simple">Simple</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Button Type:</label>
+      <select th:field="*{buttonType}">
+        <option value="Plan">Plan</option>
+        <option value="Metal">Metal</option>
+        <option value="Tich">Tich</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Front Patti design:</label>
+      <select th:field="*{frontPattiType}">
+        <option value="Round">Round</option>
+        <option value="Square">Square</option>
+        <option value="Nock">Nock</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Front Patti Kaj:</label>
+      <select th:field="*{frontPattiKaj}">
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Collar design:</label>
+      <select th:field="*{collarType}">
+        <option value="no">No</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select>
+    </div>
+
+    <div class="options-row">
+      <label>Bain Design:</label>
+      <div class="options-inline">
+        <label><input type="radio" th:field="*{bainType}" value="Round-Bain"/><img src="/images/bain_round.png" alt="Round"/> Round</label>
+        <label><input type="radio" th:field="*{bainType}" value="Square-Bain"/><img src="/images/bain_square.png" alt="Square"/> Square</label>
+        <label><input type="radio" th:field="*{bainType}" value="Cut-Bain"/><img src="/images/bain_cut.png" alt="Cut"/> Cut</label>
+      </div>
+    </div>
+
     <div class="options-row">
       <label>Cuff Design:</label>
       <div class="options-inline">
         <label><input type="radio" th:field="*{cuffDesign}" value="Round-Cuff"/><img src="/images/cuff_round.png" alt="Round"/> Round</label>
         <label><input type="radio" th:field="*{cuffDesign}" value="Square-Cuff"/><img src="/images/cuff_square.png" alt="Square"/> Square</label>
         <label><input type="radio" th:field="*{cuffDesign}" value="Cut-Cuff"/><img src="/images/cuff_cut.png" alt="Cut"/> Cut</label>
+      </div>
+    </div>
+
+    <div>
+      <label>Front Pocket:</label>
+      <input type="checkbox" id="frontPocketCheckbox" th:field="*{frontPocket}"/>
+    </div>
+
+    <div class="options-row" id="frontPocketDesign">
+      <label>Pocket Design:</label>
+      <div class="options-inline">
+        <label><input type="radio" th:field="*{frontPocketType}" value="Round"/>
+          <img src="/images/pocket_round.png" alt="Round"/> Round
+        </label>
+        <label><input type="radio" th:field="*{frontPocketType}" value="Cut"/>
+          <img src="/images/pocket_cut.png" alt="Cut"/> Cut
+        </label>
+        <label><input type="radio" th:field="*{frontPocketType}" value="Square"/>
+          <img src="/images/pocket_square.png" alt="Square"/> Square
+        </label>
       </div>
     </div>
 
@@ -764,41 +829,10 @@
     </div>
 
     <div><label>Kanta:</label><input type="checkbox" th:field="*{kanta}"/></div>
-
     <div><label>Shalwar Pocket:</label><input type="checkbox" th:field="*{shalwarPocket}"/></div>
-
-    <div>
-      <label>Stitch Type:</label>
-      <select th:field="*{stitchType}">
-        <option value="Single">Single</option>
-        <option value="Double">Double</option>
-        <option value="Simple">Simple</option>
-      </select>
-    </div>
     <div><label>Design Stitch:</label><input type="checkbox" th:field="*{designStitch}"/></div>
-    <div>
-      <label>Button Type:</label>
-      <select th:field="*{buttonType}">
-        <option value="Plan">Plan</option>
-        <option value="Metal">Metal</option>
-        <option value="Tich">Tich</option>
-      </select>
-    </div>
-    <div>
-      <label>Front Patti Kaj:</label>
-      <select th:field="*{frontPattiKaj}">
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
-    </div>
-    <div>
-      <label>Front Patti Type:</label>
-      <select th:field="*{frontPattiType}">
-        <option value="Round">Round</option>
-        <option value="Square">Square</option>
-        <option value="Nock">Nock</option>
-      </select>
-    </div>
+
+
 
     <!-- Notes -->
     <div style="grid-column: span 8;">
@@ -940,6 +974,21 @@
 
 
 <a th:href="@{/clients}" class="home-link">⬅ Back to Home</a>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const checkbox = document.getElementById("frontPocketCheckbox");
+    const pocketDesign = document.getElementById("frontPocketDesign");
+
+    // Initial visibility
+    pocketDesign.style.display = checkbox.checked ? "flex" : "none";
+
+    // Toggle on change
+    checkbox.addEventListener("change", () => {
+      pocketDesign.style.display = checkbox.checked ? "flex" : "none";
+    });
+  });
+</script>
 
 </body>
 </html>
