@@ -595,7 +595,7 @@
         <a th:href="@{'/print/dress/' + ${client.id}}" target="_blank">Print</a> |
         <a th:href="@{/clients/view/{id}(id=${client.id}, edit=${m.id})}" style="color:#0d6efd; font-weight:600;">Edit</a> |
         <a th:href="@{/clients/deleteMeasurement/{mid}(mid=${m.id})}" onclick="return confirm('Are you sure?')" style="color:#dc3545; font-weight:600;">Delete</a> |
-        <a th:href="@{/clients/copyMeasurement/{mid}(mid=${m.id})}" style="color:#28a745; font-weight:600;">Copy/Create</a>
+        <a th:href="@{/clients/copyMeasurement/{mid}(mid=${m.id})}" style="color:#28a745; font-weight:600;">Add new</a>
       </td>
 
       <!-- Empty for older records -->
@@ -876,7 +876,7 @@
     <div><label>Shalwar Pocket:</label><input type="checkbox" th:field="*{shalwarPocket}"/></div>
     <div><label>Design Stitch:</label><input type="checkbox" th:field="*{designStitch}"/></div>
 
-    <!-- Section: Shalwar -->
+    <!-- Section: quantity -->
     <div class="section-title">Dress quantity</div>
     <div>
       <label>Total quantity:</label>
@@ -970,6 +970,7 @@
       <td>
         <div class="accordion-tabs">
           <button class="accordion-btn" data-target="measurements">Waistcoat</button>
+          <button class="accordion-btn" data-target="quantity">Quantity</button>
         </div>
       </td>
 
@@ -977,7 +978,7 @@
         <a th:href="@{'/print/waistcoat/' + ${client.id}}" target="_blank">Print</a> |
         <a th:href="@{/clients/view/{id}(id=${client.id}, editWaistcoat=${w.id})}" style="color:#0d6efd; font-weight:600;">Edit</a> |
         <a th:href="@{/clients/deleteWaistcoatMeasurement/{id}(id=${w.id})}" onclick="return confirm('Are you sure?')" style="color:#dc3545; font-weight:600;">Delete</a> |
-        <a th:href="@{/clients/copyWaistcoatMeasurement/{mid}(mid=${w.id})}" style="color:#28a745; font-weight:600;">Copy/Create</a>
+        <a th:href="@{/clients/copyWaistcoatMeasurement/{mid}(mid=${w.id})}" style="color:#28a745; font-weight:600;">Add new</a>
       </td>
 
       <td th:if="${iter.index != 0}"></td>
@@ -1001,6 +1002,12 @@
               <tr><th>Bain Style</th><td th:text="${w.bainType}"></td></tr>
               <tr><th>Daman Style</th><td th:text="${w.damanType}"></td></tr>
               <tr><th>Notes</th><td th:text="${w.notes}"></td></tr>
+            </table>
+          </div>
+
+          <div class="accordion-content quantity">
+            <table>
+              <tr><th>Waistcoat quantity</th><td th:text="${w.qty}"></td></tr>
             </table>
           </div>
 
@@ -1054,6 +1061,20 @@
       <label>Notes:</label>
       <textarea th:field="*{notes}"></textarea>
     </div>
+  </div>
+
+  <!-- Section: quantity -->
+  <div class="section-title">Dress quantity</div>
+  <div>
+    <label>Total quantity:</label>
+    <select th:field="*{qty}">
+      <option value="no">No</option>
+      <option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option>
+      <option value="5">5</option><option value="6">6</option>
+      <option value="7">7</option><option value="8">8</option>
+      <option value="9">9</option><option value="10">10</option>
+    </select>
   </div>
 
   <div class="actions">
