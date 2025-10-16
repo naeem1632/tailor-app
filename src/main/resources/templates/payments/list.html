@@ -17,7 +17,8 @@
           text-align: center;
           color: #17a2b8;
           margin-bottom: 25px;
-          font-size: 24px;
+          font-size: 26px;
+          letter-spacing: 0.5px;
         }
 
         /* ====== Add Button ====== */
@@ -29,18 +30,18 @@
         .add-btn {
           background: #28a745;
           color: #fff;
-          padding: 10px 20px;
+          padding: 10px 24px;
           border: none;
-          border-radius: 6px;
+          border-radius: 8px;
           font-weight: 600;
-          font-size: 15px;
+          font-size: 16px;
           cursor: pointer;
           transition: background 0.2s ease, transform 0.1s;
         }
 
         .add-btn:hover {
           background: #218838;
-          transform: scale(1.03);
+          transform: scale(1.05);
         }
 
         /* ========= Table ========= */
@@ -48,38 +49,51 @@
           width: 100%;
           border-collapse: collapse;
           background: #fff;
-          border-radius: 8px;
+          border-radius: 10px;
           overflow: hidden;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+          font-size: 15px;
         }
 
         thead {
-          background: #17a2b8;
+          background: linear-gradient(45deg, #17a2b8, #138496);
           color: white;
+          font-size: 14px;
+          letter-spacing: 0.5px;
         }
 
         th, td {
-          padding: 10px 8px;
+          padding: 12px 10px;
           text-align: center;
-          font-size: 13px;
           border-bottom: 1px solid #e0e0e0;
         }
 
-        tbody tr:hover { background: #f9fbfc; }
-
-        .status-unpaid { color: red; font-weight: bold; }
-        .status-partial { color: orange; font-weight: bold; }
-        .status-paid { color: green; font-weight: bold; }
-        .overdue { color: red; font-weight: bold; }
-
-        td a {
-          color: #17a2b8;
-          text-decoration: none;
-          margin: 0 4px;
-          font-weight: 600;
+        tbody tr:nth-child(even) { background: #f8f9fa; }
+        tbody tr:hover {
+          background: #e8f6f9;
+          transition: background 0.2s ease;
         }
 
-        td a:hover { text-decoration: underline; }
+        .status-unpaid { color: #e63946; font-weight: bold; }
+        .status-partial { color: #f4a261; font-weight: bold; }
+        .status-paid { color: #2a9d8f; font-weight: bold; }
+
+        /* ======= Action Buttons ======= */
+        .btn-action {
+          display: inline-block;
+          padding: 5px 12px;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 13px;
+          text-decoration: none;
+          color: white;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .btn-action:hover { transform: scale(1.08); opacity: 0.9; }
+
+        .btn-edit { background: #007bff; } /* Blue */
+        .btn-delete { background: #dc3545; } /* Red */
 
         /* ========= Modal Popup ========= */
         .modal {
@@ -130,7 +144,7 @@
         .payment-form table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 13px;
+          font-size: 14px;
         }
 
         .payment-form th,
@@ -152,13 +166,13 @@
           width: 100%;
           box-sizing: border-box;
           padding: 6px 8px;
-          font-size: 13px;
+          font-size: 14px;
           border: 1px solid #ccc;
           border-radius: 4px;
         }
 
         .payment-form textarea {
-          height: 40px;
+          height: 45px;
           resize: none;
         }
 
@@ -206,7 +220,34 @@
           .payment-form td {
             margin-bottom: 8px;
           }
+
+          table { font-size: 13px; }
         }
+
+         /* ===== Go Back Button ===== */
+            .go-back-container {
+              text-align: left;
+              margin-top: 25px;
+            }
+
+            .go-back-btn {
+              background: #17a2b8;
+              color: #fff;
+              border: none;
+              border-radius: 8px;
+              padding: 10px 25px;
+              font-size: 16px;
+              font-weight: 600;
+              text-decoration: none;
+              cursor: pointer;
+              transition: background 0.2s ease, transform 0.1s;
+              display: inline-block;
+            }
+
+            .go-back-btn:hover {
+              background: #138496;
+              transform: scale(1.05);
+            }
     </style>
 </head>
 <body>
@@ -253,28 +294,33 @@
         <td th:text="${p.notes}"></td>
         <td>
             <a href="javascript:void(0)"
+               class="btn-action btn-edit"
                th:attr="data-id=${p.id},
-            data-date=${p.date},
-            data-dresscount=${p.dressCount},
-            data-dressrate=${p.dressRate},
-            data-waistcoatcount=${p.waistcoatCount},
-            data-waistcoatrate=${p.waistcoatRate},
-            data-total=${p.totalAmount},
-            data-paid=${p.paidAmount},
-            data-remaining=${p.remainingAmount},
-            data-status=${p.paymentStatus},
-            data-returndate=${p.returnDate},
-            data-returnstatus=${p.returnStatus},
-            data-notes=${#strings.escapeJavaScript(p.notes != null ? p.notes : '')}"
-               onclick="openModalFromRow(this)">
-                Edit
-            </a> |
-            <a th:href="@{'/payments/delete/' + ${p.id}}" onclick="return confirm('Delete this payment?')">Delete</a>
-
+                  data-date=${p.date},
+                  data-dresscount=${p.dressCount},
+                  data-dressrate=${p.dressRate},
+                  data-waistcoatcount=${p.waistcoatCount},
+                  data-waistcoatrate=${p.waistcoatRate},
+                  data-total=${p.totalAmount},
+                  data-paid=${p.paidAmount},
+                  data-remaining=${p.remainingAmount},
+                  data-status=${p.paymentStatus},
+                  data-returndate=${p.returnDate},
+                  data-returnstatus=${p.returnStatus},
+                  data-notes=${#strings.escapeJavaScript(p.notes != null ? p.notes : '')}"
+               onclick="openModalFromRow(this)">Edit</a>
+            <a th:href="@{'/payments/delete/' + ${p.id}}"
+               class="btn-action btn-delete"
+               onclick="return confirm('Delete this payment?')">Delete</a>
         </td>
     </tr>
     </tbody>
 </table>
+
+<!-- ✅ Go Back Button -->
+<div class="go-back-container">
+    <a th:href="@{/clients}" class="go-back-btn">⬅ Go Back Home</a>
+</div>
 
 <!-- ✅ MODAL POPUP -->
 <div id="paymentModal" class="modal">
@@ -335,23 +381,22 @@
     const title = document.getElementById("modalTitle");
 
     function openModalFromRow(el) {
-  openModal(
-    el.dataset.id,
-    el.dataset.date,
-    el.dataset.dresscount,
-    el.dataset.dressrate,
-    el.dataset.waistcoatcount,
-    el.dataset.waistcoatrate,
-    el.dataset.total,
-    el.dataset.paid,
-    el.dataset.remaining,
-    el.dataset.status,
-    el.dataset.returndate,
-    el.dataset.returnstatus,
-    el.dataset.notes
-  );
-}
-
+      openModal(
+        el.dataset.id,
+        el.dataset.date,
+        el.dataset.dresscount,
+        el.dataset.dressrate,
+        el.dataset.waistcoatcount,
+        el.dataset.waistcoatrate,
+        el.dataset.total,
+        el.dataset.paid,
+        el.dataset.remaining,
+        el.dataset.status,
+        el.dataset.returndate,
+        el.dataset.returnstatus,
+        el.dataset.notes
+      );
+    }
 
     function openModal(id, date, dCount, dRate, wCount, wRate, total, paid, remaining, status, returnDate, returnStatus, notes) {
       modal.classList.add("show");
