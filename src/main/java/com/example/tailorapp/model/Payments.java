@@ -17,8 +17,10 @@ public class Payments {
     Long id;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate date;
-    Long DressCount;
-    Long WaistcoatCount;
+    Long dressCount;
+    Long dressRate;
+    Long waistcoatCount;
+    Long waistcoatRate;
     Long totalAmount;
     Long paidAmount;
     Long remainingAmount;

@@ -1,133 +1,244 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Payments</title>
-    <meta charset="UTF-8">
+    <title>Client Payments</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
     <style>
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 0;
-        }
-
-        .header-table {
-            width: 100%;
-            background: #fff;
-            padding: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            text-align: center;
+          font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+          background: #f0f2f5;
+          margin: 0;
+          padding: 20px;
         }
 
         h1 {
-            text-align: center;
-            color: #17a2b8;
-            margin: 25px 0 15px;
-            font-size: 26px;
+          text-align: center;
+          color: #17a2b8;
+          margin-bottom: 25px;
+          font-size: 24px;
         }
 
+        /* ====== Add Button ====== */
         .add-btn-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        a.add-btn {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.2s, transform 0.1s;
-        }
-        a.add-btn:hover {
-            background: #218838;
-            transform: scale(1.03);
+          text-align: center;
+          margin-bottom: 20px;
         }
 
+        .add-btn {
+          background: #28a745;
+          color: #fff;
+          padding: 10px 20px;
+          border: none;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 15px;
+          cursor: pointer;
+          transition: background 0.2s ease, transform 0.1s;
+        }
+
+        .add-btn:hover {
+          background: #218838;
+          transform: scale(1.03);
+        }
+
+        /* ========= Table ========= */
         table {
-            width: 95%;
-            margin: 0 auto 40px auto;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          width: 100%;
+          border-collapse: collapse;
+          background: #fff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
+
         thead {
-            background: #17a2b8;
-            color: white;
+          background: #17a2b8;
+          color: white;
         }
+
         th, td {
-            padding: 12px 10px;
-            text-align: center;
-            font-size: 14px;
-            border-bottom: 1px solid #eaeaea;
+          padding: 10px 8px;
+          text-align: center;
+          font-size: 13px;
+          border-bottom: 1px solid #e0e0e0;
         }
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
+
+        tbody tr:hover { background: #f9fbfc; }
+
+        .status-unpaid { color: red; font-weight: bold; }
+        .status-partial { color: orange; font-weight: bold; }
+        .status-paid { color: green; font-weight: bold; }
+        .overdue { color: red; font-weight: bold; }
+
         td a {
-            text-decoration: none;
-            font-weight: 500;
-            color: #17a2b8;
-            margin: 0 6px;
-            transition: color 0.2s;
+          color: #17a2b8;
+          text-decoration: none;
+          margin: 0 4px;
+          font-weight: 600;
         }
-        td a:hover {
-            color: #0f6674;
-            text-decoration: underline;
+
+        td a:hover { text-decoration: underline; }
+
+        /* ========= Modal Popup ========= */
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 999;
+          left: 0; top: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.5);
+          justify-content: center;
+          align-items: center;
+          padding: 20px;
         }
-        .overdue {
-            color: red;
-            font-weight: bold;
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+          background: white;
+          border-radius: 10px;
+          padding: 20px 25px;
+          width: 95%;
+          max-width: 950px;
+          max-height: 90%;
+          overflow-y: auto;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+          position: relative;
+          animation: fadeIn 0.3s ease-in-out;
         }
-        .status-unpaid {
-            color: red;
-            font-weight: bold;
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .status-partial {
-            color: orange;
-            font-weight: bold;
+
+        .close-btn {
+          position: absolute;
+          right: 12px;
+          top: 10px;
+          font-size: 20px;
+          color: #555;
+          cursor: pointer;
+          transition: color 0.2s;
         }
-        .status-paid {
-            color: green;
-            font-weight: bold;
+
+        .close-btn:hover { color: #000; }
+
+        /* ========= Form Table Layout ========= */
+        .payment-form table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 13px;
+        }
+
+        .payment-form th,
+        .payment-form td {
+          padding: 6px 8px;
+          vertical-align: middle;
+        }
+
+        .payment-form th {
+          text-align: left;
+          color: #17a2b8;
+          white-space: nowrap;
+          width: 130px;
+        }
+
+        .payment-form input,
+        .payment-form select,
+        .payment-form textarea {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 6px 8px;
+          font-size: 13px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+
+        .payment-form textarea {
+          height: 40px;
+          resize: none;
+        }
+
+        .actions {
+          text-align: center;
+          margin-top: 15px;
+        }
+
+        .actions button, .actions a {
+          padding: 8px 18px;
+          border: none;
+          border-radius: 6px;
+          font-weight: 600;
+          cursor: pointer;
+          margin: 5px;
+        }
+
+        .actions button {
+          background: #28a745;
+          color: #fff;
+        }
+
+        .actions a {
+          background: #6c757d;
+          color: #fff;
+          text-decoration: none;
+        }
+
+        /* ======= Responsive ======= */
+        @media (max-width: 768px) {
+          .modal-content { padding: 15px; }
+          .payment-form table,
+          .payment-form tbody,
+          .payment-form tr,
+          .payment-form th,
+          .payment-form td {
+            display: block;
+            width: 100%;
+          }
+
+          .payment-form th {
+            margin-top: 8px;
+          }
+
+          .payment-form td {
+            margin-bottom: 8px;
+          }
         }
     </style>
 </head>
 <body>
 
-<div class="header-table">
-    <h1 th:text="'Schedule & Payments for ' + ${client.name}"></h1>
-</div>
+<h1 th:text="'Payments & Schedule for ' + ${client.name}"></h1>
 
 <div class="add-btn-container">
-    <a th:href="@{'/payments/new/' + ${client.id}}" class="add-btn">+ Add Schedule & Payment</a>
-    <a href="/clients" class="add-btn" style="background:#17a2b8;">⬅ Back to Home</a>
+    <button class="add-btn" onclick="openModal()">+ Add Payment</button>
 </div>
 
+<!-- ✅ PAYMENT LIST -->
 <table>
     <thead>
     <tr>
         <th>Date</th>
         <th>Dress</th>
         <th>Waistcoat</th>
-        <th>Total Amount</th>
-        <th>Paid Amount</th>
-        <th>Remaining Amount</th>
-        <th>Amount Status</th>
+        <th>Total</th>
+        <th>Paid</th>
+        <th>Remaining</th>
+        <th>Status</th>
         <th>Return Date</th>
         <th>Return Status</th>
-        <th>Remarks</th>
+        <th>Notes</th>
         <th>Actions</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="p : ${payments}">
         <td th:text="${#temporals.format(p.date, 'dd-MMM-yyyy')}"></td>
-        <td th:text="${p.dressCount}"></td>
-        <td th:text="${p.waistcoatCount}"></td>
+        <td th:text="${p.dressCount + ' @ ' + p.dressRate}"></td>
+        <td th:text="${p.waistcoatCount + ' @ ' + p.waistcoatRate}"></td>
         <td th:text="${p.totalAmount}"></td>
         <td th:text="${p.paidAmount}"></td>
         <td th:text="${p.remainingAmount}"></td>
@@ -135,24 +246,160 @@
             <span th:case="'Unpaid'" class="status-unpaid" th:text="${p.paymentStatus}"></span>
             <span th:case="'Partial'" class="status-partial" th:text="${p.paymentStatus}"></span>
             <span th:case="'Paid'" class="status-paid" th:text="${p.paymentStatus}"></span>
-            <span th:case="*"
-                  th:text="${p.paymentStatus}"></span> <!-- fallback -->
+            <span th:case="*" th:text="${p.paymentStatus}"></span>
         </td>
-
-        <td th:if="${p.returnDate != null}"
-            th:text="${#temporals.format(p.returnDate, 'dd-MMM-yyyy')}"
-            th:classappend="${p.returnDate.isBefore(T(java.time.LocalDate).now())} ? 'overdue' : ''">
-        </td>
-        <td th:if="${p.returnDate == null}">-</td>
+        <td th:text="${p.returnDate != null ? #temporals.format(p.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
         <td th:text="${p.returnStatus}"></td>
         <td th:text="${p.notes}"></td>
         <td>
-            <a th:href="@{'/payments/edit/' + ${p.id}}">Edit</a> |
+            <a href="javascript:void(0)"
+               th:attr="data-id=${p.id},
+            data-date=${p.date},
+            data-dresscount=${p.dressCount},
+            data-dressrate=${p.dressRate},
+            data-waistcoatcount=${p.waistcoatCount},
+            data-waistcoatrate=${p.waistcoatRate},
+            data-total=${p.totalAmount},
+            data-paid=${p.paidAmount},
+            data-remaining=${p.remainingAmount},
+            data-status=${p.paymentStatus},
+            data-returndate=${p.returnDate},
+            data-returnstatus=${p.returnStatus},
+            data-notes=${#strings.escapeJavaScript(p.notes != null ? p.notes : '')}"
+               onclick="openModalFromRow(this)">
+                Edit
+            </a> |
             <a th:href="@{'/payments/delete/' + ${p.id}}" onclick="return confirm('Delete this payment?')">Delete</a>
+
         </td>
     </tr>
     </tbody>
 </table>
+
+<!-- ✅ MODAL POPUP -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle" style="text-align:center; color:#17a2b8; margin-bottom:15px;">Add Payment</h3>
+
+        <form class="payment-form" th:action="@{/payments/save}" method="post">
+            <input type="hidden" name="id" id="paymentId"/>
+            <input type="hidden" name="client.id" th:value="${client.id}"/>
+
+            <table>
+                <tr>
+                    <th>Date</th><td><input type="date" name="date" id="date" required/></td>
+                    <th>Dress Count</th><td><input type="number" name="dressCount" id="dressCount"/></td>
+                    <th>Dress Rate</th><td><input type="number" name="dressRate" id="dressRate"/></td>
+                </tr>
+                <tr>
+                    <th>Waistcoat Count</th><td><input type="number" name="waistcoatCount" id="waistcoatCount"/></td>
+                    <th>Waistcoat Rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
+                    <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
+                </tr>
+                <tr>
+                    <th>Paid</th><td><input type="number" name="paidAmount" id="paidAmount"/></td>
+                    <th>Remaining</th><td><input type="number" name="remainingAmount" id="remainingAmount" readonly/></td>
+                    <th>Status</th>
+                    <td>
+                        <select name="paymentStatus" id="paymentStatus">
+                            <option value="Unpaid">Unpaid</option>
+                            <option value="Partial">Partial</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Return Date</th><td><input type="date" name="returnDate" id="returnDate"/></td>
+                    <th>Return Status</th>
+                    <td>
+                        <select name="returnStatus" id="returnStatus">
+                            <option value="Not yet">Not yet</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                    </td>
+                    <th>Notes</th><td colspan="3"><textarea name="notes" id="notes"></textarea></td>
+                </tr>
+            </table>
+
+            <div class="actions">
+                <button type="submit">💾 Save</button>
+                <a href="javascript:void(0)" onclick="closeModal()">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById("paymentModal");
+    const title = document.getElementById("modalTitle");
+
+    function openModalFromRow(el) {
+  openModal(
+    el.dataset.id,
+    el.dataset.date,
+    el.dataset.dresscount,
+    el.dataset.dressrate,
+    el.dataset.waistcoatcount,
+    el.dataset.waistcoatrate,
+    el.dataset.total,
+    el.dataset.paid,
+    el.dataset.remaining,
+    el.dataset.status,
+    el.dataset.returndate,
+    el.dataset.returnstatus,
+    el.dataset.notes
+  );
+}
+
+
+    function openModal(id, date, dCount, dRate, wCount, wRate, total, paid, remaining, status, returnDate, returnStatus, notes) {
+      modal.classList.add("show");
+      document.body.style.overflow = "hidden";
+      title.innerText = id ? "Edit Payment" : "Add Payment";
+
+      document.getElementById("paymentId").value = id || "";
+      document.getElementById("date").value = date || new Date().toISOString().split('T')[0];
+      document.getElementById("dressCount").value = dCount || 0;
+      document.getElementById("dressRate").value = dRate || 0;
+      document.getElementById("waistcoatCount").value = wCount || 0;
+      document.getElementById("waistcoatRate").value = wRate || 0;
+      document.getElementById("totalAmount").value = total || 0;
+      document.getElementById("paidAmount").value = paid || 0;
+      document.getElementById("remainingAmount").value = remaining || 0;
+      document.getElementById("paymentStatus").value = status || "Unpaid";
+      document.getElementById("returnDate").value = (returnDate && returnDate !== "null") ? returnDate : "";
+      document.getElementById("returnStatus").value = returnStatus || "Not yet";
+      document.getElementById("notes").value = notes || "";
+    }
+
+    function closeModal() {
+      modal.classList.remove("show");
+      document.body.style.overflow = "auto";
+    }
+
+    // Auto calculate totals
+    const dC = document.getElementById("dressCount");
+    const dR = document.getElementById("dressRate");
+    const wC = document.getElementById("waistcoatCount");
+    const wR = document.getElementById("waistcoatRate");
+    const tA = document.getElementById("totalAmount");
+    const pA = document.getElementById("paidAmount");
+    const rA = document.getElementById("remainingAmount");
+    const sS = document.getElementById("paymentStatus");
+
+    [dC, dR, wC, wR, pA].forEach(el => el.addEventListener("input", updateTotals));
+
+    function updateTotals() {
+      const total = (parseFloat(dC.value) || 0) * (parseFloat(dR.value) || 0)
+                  + (parseFloat(wC.value) || 0) * (parseFloat(wR.value) || 0);
+      const paid = parseFloat(pA.value) || 0;
+      tA.value = total;
+      rA.value = Math.max(total - paid, 0);
+      sS.value = (rA.value == 0 && total > 0) ? "Paid" :
+                 (paid > 0 && rA.value > 0) ? "Partial" : "Unpaid";
+    }
+</script>
 
 </body>
 </html>
