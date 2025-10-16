@@ -1030,3 +1030,40 @@ button.cancel-btn:active {
   flex-wrap: wrap;
   margin-top: 20px;
 }
+
+/* ===== HEADER STYLING ===== */
+.site-header {
+    background: linear-gradient(135deg, #f8f3f0, #e7d8cf);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+}
+
+.logo-text {
+    font-family: 'Great Vibes', cursive;
+    font-size: 2.2rem;
+    color: #3e2723;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* ===== OPTIONAL PAGE TITLE TWEAK ===== */
+h1 {
+    text-align: center;
+    margin-top: 20px;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+}
