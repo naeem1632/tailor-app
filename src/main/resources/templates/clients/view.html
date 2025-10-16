@@ -9,7 +9,6 @@
   <head>
     <title>Client Details</title>
     <meta charset="UTF-8"/>
-
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 
   <script>
@@ -99,7 +98,7 @@
 </div>
 
 <div class="client-photo">
-  <img th:if="${client.pictureFilename}" th:src="@{${client.pictureFilename}}" alt="Client Picture"/>
+  <img th:if="${client.pictureFilename}" th:src="@{${client.pictureFilename}}" alt="pic"/></td>
 </div>
 
 <!-- Action Buttons -->
@@ -273,16 +272,16 @@
 
     <div><label>Kameez Length:</label><input type="text" th:field="*{kameezLength}" required/></div>
     <div><label>Arm:</label><input type="text" th:field="*{arm}" required/></div>
-    <div><label>Shoulder-arm:</label><input type="text" th:field="*{shoulderArm}"/></div>
+    <div><label>Shoulder-arm:</label><input type="text" th:field="*{shoulderArm}" required/></div>
     <div><label>Upper Arm:</label><input type="text" th:field="*{upperArm}"/></div>
-    <div><label>Center Arm:</label><input type="text" th:field="*{centerArm}"/></div>
+    <div><label>Center Arm:</label><input type="text" th:field="*{centerArm}" required/></div>
     <div><label>Lower Arm:</label><input type="text" th:field="*{lowerArm}"/></div>
     <div><label>Cuff Length:</label><input type="text" th:field="*{cuffLength}"/></div>
     <div><label>Cuff Width:</label><input type="text" th:field="*{cuffWidth}"/></div>
     <div><label>Terra:</label><input type="text" th:field="*{terra}" required/></div>
     <div><label>Terra Down:</label><input type="text" th:field="*{terraDown}"/></div>
     <div><label>Collar Size:</label><input type="text" th:field="*{collarSize}"/></div>
-    <div><label>Bain Size:</label><input type="text" th:field="*{bainSize}"/></div>
+    <div><label>Bain Size:</label><input type="text" th:field="*{bainSize}" required/></div>
     <div><label>Chest:</label><input type="text" th:field="*{chest}" required/></div>
     <div><label>Chest Fitting:</label><input type="text" th:field="*{chestFitting}"/></div>
     <div><label>Waist:</label><input type="text" th:field="*{waist}" required/></div>
@@ -291,7 +290,7 @@
     <!-- Section: Shalwar -->
     <div class="section-title">Shalwar Measurements</div>
     <div><label>Shalwar Length:</label><input type="text" th:field="*{shalwarLength}" required/></div>
-    <div><label>Shalwar Fitting:</label><input type="text" th:field="*{shalwarFitting}"/></div>
+    <div><label>Shalwar Fitting:</label><input type="text" th:field="*{shalwarFitting}" required/></div>
     <div><label>Asan:</label><input type="text" th:field="*{asan}" required/></div>
     <div><label>Payncha:</label><input type="text" th:field="*{payncha}" required/></div>
 
@@ -433,7 +432,7 @@
     <!-- Section: quantity -->
     <div class="section-title">Dress quantity</div>
     <div>
-      <label>Total quantity:</label>
+      <label>Dress quantity:</label>
       <select th:field="*{DressQty}">
         <option value="no">No</option>
         <option value="1">1</option><option value="2">2</option>
@@ -499,7 +498,6 @@
 
 <!-- ===================== WAISTCOAT LIST (Accordion + Edit/Delete) ===================== -->
 
-<!-- ===================== WAISTCOAT LIST ===================== -->
 <table>
   <thead>
   <tr class="section-title">
@@ -587,13 +585,13 @@
   <div class="grid-8">
     <div class="section-title">Waistcoat Measurements</div>
 
-    <div><label>Length:</label><input type="text" th:field="*{length}"/></div>
-    <div><label>Shoulder:</label><input type="text" th:field="*{shoulder}"/></div>
-    <div><label>Neck:</label><input type="text" th:field="*{neck}"/></div>
-    <div><label>Chest:</label><input type="text" th:field="*{chest}"/></div>
-    <div><label>Chest Fitting:</label><input type="text" th:field="*{chestFitting}"/></div>
-    <div><label>Hip:</label><input type="text" th:field="*{hip}"/></div>
-    <div><label>Bain Width:</label><input type="text" th:field="*{bainSize}"/></div>
+    <div><label>Length:</label><input type="text" th:field="*{length}" required/></div>
+    <div><label>Shoulder:</label><input type="text" th:field="*{shoulder}" required/></div>
+    <div><label>Neck:</label><input type="text" th:field="*{neck}" required/></div>
+    <div><label>Chest:</label><input type="text" th:field="*{chest}" required/></div>
+    <div><label>Chest Fitting:</label><input type="text" th:field="*{chestFitting}" required/></div>
+    <div><label>Hip:</label><input type="text" th:field="*{hip}" required/></div>
+    <div><label>Bain Width:</label><input type="text" th:field="*{bainSize}" required/></div>
 
     <div>
       <label>Bain Style:</label>
@@ -620,7 +618,7 @@
   <!-- Section: quantity -->
   <div class="section-title">Dress quantity</div>
   <div>
-    <label>Total quantity:</label>
+    <label>Waistcoat quantity:</label>
     <select th:field="*{qty}">
       <option value="no">No</option>
       <option value="1">1</option><option value="2">2</option>

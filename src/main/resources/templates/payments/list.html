@@ -92,18 +92,18 @@
             <table>
                 <tr>
                     <th>Date</th><td><input type="date" name="date" id="date" required/></td>
-                    <th>Dress Count</th><td><input type="number" name="dressCount" id="dressCount"/></td>
-                    <th>Dress Rate</th><td><input type="number" name="dressRate" id="dressRate"/></td>
+                    <th>Dress quantity</th><td><input type="number" name="dressCount" id="dressCount" required/></td>
+                    <th>Dress rate</th><td><input type="number" name="dressRate" id="dressRate" required/></td>
                 </tr>
                 <tr>
-                    <th>Waistcoat Count</th><td><input type="number" name="waistcoatCount" id="waistcoatCount"/></td>
-                    <th>Waistcoat Rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
+                    <th>Waistcoat quantity</th><td><input type="number" name="waistcoatCount" id="waistcoatCount"/></td>
+                    <th>Waistcoat rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
                     <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
                 </tr>
                 <tr>
                     <th>Paid</th><td><input type="number" name="paidAmount" id="paidAmount"/></td>
                     <th>Remaining</th><td><input type="number" name="remainingAmount" id="remainingAmount" readonly/></td>
-                    <th>Status</th>
+                    <th>Payment status</th>
                     <td>
                         <select name="paymentStatus" id="paymentStatus">
                             <option value="Unpaid">Unpaid</option>
@@ -113,8 +113,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Return Date</th><td><input type="date" name="returnDate" id="returnDate"/></td>
-                    <th>Return Status</th>
+                    <th>Return date</th><td><input type="date" name="returnDate" id="returnDate" required/></td>
+                    <th>Return status</th>
                     <td>
                         <select name="returnStatus" id="returnStatus">
                             <option value="Not yet">Not yet</option>
@@ -126,7 +126,7 @@
             </table>
 
             <div class="actions">
-                <button type="submit">💾 Save</button>
+                <button type="submit">Save</button>
                 <a href="javascript:void(0)" onclick="closeModal()">Cancel</a>
             </div>
         </form>

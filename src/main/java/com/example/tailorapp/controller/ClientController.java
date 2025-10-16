@@ -44,28 +44,12 @@ public class ClientController {
 
     // List clients
     @GetMapping
-    public String list(@RequestParam(required = false) String q,
-                       @RequestParam(required = false, defaultValue = "name") String sort,
-                       Model model) {
+    public String list(@RequestParam(required = false) String q, Model model) {
         List<Client> clients = clientService.search(q);
-
-        if ("name".equalsIgnoreCase(sort)) {
-            clients.sort(Comparator.comparing(Client::getName, String.CASE_INSENSITIVE_ORDER));
-        } else if ("mobile".equalsIgnoreCase(sort)) {
-            clients.sort(Comparator.comparing(Client::getMobile, String.CASE_INSENSITIVE_ORDER));
-        }
-
+        clients.sort(Comparator.comparing(Client::getId).reversed());
         model.addAttribute("clients", clients);
         model.addAttribute("q", q);
-        model.addAttribute("sort", sort);
         return "clients/list";
-    }
-
-    // New Client
-    @GetMapping("/new")
-    public String form(Model model) {
-        model.addAttribute("client", new Client());
-        return "clients/form";
     }
 
     @PostMapping("/save")
@@ -110,7 +94,6 @@ public class ClientController {
 
         return "redirect:/clients";
     }
-
 
     // View client + measurements
     @GetMapping("/view/{id}")
