@@ -58,17 +58,17 @@ public class DressMeasurement {
     String frontPattiType; // round, square, nock
     String notes;
 
-    String DressQty;
-    String withCollar;
-    String withBain;
-    String withDesign;
+    Integer DressQty;
+    Integer withCollar;
+    Integer withBain;
+    Integer withDesign;
 
     @ManyToOne(fetch = FetchType.LAZY)
     Client client;
 
     public DressMeasurement() {
     }
-    
+
     public String getJali() {
         if (jali != null && (jali.endsWith(".0"))) {
             return jali.substring(0, jali.length() - 2);

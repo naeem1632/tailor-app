@@ -94,7 +94,7 @@
 </div>
 
 <div class="header-table">
-  <h1 th:text="'Measurements for ' + ${client.name}"></h1>
+  <h1 th:text=" ${client.name} + ' (' + ${client.id} + ')' "></h1>
 </div>
 
 <div class="client-photo">
@@ -163,7 +163,7 @@
           <!-- KAMEEZ TAB -->
           <div class="accordion-content kameez">
             <table>
-              <tr><th>Kameez Length</th><td th:text="${m.kameezLength}"></td></tr>
+              <tr><th>Length</th><td th:text="${m.kameezLength}"></td></tr>
               <tr><th>Arm</th><td th:text="${m.arm}"></td></tr>
               <tr><th>Shoulder-arm</th><td th:text="${m.shoulderArm}"></td></tr>
               <tr><th>Upper Arm</th><td th:text="${m.upperArm}"></td></tr>
@@ -185,8 +185,8 @@
           <!-- SHALWAR TAB -->
           <div class="accordion-content shalwar">
             <table>
-              <tr><th>Shalwar Length</th><td th:text="${m.shalwarLength}"></td></tr>
-              <tr><th>Shalwar Fitting</th><td th:text="${m.shalwarFitting}"></td></tr>
+              <tr><th>Length</th><td th:text="${m.shalwarLength}"></td></tr>
+              <tr><th>Fitting</th><td th:text="${m.shalwarFitting}"></td></tr>
               <tr><th>Asan</th><td th:text="${m.asan}"></td></tr>
               <tr><th>Payncha</th><td th:text="${m.payncha}"></td></tr>
             </table>
@@ -234,7 +234,7 @@
               <tr><th>Button Type</th><td th:text="${m.buttonType}"></td></tr>
               <tr><th>Front Patti Kaj</th><td th:text="${m.frontPattiKaj}"></td></tr>
               <tr><th>Front Patti Design</th><td th:text="${m.frontPattiType}"></td></tr>
-              <tr><th>Notes</th><td th:text="${m.notes}"></td></tr>
+              <tr><th>Note</th><td th:text="${m.notes}"></td></tr>
             </table>
           </div>
 
@@ -270,7 +270,7 @@
     <!-- Section: Kameez -->
     <div class="section-title">Kameez Measurements</div>
 
-    <div><label>Kameez Length:</label><input type="text" th:field="*{kameezLength}" required/></div>
+    <div><label>Length:</label><input type="text" th:field="*{kameezLength}" required/></div>
     <div><label>Arm:</label><input type="text" th:field="*{arm}" required/></div>
     <div><label>Shoulder-arm:</label><input type="text" th:field="*{shoulderArm}" required/></div>
     <div><label>Upper Arm:</label><input type="text" th:field="*{upperArm}"/></div>
@@ -289,8 +289,8 @@
 
     <!-- Section: Shalwar -->
     <div class="section-title">Shalwar Measurements</div>
-    <div><label>Shalwar Length:</label><input type="text" th:field="*{shalwarLength}" required/></div>
-    <div><label>Shalwar Fitting:</label><input type="text" th:field="*{shalwarFitting}" required/></div>
+    <div><label>Length:</label><input type="text" th:field="*{shalwarLength}" required/></div>
+    <div><label>Fitting:</label><input type="text" th:field="*{shalwarFitting}" required/></div>
     <div><label>Asan:</label><input type="text" th:field="*{asan}" required/></div>
     <div><label>Payncha:</label><input type="text" th:field="*{payncha}" required/></div>
 
@@ -369,7 +369,7 @@
     <div>
       <label>Collar design:</label>
       <select th:field="*{collarType}">
-        <option value="no">No</option>
+        <option value="No">No</option>
         <option value="1">1</option><option value="2">2</option>
         <option value="3">3</option><option value="4">4</option>
         <option value="5">5</option><option value="6">6</option>
@@ -434,48 +434,48 @@
     <div>
       <label>Dress quantity:</label>
       <select th:field="*{DressQty}">
-        <option value="no">No</option>
-        <option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option>
-        <option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option><option value="10">10</option>
+        <option value=0>0</option>
+        <option value=1>1</option><option value=2>2</option>
+        <option value=3>3</option><option value=4>4</option>
+        <option value=5>5</option><option value=6>6</option>
+        <option value=7>7</option><option value=8>8</option>
+        <option value=9>9</option><option value=10>10</option>
       </select>
     </div>
 
     <div>
       <label>With collar:</label>
       <select th:field="*{withCollar}">
-        <option value="no">No</option>
-        <option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option>
-        <option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option><option value="10">10</option>
+        <option value=0>0</option>
+        <option value=1>1</option><option value=2>2</option>
+        <option value=3>3</option><option value=4>4</option>
+        <option value=5>5</option><option value=6>6</option>
+        <option value=7>7</option><option value=8>8</option>
+        <option value=9>9</option><option value=10>10</option>
       </select>
     </div>
 
     <div>
       <label>With bain:</label>
       <select th:field="*{withBain}">
-        <option value="no">No</option>
-        <option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option>
-        <option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option><option value="10">10</option>
+        <option value=0>0</option>
+        <option value=1>1</option><option value=2>2</option>
+        <option value=3>3</option><option value=4>4</option>
+        <option value=5>5</option><option value=6>6</option>
+        <option value=7>7</option><option value=8>8</option>
+        <option value=9>9</option><option value=10>10</option>
       </select>
     </div>
 
     <div>
       <label>With design:</label>
       <select th:field="*{withDesign}">
-        <option value="no">No</option>
-        <option value="1">1</option><option value="2">2</option>
-        <option value="3">3</option><option value="4">4</option>
-        <option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option><option value="8">8</option>
-        <option value="9">9</option><option value="10">10</option>
+        <option value=0>0</option>
+        <option value=1>1</option><option value=2>2</option>
+        <option value=3>3</option><option value=4>4</option>
+        <option value=5>5</option><option value=6>6</option>
+        <option value=7>7</option><option value=8>8</option>
+        <option value=9>9</option><option value=10>10</option>
       </select>
     </div>
 
@@ -620,12 +620,12 @@
   <div>
     <label>Waistcoat quantity:</label>
     <select th:field="*{qty}">
-      <option value="no">No</option>
-      <option value="1">1</option><option value="2">2</option>
-      <option value="3">3</option><option value="4">4</option>
-      <option value="5">5</option><option value="6">6</option>
-      <option value="7">7</option><option value="8">8</option>
-      <option value="9">9</option><option value="10">10</option>
+      <option value=0>0</option>
+      <option value=1>1</option><option value=2>2</option>
+      <option value=3>3</option><option value=4>4</option>
+      <option value=5>5</option><option value=6>6</option>
+      <option value=7>7</option><option value=8>8</option>
+      <option value=9>9</option><option value=10>10</option>
     </select>
   </div>
 

@@ -26,7 +26,7 @@ public class WaistcoatMeasurement {
     String damanType; // round, square
     String notes; // round, square
 
-    String qty;
+    Integer qty;
 
     @ManyToOne
     Client client;

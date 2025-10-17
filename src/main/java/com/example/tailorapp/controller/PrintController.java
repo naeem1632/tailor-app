@@ -115,7 +115,7 @@ public class PrintController {
     private void addKameezSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Kameez Measurements");
 
-        addRow4IfNotNull(table, "Kameez length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
+        addRow4IfNotNull(table, "Length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
         addRow4IfNotNull(table, "Shoulder-aram", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
         addRow4IfNotNull(table, "Center aram", nvl(m.getCenterArm()),  "Lower arm", nvl(m.getLowerArm()));
         addRow4IfNotNull(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
@@ -148,8 +148,8 @@ public class PrintController {
         addRow4IfNotNull(table, "Side pocket", nvl(m.getSidePocket()), "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No");
         addRow4IfNotNull(table, "Daman type", m.getDamanType(), "Daman stitching", nvl(m.getDamanStitching()));
         addRow4IfNotNull(table,  "Cuff type", m.getCuffType(), "Stitching", nvl(m.getStitchType()));
-        addRow4IfNotNull(table, "Button", nvl(m.getButtonType()), "Design Stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
-        addRow4IfNotNull(table, "Front patti type", nvl(m.getFrontPattiType()), "Front patti kaj", nvl(m.getFrontPattiKaj()));
+        addRow4IfNotNull(table, "Button", nvl(m.getButtonType()), "Design stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
+        addRow4IfNotNull(table, "Front patti design", nvl(m.getFrontPattiType()), "Front patti kaj", nvl(m.getFrontPattiKaj()));
         addRow4IfNotNull(table, "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No", "Jali", nvl(m.getJali()));
 
         doc.add(table);
@@ -357,8 +357,8 @@ public class PrintController {
         addRow2IfNotNull(table, "Chest fitting", nvl(m.getChestFitting()));
         addRow2IfNotNull(table, "Hip", nvl(m.getHip()));
         addRow2IfNotNull(table, "Bain size", nvl(m.getBainSize()));
-        addRow2IfNotNull(table, "Bain style", nvl(m.getBainType()));
-        addRow2IfNotNull(table, "Daman style", nvl(m.getDamanType()));
+        addRow2IfNotNull(table, "Bain design", nvl(m.getBainType()));
+        addRow2IfNotNull(table, "Daman design", nvl(m.getDamanType()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
