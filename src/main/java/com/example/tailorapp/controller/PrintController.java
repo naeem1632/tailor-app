@@ -62,7 +62,7 @@ public class PrintController {
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
-        Document document = new Document(slipSize, 15, 15, 25, 20); // extra bottom margin for footer
+        Document document = new Document(slipSize, 15, 15, 10, 20); // extra bottom margin for footer
         String now = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date());
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
@@ -70,10 +70,25 @@ public class PrintController {
         document.open();
 
         // === Title ===
-        Paragraph title = new Paragraph(nvl(client.getName() + " (" + client.getId() +")"),
+        Paragraph title = new Paragraph(nvl(client.getName() + " (" + client.getId() + ")"),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10));
         title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(3f);
         document.add(title);
+
+// === Extra Info Row (Dress Qty, Collar, Bain, Design) ===
+        PdfPTable infoTable = new PdfPTable(4);
+        infoTable.setWidthPercentage(100);
+        infoTable.setWidths(new float[]{25f, 25f, 25f, 25f});
+        infoTable.setSpacingAfter(6f);
+
+// Row content
+        infoTable.addCell(makeInfoCell("Dress Qty: " + nvl(dressMeasurement.getDressQty())));
+        infoTable.addCell(makeInfoCell("With Collar: " + nvl(dressMeasurement.getWithCollar())));
+        infoTable.addCell(makeInfoCell("With Bain: " + nvl(dressMeasurement.getWithBain())));
+        infoTable.addCell(makeInfoCell("With Design: " + nvl(dressMeasurement.getWithDesign())));
+
+        document.add(infoTable);
 
         document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
 
@@ -84,6 +99,16 @@ public class PrintController {
             addNotesSection(document, dressMeasurement.getNotes());
 
         document.close();
+    }
+
+    private PdfPCell makeInfoCell(String text) {
+        PdfPCell cell = new PdfPCell(new Phrase(nvl(text),
+                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setVerticalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(2f);
+        return cell;
     }
 
     // === Kameez Section ===
