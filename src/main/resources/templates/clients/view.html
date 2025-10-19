@@ -479,6 +479,11 @@
       </select>
     </div>
 
+    <!-- Inline error message area -->
+    <div id="quantityError"
+         style="grid-column: span 8; color: #dc3545; font-weight:600; display:none; font-size:14px; padding-top:6px;">
+    </div>
+
     <!-- Notes -->
     <div style="grid-column: span 8;">
       <label>Notes:</label>
@@ -657,6 +662,58 @@
     });
   });
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dressQty = document.querySelector("[name='DressQty']");
+    const withCollar = document.querySelector("[name='withCollar']");
+    const withBain = document.querySelector("[name='withBain']");
+    const withDesign = document.querySelector("[name='withDesign']");
+    const form = document.getElementById("measurementForm");
+    const errorDiv = document.getElementById("quantityError");
+
+    function validateQuantities() {
+      const qty = parseInt(dressQty.value || 0);
+      const collar = parseInt(withCollar.value || 0);
+      const bain = parseInt(withBain.value || 0);
+      const design = parseInt(withDesign.value || 0);
+
+      let invalid = false;
+      let message = "";
+
+      if (collar > qty || bain > qty || design > qty || collar + bain > qty) {
+        invalid = true;
+        message = "❌ Invalid quantities: 'With Collar', 'With Bain', or 'With Design' (individually or combined) cannot exceed the total Dress Quantity.";
+      }
+
+      if (invalid) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = "block";
+        return false;
+      } else {
+        errorDiv.style.display = "none";
+        errorDiv.textContent = "";
+        return true;
+      }
+    }
+
+    // Validate on submit
+    form.addEventListener("submit", function (e) {
+      if (!validateQuantities()) {
+        e.preventDefault();
+        // Scroll to error for better UX
+        errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+
+    // Live validation
+    [dressQty, withCollar, withBain, withDesign].forEach(el => {
+      el.addEventListener("change", validateQuantities);
+    });
+  });
+</script>
+
+
 
 </body>
 </html>
