@@ -22,9 +22,14 @@
 
 <h1 th:text="'Payments & Schedule for ' + ${client.name}"></h1>
 
-<div class="add-btn-container">
-    <button class="add-btn" onclick="openModal()">Add Payment</button>
+<div class="toolbar-3">
+    <div class="toolbar-left">
+        <button class="add-btn" onclick="openModal()">Add Payment</button>
+    </div>
+    <div class="toolbar-center"></div>
+    <div class="toolbar-right"></div>
 </div>
+
 
 <!-- ✅ PAYMENT LIST -->
 <table>

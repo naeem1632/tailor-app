@@ -1118,3 +1118,69 @@ input.invalid {
     margin-top: 5px;
   }
 }
+
+/* ===== 3-column toolbar: left = Add, center = Search, right = spacer/actions ===== */
+.toolbar-3 {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* ensures true centering */
+  align-items: center;
+  gap: 16px;
+  margin: 10px 0 20px;
+}
+
+/* explicit alignment so it’s bulletproof */
+.toolbar-left   { justify-self: start; }
+.toolbar-center { justify-self: center; }
+.toolbar-right  { justify-self: end; }
+
+/* Search form visuals */
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-form input[type="text"] {
+  padding: 8px 10px;
+  width: 260px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fff;
+}
+
+.search-form button {
+  padding: 8px 16px;
+  background: #138496;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-form a {
+  padding: 8px 16px;
+  background: #6c757d;
+  color: #fff !important;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Keep the Add button on the far left consistently */
+.add-btn-container { margin: 0; } /* if this class exists elsewhere */
+
+/* Mobile: stack neatly but keep order (Add, then Search) */
+@media (max-width: 700px) {
+  .toolbar-3 {
+    grid-template-columns: 1fr;      /* stack */
+    gap: 12px;
+  }
+  .toolbar-left,
+  .toolbar-center,
+  .toolbar-right {
+    justify-self: stretch;
+  }
+  .search-form { justify-content: center; }
+}
