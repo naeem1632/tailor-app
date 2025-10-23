@@ -1,11 +1,15 @@
 package com.example.tailorapp.service;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "file")
+@Setter
+@ConfigurationProperties(prefix = "tailor.upload")
+@Getter
 public class StorageProperties {
-    private String uploadDir;
 
-    public String getUploadDir() { return uploadDir; }
-    public void setUploadDir(String uploadDir) { this.uploadDir = uploadDir; }
+    /** Path for client profile pictures */
+    private String clientPath = "D:/tailor-app/client-profiles";
+
 }

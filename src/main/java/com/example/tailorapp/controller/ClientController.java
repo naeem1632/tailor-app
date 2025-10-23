@@ -59,34 +59,42 @@ public class ClientController {
             @RequestParam(value = "imageData", required = false) String imageData,
             RedirectAttributes ra) throws IOException {
 
-        String uploadDir = System.getProperty("user.dir") + "/uploads";
+        // ✅ Use path from application.properties
+        String uploadDir = storageProperties.getClientPath();
         File uploadPath = new File(uploadDir);
-        if (!uploadPath.exists()) uploadPath.mkdirs();
+        if (!uploadPath.exists()) {
+            uploadPath.mkdirs();
+        }
 
-        // Existing client check (for edit)
+        // ✅ Load existing client (for update)
         Client existing = null;
         if (client.getId() != null) {
             existing = clientService.findById(client.getId()).orElse(null);
         }
 
-        // Handle image upload
+        // ✅ Handle image upload
         if (pictureFile != null && !pictureFile.isEmpty()) {
+            // File upload
             String filename = System.currentTimeMillis() + "_" + pictureFile.getOriginalFilename();
             File dest = new File(uploadPath, filename);
             pictureFile.transferTo(dest);
-            client.setPictureFilename("/uploads/" + filename);
-        } else if (imageData != null && !imageData.isEmpty()) {
+            client.setPictureFilename("/client-profiles/" + filename);
+        }
+        else if (imageData != null && !imageData.isEmpty()) {
+            // Camera capture
             String base64Image = imageData.split(",")[1];
             byte[] imageBytes = java.util.Base64.getDecoder().decode(base64Image);
             String filename = "camera_" + System.currentTimeMillis() + ".png";
             File outputFile = new File(uploadPath, filename);
             java.nio.file.Files.write(outputFile.toPath(), imageBytes);
-            client.setPictureFilename("/uploads/" + filename);
-        } else if (existing != null) {
-            // Keep existing picture
+            client.setPictureFilename("/client-profiles/" + filename);
+        }
+        else if (existing != null) {
+            // ✅ Keep existing picture if no new one provided
             client.setPictureFilename(existing.getPictureFilename());
         }
 
+        // ✅ Save client
         clientService.save(client);
 
         String msg = (existing != null) ? "Client updated successfully" : "Client added successfully";
@@ -94,6 +102,7 @@ public class ClientController {
 
         return "redirect:/clients";
     }
+
 
     // View client + measurements
     @GetMapping("/view/{id}")

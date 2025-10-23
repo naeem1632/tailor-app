@@ -22,7 +22,7 @@ public class AppStartup implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        String uploadDir = props.getUploadDir() == null ? "uploads" : props.getUploadDir();
+        String uploadDir = props.getClientPath();
         Path p = Paths.get(uploadDir);
         if (!Files.exists(p)) {
             Files.createDirectories(p);
