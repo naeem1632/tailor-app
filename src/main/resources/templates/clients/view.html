@@ -1,15 +1,15 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <title>Client Details</title>
-  <meta charset="UTF-8"/>
-
   <!DOCTYPE html>
   <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <title>Client Details</title>
-    <meta charset="UTF-8"/>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+    <head>
+      <title>Clients - Stitch & Style</title>
+      <meta charset="UTF-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <link rel="stylesheet" th:href="@{/css/styles.css}">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    </head>
 
   <script>
     function toggleForm(formId) {
@@ -84,6 +84,13 @@
 
 </head>
 <body>
+
+<header class="site-header">
+  <div class="logo-container">
+    <!-- If you later have an image, use this: <img src="/images/logo.png" alt="Stitch & Style Logo" class="logo-img"> -->
+    <span class="logo-text">Stitch & Style</span>
+  </div>
+</header>
 
 <!-- Flash Messages -->
 <div th:if="${message}" id="flashMessage" class="alert alert-success">
