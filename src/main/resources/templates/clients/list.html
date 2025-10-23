@@ -25,6 +25,19 @@
     <button class="add-btn" onclick="openModal()">Add Client</button>
 </div>
 
+<div class="search-container" style="margin-bottom: 20px; text-align: center;">
+    <form th:action="@{/clients}" method="get" style="display: inline-flex; gap: 10px;">
+        <input type="text" name="q" th:value="${q}" placeholder="Search by name or mobile..."
+               style="padding: 8px; width: 250px; border-radius: 5px; border: 1px solid #ccc;">
+        <button type="submit" style="padding: 8px 16px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            🔍 Search
+        </button>
+        <a th:href="@{/clients}" style="padding: 8px 16px; background-color: #888; color: white; border-radius: 5px; text-decoration: none;">
+            Reset
+        </a>
+    </form>
+</div>
+
 <table>
     <thead>
     <tr>
