@@ -713,6 +713,93 @@
   });
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const numericFields = document.querySelectorAll(
+      "#measurementForm input[type='text'], #waistcoatForm input[type='text']"
+    );
+
+    // Common numeric field names
+    const numericKeywords = [
+      "length", "arm", "shoulder", "upperarm", "centerarm", "lowerarm",
+      "terra", "terradown", "collarsize", "bainsize", "chest", "chestfitting",
+      "waist", "hip", "asan", "payncha", "fitting", "neck", "cuffwidth"
+    ];
+
+    // Create an error span for each input
+    numericFields.forEach(input => {
+      if (!input.nextElementSibling || !input.nextElementSibling.classList.contains("error-msg")) {
+        const span = document.createElement("span");
+        span.className = "error-msg";
+        span.style.color = "#dc3545";
+        span.style.fontSize = "13px";
+        span.style.display = "none";
+        input.insertAdjacentElement("afterend", span);
+      }
+    });
+
+    function isNumeric(value) {
+      return value === "" || /^-?\d*\.?\d*$/.test(value);
+    }
+
+    function isNumberField(name) {
+      if (!name) return false;
+      return numericKeywords.some(k => name.toLowerCase().includes(k));
+    }
+
+    function validateInput(input) {
+      const name = input.getAttribute("name");
+      const errorMsg = input.nextElementSibling;
+
+      // Skip non-numeric fields
+      if (!isNumberField(name)) return true;
+
+      if (!isNumeric(input.value)) {
+        errorMsg.textContent = "Please enter a valid number.";
+        errorMsg.style.display = "block";
+        input.classList.add("invalid");
+        return false;
+      } else {
+        errorMsg.style.display = "none";
+        input.classList.remove("invalid");
+        return true;
+      }
+    }
+
+    // Live validation as user types
+    numericFields.forEach(input => {
+      input.addEventListener("input", () => validateInput(input));
+      input.addEventListener("blur", () => validateInput(input));
+    });
+
+    function validateForm(formId) {
+      let valid = true;
+      const inputs = document.querySelectorAll(`#${formId} input[type='text']`);
+      inputs.forEach(input => {
+        if (!validateInput(input)) valid = false;
+      });
+      return valid;
+    }
+
+    // Attach submit listeners to forms
+    ["measurementForm", "waistcoatForm"].forEach(formId => {
+      const form = document.getElementById(formId);
+      if (!form) return;
+
+      form.addEventListener("submit", e => {
+        const valid = validateForm(formId);
+        if (!valid) {
+          e.preventDefault(); // ✅ Stop form from submitting
+          const firstError = form.querySelector(".invalid");
+          if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    });
+  });
+</script>
+
+
+
 
 
 </body>
