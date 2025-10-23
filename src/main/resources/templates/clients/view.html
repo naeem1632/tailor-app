@@ -100,13 +100,11 @@
   <span th:text="${error}"></span>
 </div>
 
-<div class="header-table">
-  <h1 th:text=" ${client.name} + ' (' + ${client.id} + ')' "></h1>
+<div class="client-header">
+  <h1 th:text="${client.name} + ' (' + ${client.id} + ')' "></h1>
+  <img th:if="${client.pictureFilename}" th:src="@{${client.pictureFilename}}" alt="Client Photo" class="client-photo">
 </div>
 
-<div class="client-photo">
-  <img th:if="${client.pictureFilename}" th:src="@{${client.pictureFilename}}" alt="pic"/></td>
-</div>
 
 <!-- Action Buttons -->
 <div class="actions">

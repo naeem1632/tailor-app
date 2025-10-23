@@ -5,7 +5,7 @@ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: #f4f6f8;
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   color: #333;
 }
 
@@ -1033,12 +1033,12 @@ button.cancel-btn:active {
 
 /* ===== HEADER STYLING ===== */
 .site-header {
-    background: linear-gradient(135deg, #f8f3f0, #e7d8cf);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, #f8f3f0, #e7d8cf);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0; /* was 20px → reduced */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .logo-container {
@@ -1047,17 +1047,18 @@ button.cancel-btn:active {
     gap: 10px;
 }
 
+/* Make the logo smaller */
 .logo-img {
-    height: 60px;
-    width: auto;
+  height: 35px; /* was 60px */
+  width: auto;
 }
 
 .logo-text {
-    font-family: 'Great Vibes', cursive;
-    font-size: 2.2rem;
-    color: #3e2723;
-    letter-spacing: 2px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.6rem; /* was 2.2rem */
+  color: #3e2723;
+  letter-spacing: 1px;
+  text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.05);
 }
 
 /* ===== OPTIONAL PAGE TITLE TWEAK ===== */
@@ -1077,4 +1078,43 @@ input.invalid {
   margin-top: 2px;
   color: #dc3545;
   font-size: 13px;
+}
+
+/* Compact client name + image row */
+.client-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;              /* less gap */
+  margin: 10px auto 15px; /* tighter vertical spacing */
+  text-align: center;
+}
+
+.client-header h1 {
+  font-size: 20px;        /* smaller text */
+  font-weight: 600;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+}
+
+/* Smaller image next to name */
+.client-photo {
+  width: 50px;            /* was 65px */
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #bbb;
+}
+
+/* For mobile view — still stack nicely */
+@media (max-width: 600px) {
+  .client-header {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .client-photo {
+    margin-top: 5px;
+  }
 }
