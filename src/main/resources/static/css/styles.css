@@ -1257,3 +1257,33 @@ input.invalid {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+/* ===  FIX: Keep column alignment ONLY on the Measurement Page  === */
+
+/* Identify measurement tables by their section titles */
+table:has(tr.section-title) {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Set consistent column widths for those specific tables */
+table:has(tr.section-title) thead tr.sub-header th:nth-child(1),
+table:has(tr.section-title) tbody tr td:nth-child(1) {
+  width: 25%; /* Date column */
+}
+
+table:has(tr.section-title) thead tr.sub-header th:nth-child(2),
+table:has(tr.section-title) tbody tr td:nth-child(2) {
+  width: 50%; /* Measurements column */
+}
+
+table:has(tr.section-title) thead tr.sub-header th:nth-child(3),
+table:has(tr.section-title) tbody tr td:nth-child(3) {
+  width: 25%; /* Actions column */
+  text-align: center;
+}
+
+/* Restore default layout for all other tables (Clients, Payments, etc.) */
+body:not(:has(tr.section-title)) table {
+  table-layout: auto;
+}
