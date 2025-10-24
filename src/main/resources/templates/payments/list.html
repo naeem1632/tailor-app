@@ -15,7 +15,6 @@
 
 <header class="site-header">
     <div class="logo-container">
-        <!-- If you later have an image, use this: <img src="/images/logo.png" alt="Stitch & Style Logo" class="logo-img"> -->
         <span class="logo-text">Stitch & Style</span>
     </div>
 </header>
@@ -29,7 +28,6 @@
     <div class="toolbar-center"></div>
     <div class="toolbar-right"></div>
 </div>
-
 
 <!-- ✅ PAYMENT LIST -->
 <table>
@@ -57,32 +55,39 @@
         <td th:text="${p.paidAmount}"></td>
         <td th:text="${p.remainingAmount}"></td>
         <td th:switch="${p.paymentStatus}">
-            <span th:case="'Unpaid'" class="status-unpaid" th:text="${p.paymentStatus}"></span>
-            <span th:case="'Partial'" class="status-partial" th:text="${p.paymentStatus}"></span>
-            <span th:case="'Paid'" class="status-paid" th:text="${p.paymentStatus}"></span>
+            <span th:case="'Unpaid'" class="status-unpaid" th:text="${p.paymentStatus}" style="color: red;"></span>
+            <span th:case="'Partial'" class="status-partial" th:text="${p.paymentStatus}" style="color: yellow;"></span>
+            <span th:case="'Paid'" class="status-paid" th:text="${p.paymentStatus}" style="color: green;"></span>
             <span th:case="*" th:text="${p.paymentStatus}"></span>
         </td>
         <td th:text="${p.returnDate != null ? #temporals.format(p.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
         <td th:text="${p.returnStatus}"></td>
         <td th:text="${p.notes}"></td>
         <td>
+            <!-- Hide edit and delete buttons based on returnStatus and paymentStatus -->
             <a href="javascript:void(0)"
                class="btn-action btn-edit"
+               th:if="${p.returnStatus != 'Returned' or p.paymentStatus != 'Paid'}"
                th:attr="data-id=${p.id},
-                  data-date=${p.date},
-                  data-dresscount=${p.dressCount},
-                  data-dressrate=${p.dressRate},
-                  data-waistcoatcount=${p.waistcoatCount},
-                  data-waistcoatrate=${p.waistcoatRate},
-                  data-total=${p.totalAmount},
-                  data-paid=${p.paidAmount},
-                  data-remaining=${p.remainingAmount},
-                  data-status=${p.paymentStatus},
-                  data-returndate=${p.returnDate},
-                  data-returnstatus=${p.returnStatus},
-                  data-notes=${#strings.escapeJavaScript(p.notes != null ? p.notes : '')}"
+          data-date=${p.date},
+          data-dresscount=${p.dressCount},
+          data-dressrate=${p.dressRate},
+          data-waistcoatcount=${p.waistcoatCount},
+          data-waistcoatrate=${p.waistcoatRate},
+          data-total=${p.totalAmount},
+          data-paid=${p.paidAmount},
+          data-remaining=${p.remainingAmount},
+          data-status=${p.paymentStatus},
+          data-returndate=${p.returnDate},
+          data-returnstatus=${p.returnStatus},
+          data-notes=${#strings.escapeJavaScript(p.notes != null ? p.notes : '')}"
                onclick="openModalFromRow(this)">Edit</a>
-            <a th:href="@{'/payments/delete/' + ${p.id}}" style="color:#dc3545; font-weight:600;">Delete</a>
+
+            <a href="javascript:void(0)"
+               class="btn-action btn-delete"
+               th:if="${p.returnStatus != 'Returned' and p.paymentStatus != 'Paid'}"
+               th:href="@{'/payments/delete/' + ${p.id}}"
+               style="color:#dc3545; font-weight:600;">Delete</a>
         </td>
     </tr>
     </tbody>
