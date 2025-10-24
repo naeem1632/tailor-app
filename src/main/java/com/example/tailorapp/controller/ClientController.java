@@ -8,6 +8,7 @@ import com.example.tailorapp.service.MeasurementService;
 import com.example.tailorapp.service.StorageProperties;
 
 import com.example.tailorapp.service.WaistcoatService;
+import jakarta.transaction.Transactional;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,6 +53,7 @@ public class ClientController {
         return "clients/list";
     }
 
+    @Transactional
     @PostMapping("/save")
     public String saveClient(
             @ModelAttribute Client client,
