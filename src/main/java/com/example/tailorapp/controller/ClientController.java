@@ -53,7 +53,6 @@ public class ClientController {
         return "clients/list";
     }
 
-    @Transactional
     @PostMapping("/save")
     public String saveClient(
             @ModelAttribute Client client,

@@ -23,8 +23,6 @@ public class Client {
     String whatsAppNo;
     String address;
     String pictureFilename;
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    List<DressMeasurement> dressMeasurements = new ArrayList<>();
 
     public Client() {
     }
