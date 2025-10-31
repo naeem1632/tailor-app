@@ -6,6 +6,8 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -33,7 +35,24 @@ public class Payments {
     @ManyToOne(fetch = FetchType.LAZY)
     Client client;
 
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentInstallment> installments = new ArrayList<>();
+
+    // helper method
+    public void addInstallment(PaymentInstallment installment) {
+        installments.add(installment);
+        installment.setPayment(this);
+    }
+
     public Payments() {
+    }
+
+    public void updateStatus() {
+        long paid = installments.stream().mapToLong(PaymentInstallment::getPaidAmount).sum();
+        this.remainingAmount = totalAmount - paid;
+        if (remainingAmount <= 0) paymentStatus = "Paid";
+        else if (paid > 0) paymentStatus = "Partial";
+        else paymentStatus = "Unpaid";
     }
 
 }

@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-    <title>Clients - Stitch & Style</title>
+    <title>Client Payments - Stitch & Style</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Master stylesheet -->
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
-
 <header class="site-header">
     <div class="logo-container">
         <span class="logo-text">Stitch & Style</span>
@@ -25,19 +23,18 @@
     <div class="toolbar-left">
         <button class="add-btn" onclick="openModal()">Add Payment</button>
     </div>
-    <div class="toolbar-center"></div>
-    <div class="toolbar-right"></div>
 </div>
 
 <!-- ✅ PAYMENT LIST -->
 <table>
     <thead>
     <tr>
+        <th></th>
         <th>Date</th>
         <th>Dress</th>
         <th>Waistcoat</th>
         <th>Total</th>
-        <th>Paid</th>
+        <th>Total Paid</th>
         <th>Remaining</th>
         <th>Status</th>
         <th>Return Date</th>
@@ -47,49 +44,68 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="p : ${payments}">
-        <td th:text="${#temporals.format(p.date, 'dd-MMM-yyyy')}"></td>
-        <td th:text="${p.dressCount + ' @ ' + p.dressRate}"></td>
-        <td th:text="${p.waistcoatCount + ' @ ' + p.waistcoatRate}"></td>
-        <td th:text="${p.totalAmount}"></td>
-        <td th:text="${p.paidAmount}"></td>
-        <td th:text="${p.remainingAmount}"></td>
-        <td th:switch="${p.paymentStatus}">
-            <span th:case="'Unpaid'" class="status-unpaid" th:text="${p.paymentStatus}" style="color: red;"></span>
-            <span th:case="'Partial'" class="status-partial" th:text="${p.paymentStatus}" style="color: yellow;"></span>
-            <span th:case="'Paid'" class="status-paid" th:text="${p.paymentStatus}" style="color: green;"></span>
-            <span th:case="*" th:text="${p.paymentStatus}"></span>
-        </td>
-        <td th:text="${p.returnDate != null ? #temporals.format(p.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
-        <td th:text="${p.returnStatus}"></td>
-        <td th:text="${p.notes}"></td>
-        <td>
-            <!-- Hide edit and delete buttons based on returnStatus and paymentStatus -->
-            <a href="javascript:void(0)"
-               class="btn-action btn-edit"
-               th:if="${p.returnStatus != 'Returned' or p.paymentStatus != 'Paid'}"
-               th:attr="data-id=${p.id},
-          data-date=${p.date},
-          data-dresscount=${p.dressCount},
-          data-dressrate=${p.dressRate},
-          data-waistcoatcount=${p.waistcoatCount},
-          data-waistcoatrate=${p.waistcoatRate},
-          data-total=${p.totalAmount},
-          data-paid=${p.paidAmount},
-          data-remaining=${p.remainingAmount},
-          data-status=${p.paymentStatus},
-          data-returndate=${p.returnDate},
-          data-returnstatus=${p.returnStatus},
-          data-notes=${#strings.escapeJavaScript(p.notes != null ? p.notes : '')}"
-               onclick="openModalFromRow(this)">Edit</a>
+    <th:block th:each="p : ${payments}">
+        <tr>
+            <td>
+                <button class="expand-btn" type="button"
+                        th:attr="onclick='toggleInstallments(' + ${p.id} + ')'">▼</button>
+            </td>
+            <td th:text="${#temporals.format(p.date, 'dd-MMM-yyyy')}"></td>
+            <td th:text="${(p.dressCount != null or p.dressRate != null)
+                ? p.dressCount + ' @ ' + p.dressRate
+                : ''}"></td>
 
-            <a href="javascript:void(0)"
-               class="btn-action btn-delete"
-               th:if="${p.returnStatus != 'Returned' and p.paymentStatus != 'Paid'}"
-               th:href="@{'/payments/delete/' + ${p.id}}"
-               style="color:#dc3545; font-weight:600;">Delete</a>
-        </td>
-    </tr>
+            <td th:text="${(p.waistcoatCount != null or p.waistcoatRate != null)
+                ? p.waistcoatCount + ' @ ' + p.waistcoatRate
+                : ''}"></td>
+            <td th:text="${p.totalAmount}"></td>
+            <td th:text="${p.paidAmount}"></td>
+            <td th:text="${p.remainingAmount}"></td>
+            <td th:text="${p.paymentStatus}"
+                th:style="${p.paymentStatus == 'Paid' ? 'color:green;' :
+                          (p.paymentStatus == 'Partial' ? 'color:orange;' : 'color:red;')}"></td>
+            <td th:text="${p.returnDate != null ? #temporals.format(p.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
+            <td th:text="${p.returnStatus}"></td>
+            <td th:text="${p.notes}"></td>
+            <td>
+                <a href="javascript:void(0)" class="btn-action btn-edit"
+                   th:attr="data-id=${p.id}, data-date=${p.date},
+                            data-dresscount=${p.dressCount}, data-dressrate=${p.dressRate},
+                            data-waistcoatcount=${p.waistcoatCount}, data-waistcoatrate=${p.waistcoatRate},
+                            data-total=${p.totalAmount}, data-remaining=${p.remainingAmount},
+                            data-status=${p.paymentStatus}, data-returndate=${p.returnDate},
+                            data-returnstatus=${p.returnStatus}, data-notes=${p.notes}"
+                   onclick="openModalFromRow(this)">Edit</a>
+
+                <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete">Delete</a>
+
+                <a href="javascript:void(0)" class="btn-action btn-payment"
+                   th:attr="data-id=${p.id}"
+                   onclick="openInstallmentModal(this)">Add Installment</a>
+            </td>
+        </tr>
+
+        <!-- ✅ Installments Table -->
+        <tr th:id="'installments-' + ${p.id}" class="installment-row" style="display:none;">
+            <td colspan="12">
+                <table class="installments-table">
+                    <thead>
+                    <tr><th>Date</th><th>Paid Amount</th><th>Note</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="i : ${p.installments}">
+                        <td th:text="${#temporals.format(i.paymentDate, 'dd-MMM-yyyy')}"></td>
+                        <td th:text="${i.paidAmount}"></td>
+                        <td th:text="${i.note}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(p.installments)}">
+                        <td colspan="3" style="text-align:center; color:gray;">No installments yet</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </th:block>
     </tbody>
 </table>
 
@@ -98,31 +114,30 @@
     <a th:href="@{/clients}" class="go-back-btn">Go Back Home</a>
 </div>
 
-<!-- ✅ MODAL POPUP -->
+<!-- ✅ ADD/EDIT PAYMENT MODAL -->
 <div id="paymentModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3 id="modalTitle" style="text-align:center; color:#17a2b8; margin-bottom:15px;">Add Payment</h3>
+        <h3 id="modalTitle">Add Payment</h3>
 
-        <form class="payment-form" th:action="@{/payments/save}" method="post">
+        <form th:action="@{/payments/save}" method="post" class="payment-form">
             <input type="hidden" name="id" id="paymentId"/>
             <input type="hidden" name="client.id" th:value="${client.id}"/>
 
             <table>
                 <tr>
                     <th>Date</th><td><input type="date" name="date" id="date" required/></td>
-                    <th>Dress quantity</th><td><input type="number" name="dressCount" id="dressCount" required/></td>
-                    <th>Dress rate</th><td><input type="number" name="dressRate" id="dressRate" required/></td>
+                    <th>Dress Qty</th><td><input type="number" name="dressCount" id="dressCount" required/></td>
+                    <th>Dress Rate</th><td><input type="number" name="dressRate" id="dressRate" required/></td>
                 </tr>
                 <tr>
-                    <th>Waistcoat quantity</th><td><input type="number" name="waistcoatCount" id="waistcoatCount"/></td>
-                    <th>Waistcoat rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
+                    <th>Waistcoat Qty</th><td><input type="number" name="waistcoatCount" id="waistcoatCount"/></td>
+                    <th>Waistcoat Rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
                     <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
                 </tr>
                 <tr>
-                    <th>Paid</th><td><input type="number" name="paidAmount" id="paidAmount"/></td>
                     <th>Remaining</th><td><input type="number" name="remainingAmount" id="remainingAmount" readonly/></td>
-                    <th>Payment status</th>
+                    <th>Status</th>
                     <td>
                         <select name="paymentStatus" id="paymentStatus">
                             <option value="Unpaid">Unpaid</option>
@@ -132,8 +147,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Return date</th><td><input type="date" name="returnDate" id="returnDate" required/></td>
-                    <th>Return status</th>
+                    <th>Return Date</th><td><input type="date" name="returnDate" id="returnDate" required/></td>
+                    <th>Return Status</th>
                     <td>
                         <select name="returnStatus" id="returnStatus">
                             <option value="Not yet">Not yet</option>
@@ -152,123 +167,112 @@
     </div>
 </div>
 
-<!-- ✅ Custom Delete Confirmation Modal -->
-<div id="confirmDeleteModal" class="modal-overlay">
-    <div class="modal-box">
-        <h3>⚠ Confirm Deletion</h3>
-        <p>Are you sure you want to delete this record?</p>
-        <div class="modal-actions">
-            <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
-            <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
-        </div>
+<!-- ✅ INSTALLMENT MODAL -->
+<div id="installmentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeInstallmentModal()">&times;</span>
+        <h3>Add Payment Installment</h3>
+
+        <form th:action="@{/payments/installment/add}" method="post">
+            <input type="hidden" name="paymentId" id="installmentPaymentId"/>
+            <table>
+                <tr><th>Date</th><td><input type="date" name="paymentDate" id="installmentDate" required/></td></tr>
+                <tr><th>Paid Amount</th><td><input type="number" name="paidAmount" id="installmentPaidAmount" required/></td></tr>
+                <tr><th>Note</th><td><input type="text" name="note" id="installmentNote"/></td></tr>
+            </table>
+            <div class="actions">
+                <button type="submit">Add Payment</button>
+                <a href="javascript:void(0)" onclick="closeInstallmentModal()">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 
+<!-- ✅ JS LOGIC -->
 <script>
-    const modal = document.getElementById("paymentModal");
-    const title = document.getElementById("modalTitle");
+    function toggleInstallments(paymentId) {
+       const row = document.getElementById("installments-" + paymentId);
+       const btn = document.querySelector(`[onclick*="toggleInstallments(${paymentId})"]`);
+       if (row.style.display === "none" || row.style.display === "") {
+           row.style.display = "table-row";
+           if (btn) btn.textContent = "▲";
+       } else {
+           row.style.display = "none";
+           if (btn) btn.textContent = "▼";
+       }
+   }
 
-    function openModalFromRow(el) {
-      openModal(
-        el.dataset.id,
-        el.dataset.date,
-        el.dataset.dresscount,
-        el.dataset.dressrate,
-        el.dataset.waistcoatcount,
-        el.dataset.waistcoatrate,
-        el.dataset.total,
-        el.dataset.paid,
-        el.dataset.remaining,
-        el.dataset.status,
-        el.dataset.returndate,
-        el.dataset.returnstatus,
-        el.dataset.notes
-      );
-    }
+        const paymentModal = document.getElementById("paymentModal");
+        const installmentModal = document.getElementById("installmentModal");
 
-    function openModal(id, date, dCount, dRate, wCount, wRate, total, paid, remaining, status, returnDate, returnStatus, notes) {
-      modal.classList.add("show");
-      document.body.style.overflow = "hidden";
-      title.innerText = id ? "Edit Payment" : "Add Payment";
+        function openModal() {
+            paymentModal.classList.add("show");
+            document.body.style.overflow = "hidden";
+            document.getElementById("modalTitle").innerText = "Add Payment";
+            clearPaymentForm();
+        }
 
-      document.getElementById("paymentId").value = id || "";
-      document.getElementById("date").value = date || new Date().toISOString().split('T')[0];
-      document.getElementById("dressCount").value = dCount || 0;
-      document.getElementById("dressRate").value = dRate || 0;
-      document.getElementById("waistcoatCount").value = wCount || 0;
-      document.getElementById("waistcoatRate").value = wRate || 0;
-      document.getElementById("totalAmount").value = total || 0;
-      document.getElementById("paidAmount").value = paid || 0;
-      document.getElementById("remainingAmount").value = remaining || 0;
-      document.getElementById("paymentStatus").value = status || "Unpaid";
-      document.getElementById("returnDate").value = (returnDate && returnDate !== "null") ? returnDate : "";
-      document.getElementById("returnStatus").value = returnStatus || "Not yet";
-      document.getElementById("notes").value = notes || "";
-    }
+        function closeModal() {
+            paymentModal.classList.remove("show");
+            document.body.style.overflow = "auto";
+        }
 
-    function closeModal() {
-      modal.classList.remove("show");
-      document.body.style.overflow = "auto";
-    }
+        function openModalFromRow(el) {
+            openModal();
+            document.getElementById("modalTitle").innerText = "Edit Payment";
+            document.getElementById("paymentId").value = el.dataset.id;
+            document.getElementById("date").value = el.dataset.date;
+            document.getElementById("dressCount").value = el.dataset.dresscount;
+            document.getElementById("dressRate").value = el.dataset.dressrate;
+            document.getElementById("waistcoatCount").value = el.dataset.waistcoatcount;
+            document.getElementById("waistcoatRate").value = el.dataset.waistcoatrate;
+            document.getElementById("totalAmount").value = el.dataset.total;
+            document.getElementById("remainingAmount").value = el.dataset.remaining;
+            document.getElementById("paymentStatus").value = el.dataset.status;
+            document.getElementById("returnDate").value = el.dataset.returndate;
+            document.getElementById("returnStatus").value = el.dataset.returnstatus;
+            document.getElementById("notes").value = el.dataset.notes;
+        }
 
-    // Auto calculate totals
-    const dC = document.getElementById("dressCount");
-    const dR = document.getElementById("dressRate");
-    const wC = document.getElementById("waistcoatCount");
-    const wR = document.getElementById("waistcoatRate");
-    const tA = document.getElementById("totalAmount");
-    const pA = document.getElementById("paidAmount");
-    const rA = document.getElementById("remainingAmount");
-    const sS = document.getElementById("paymentStatus");
+        function clearPaymentForm() {
+            document.getElementById("paymentId").value = "";
+            document.querySelector(".payment-form").reset();
+            document.getElementById("totalAmount").value = "";
+            document.getElementById("remainingAmount").value = "";
+        }
 
-    [dC, dR, wC, wR, pA].forEach(el => el.addEventListener("input", updateTotals));
+        function openInstallmentModal(el) {
+            installmentModal.classList.add("show");
+            document.body.style.overflow = "hidden";
+            document.getElementById("installmentPaymentId").value = el.dataset.id;
+            document.getElementById("installmentDate").value = new Date().toISOString().split('T')[0];
+        }
 
-    function updateTotals() {
-      const total = (parseFloat(dC.value) || 0) * (parseFloat(dR.value) || 0)
-                  + (parseFloat(wC.value) || 0) * (parseFloat(wR.value) || 0);
-      const paid = parseFloat(pA.value) || 0;
-      tA.value = total;
-      rA.value = Math.max(total - paid, 0);
-      sS.value = (rA.value == 0 && total > 0) ? "Paid" :
-                 (paid > 0 && rA.value > 0) ? "Partial" : "Unpaid";
-    }
-</script>
+        function closeInstallmentModal() {
+            installmentModal.classList.remove("show");
+            document.body.style.overflow = "auto";
+        }
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-      let deleteUrl = null;
-      const modal = document.getElementById("confirmDeleteModal");
-      const confirmBtn = document.getElementById("confirmDeleteBtn");
-      const cancelBtn = document.getElementById("cancelDeleteBtn");
+        // ✅ Auto-calc total and remaining when qty/rate changes
+        const dressCount = document.getElementById("dressCount");
+        const dressRate = document.getElementById("dressRate");
+        const waistcoatCount = document.getElementById("waistcoatCount");
+        const waistcoatRate = document.getElementById("waistcoatRate");
 
-      // Intercept all delete links
-      document.querySelectorAll("a[href*='/payments/delete/']").forEach(link => {
-        link.addEventListener("click", function (e) {
-          e.preventDefault(); // stop immediate navigation
-          deleteUrl = this.getAttribute("href");
-          modal.style.display = "flex"; // show modal
+        function calculateTotals() {
+            const dCount = parseFloat(dressCount.value) || 0;
+            const dRate = parseFloat(dressRate.value) || 0;
+            const wCount = parseFloat(waistcoatCount.value) || 0;
+            const wRate = parseFloat(waistcoatRate.value) || 0;
+
+            const total = (dCount * dRate) + (wCount * wRate);
+            document.getElementById("totalAmount").value = total;
+            document.getElementById("remainingAmount").value = total;
+        }
+
+        [dressCount, dressRate, waistcoatCount, waistcoatRate].forEach(el => {
+            el.addEventListener("input", calculateTotals);
         });
-      });
-
-      confirmBtn.addEventListener("click", function () {
-        if (deleteUrl) {
-          window.location.href = deleteUrl; // redirect to delete endpoint
-        }
-      });
-
-      cancelBtn.addEventListener("click", function () {
-        modal.style.display = "none";
-        deleteUrl = null;
-      });
-
-      // Close modal when clicking outside box
-      modal.addEventListener("click", function (e) {
-        if (e.target === modal) {
-          modal.style.display = "none";
-          deleteUrl = null;
-        }
-      });
-    });
 </script>
 
 </body>
