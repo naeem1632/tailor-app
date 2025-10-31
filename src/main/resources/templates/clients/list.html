@@ -35,8 +35,34 @@
         </form>
     </div>
 
-    <!-- empty right side keeps the search perfectly centered -->
-    <div class="toolbar-right"></div>
+    <!-- ✅ Right side -->
+    <div class="toolbar-right">
+        <button class="btn-secondary" onclick="openReportModal()">📄 Generate Report</button>
+    </div>
+</div>
+
+<!-- ✅ REPORT FILTER MODAL -->
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeReportModal()">&times;</span>
+        <h3 style="text-align:center;">Generate Client Payment Report</h3>
+
+        <form th:action="@{/print/report}" method="get" target="_blank">
+            <table>
+                <tr>
+                    <th>From Date</th>
+                    <td><input type="date" name="startDate" required></td>
+                    <th>To Date</th>
+                    <td><input type="date" name="endDate" required></td>
+                </tr>
+            </table>
+
+            <div class="actions">
+                <button type="submit">Generate PDF</button>
+                <a href="javascript:void(0)" onclick="closeReportModal()">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 
@@ -177,6 +203,20 @@
       }
       video.style.display = 'none';
     });
+</script>
+
+<script>
+    const reportModal = document.getElementById("reportModal");
+
+    function openReportModal() {
+      reportModal.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeReportModal() {
+      reportModal.classList.remove("show");
+      document.body.style.overflow = "auto";
+    }
 </script>
 
 </body>
