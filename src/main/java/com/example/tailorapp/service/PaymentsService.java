@@ -1,5 +1,6 @@
 package com.example.tailorapp.service;
 
+import com.example.tailorapp.config.AppConstants;
 import com.example.tailorapp.model.PaymentInstallment;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.repository.PaymentInstallmentRepository;
@@ -60,9 +61,9 @@ public class PaymentsService {
         payment.setPaidAmount(totalPaid);
         payment.setRemainingAmount(remaining);
 
-        if (remaining <= 0 && total > 0) payment.setPaymentStatus("Paid");
-        else if (totalPaid > 0) payment.setPaymentStatus("Partial");
-        else payment.setPaymentStatus("Unpaid");
+        if (remaining <= 0 && total > 0) payment.setPaymentStatus(AppConstants.PAYMENT_STATUS_PAID);
+        else if (totalPaid > 0) payment.setPaymentStatus(AppConstants.PAYMENT_STATUS_PARTIAL);
+        else payment.setPaymentStatus(AppConstants.PAYMENT_STATUS_UNPAID);
     }
 
     // ✅ Delete installment and sync parent totals

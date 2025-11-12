@@ -10,7 +10,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public String handleMaxSizeException(RedirectAttributes ra) {
-        ra.addFlashAttribute("error", "File too large! Please upload an image under 10 MB.");
+        ra.addFlashAttribute("error", AppConstants.MAX_UPLOAD_SIZE_ERROR_MESSAGE);
         return "redirect:/clients";
     }
 }

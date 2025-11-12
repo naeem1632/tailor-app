@@ -9,6 +9,7 @@ import com.example.tailorapp.service.StorageProperties;
 
 import com.example.tailorapp.service.WaistcoatService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -179,51 +180,8 @@ public class ClientController {
         }
 
         DressMeasurement m = existing.get();
-        m.setKameezLength(dressMeasurement.getKameezLength());
-        m.setArm(dressMeasurement.getArm());
-        m.setUpperArm(dressMeasurement.getUpperArm());
-        m.setCenterArm(dressMeasurement.getCenterArm());
-        m.setLowerArm(dressMeasurement.getLowerArm());
-        m.setTerra(dressMeasurement.getTerra());
-        m.setTerraDown(dressMeasurement.getTerraDown());
-        m.setShoulderArm(dressMeasurement.getShoulderArm());
-        m.setChest(dressMeasurement.getChest());
-        m.setChestFitting(dressMeasurement.getChestFitting());
-        m.setWaist(dressMeasurement.getWaist());
-        m.setHip(dressMeasurement.getHip());
-        m.setRound(dressMeasurement.getRound());
-        m.setCollarSize(dressMeasurement.getCollarSize());
-        m.setCollarType(dressMeasurement.getCollarType());
-        m.setBainSize(dressMeasurement.getBainSize());
-        m.setBainType(dressMeasurement.getBainType());
-        m.setDamanType(dressMeasurement.getDamanType());
-        m.setDamanStitching(dressMeasurement.getDamanStitching());
-        m.setSidePocket(dressMeasurement.getSidePocket());
-        m.setFrontPocket(dressMeasurement.getFrontPocket());
-        m.setFrontPocketType(dressMeasurement.getFrontPocketType());
-        m.setCuffDesign(dressMeasurement.getCuffDesign());
-        m.setCuffLength(dressMeasurement.getCuffLength());
-        m.setCuffWidth(dressMeasurement.getCuffWidth());
-        m.setCuffType(dressMeasurement.getCuffType());
-        m.setWristType(dressMeasurement.getWristType());
-        m.setShalwarLength(dressMeasurement.getShalwarLength());
-        m.setShalwarFitting(dressMeasurement.getShalwarFitting());
-        m.setAsan(dressMeasurement.getAsan());
-        m.setPayncha(dressMeasurement.getPayncha());
-        m.setJali(dressMeasurement.getJali());
-        m.setKanta(dressMeasurement.getKanta());
-        m.setStitchType(dressMeasurement.getStitchType());
-        m.setDesignStitch(dressMeasurement.getDesignStitch());
-        m.setButtonType(dressMeasurement.getButtonType());
-        m.setFrontPattiKaj(dressMeasurement.getFrontPattiKaj());
-        m.setFrontPattiType(dressMeasurement.getFrontPattiType());
-        m.setNotes(dressMeasurement.getNotes());
-        m.setShalwarPocket(dressMeasurement.getShalwarPocket());
-
-        m.setDressQty(dressMeasurement.getDressQty());
-        m.setWithCollar(dressMeasurement.getWithCollar());
-        m.setWithBain(dressMeasurement.getWithBain());
-        m.setWithDesign(dressMeasurement.getWithDesign());
+        // Copy all properties except id, client, and date to preserve the existing record metadata
+        BeanUtils.copyProperties(dressMeasurement, m, "id", "client", "date");
         measurementService.save(m);
 
         ra.addFlashAttribute("message", "DressMeasurement updated successfully");

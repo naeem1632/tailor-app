@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
     <!-- Master stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -90,16 +90,27 @@
             <td colspan="12">
                 <table class="installments-table">
                     <thead>
-                    <tr><th>Date</th><th>Paid Amount</th><th>Note</th></tr>
+                    <tr><th>Date</th><th>Paid Amount</th><th>Note</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                     <tr th:each="i : ${p.installments}">
                         <td th:text="${#temporals.format(i.paymentDate, 'dd-MMM-yyyy')}"></td>
                         <td th:text="${i.paidAmount}"></td>
                         <td th:text="${i.note}"></td>
+                        <td>
+                            <a href="javascript:void(0)" class="btn-action btn-edit"
+                               th:attr="data-id=${i.id},
+                                        data-date=${i.paymentDate},
+                                        data-amount=${i.paidAmount},
+                                        data-note=${i.note}"
+                               onclick="openEditInstallmentModal(this)">Edit</a>
+                            <a th:href="@{'/payments/installment/delete/' + ${i.id}}"
+                               class="btn-action btn-delete"
+                               onclick="return confirm('Are you sure you want to delete this installment?')">Delete</a>
+                        </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(p.installments)}">
-                        <td colspan="3" style="text-align:center; color:gray;">No installments yet</td>
+                        <td colspan="4" style="text-align:center; color:gray;">No installments yet</td>
                     </tr>
                     </tbody>
                 </table>
@@ -188,6 +199,27 @@
     </div>
 </div>
 
+<!-- ✅ EDIT INSTALLMENT MODAL -->
+<div id="editInstallmentModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeEditInstallmentModal()">&times;</span>
+        <h3>Edit Payment Installment</h3>
+
+        <form th:action="@{/payments/installment/edit}" method="post">
+            <input type="hidden" name="installmentId" id="editInstallmentId"/>
+            <table>
+                <tr><th>Date</th><td><input type="date" name="paymentDate" id="editInstallmentDate" required/></td></tr>
+                <tr><th>Paid Amount</th><td><input type="number" name="paidAmount" id="editInstallmentPaidAmount" required/></td></tr>
+                <tr><th>Note</th><td><input type="text" name="note" id="editInstallmentNote"/></td></tr>
+            </table>
+            <div class="actions">
+                <button type="submit">Update Payment</button>
+                <a href="javascript:void(0)" onclick="closeEditInstallmentModal()">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- ✅ JS LOGIC -->
 <script>
     function toggleInstallments(paymentId) {
@@ -250,6 +282,23 @@
 
         function closeInstallmentModal() {
             installmentModal.classList.remove("show");
+            document.body.style.overflow = "auto";
+        }
+
+        // ✅ Edit Installment Modal Functions
+        const editInstallmentModal = document.getElementById("editInstallmentModal");
+
+        function openEditInstallmentModal(el) {
+            editInstallmentModal.classList.add("show");
+            document.body.style.overflow = "hidden";
+            document.getElementById("editInstallmentId").value = el.dataset.id;
+            document.getElementById("editInstallmentDate").value = el.dataset.date;
+            document.getElementById("editInstallmentPaidAmount").value = el.dataset.amount;
+            document.getElementById("editInstallmentNote").value = el.dataset.note || "";
+        }
+
+        function closeEditInstallmentModal() {
+            editInstallmentModal.classList.remove("show");
             document.body.style.overflow = "auto";
         }
 

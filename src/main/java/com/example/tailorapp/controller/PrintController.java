@@ -1,5 +1,6 @@
 package com.example.tailorapp.controller;
 
+import com.example.tailorapp.config.AppConstants;
 import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
 import com.example.tailorapp.model.WaistcoatMeasurement;
@@ -19,14 +20,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/print")
 @EnableConfigurationProperties(StorageProperties.class)
 public class PrintController {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern(AppConstants.DATE_TIME_FORMAT);
 
     private final ClientService clientService;
     private final MeasurementService measurementService;
@@ -63,7 +68,7 @@ public class PrintController {
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
         Document document = new Document(slipSize, 15, 15, 10, 20); // extra bottom margin for footer
-        String now = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date());
+        String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
         writer.setPageEvent(new FooterHandler(now)); // attach footer handler
@@ -315,7 +320,7 @@ public class PrintController {
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
         Document document = new Document(slipSize, 15, 15, 25, 20); // extra bottom margin for footer
-        String now = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date());
+        String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
         writer.setPageEvent(new FooterHandler(now)); // attach footer handler
