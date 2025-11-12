@@ -74,7 +74,9 @@
                             data-waistcoatcount=${p.waistcoatCount}, data-waistcoatrate=${p.waistcoatRate},
                             data-total=${p.totalAmount}, data-remaining=${p.remainingAmount},
                             data-status=${p.paymentStatus}, data-returndate=${p.returnDate},
-                            data-returnstatus=${p.returnStatus}, data-notes=${p.notes}"
+                            data-returnstatus=${p.returnStatus}, data-notes=${p.notes},
+                            data-buttontype=${p.buttonType}, data-buttonamount=${p.buttonAmount},
+                            data-withmatel=${p.withMatel}, data-withtich=${p.withTich}"
                    onclick="openModalFromRow(this)">Edit</a>
 
                 <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete">Delete</a>
@@ -286,6 +288,15 @@
             document.getElementById("returnDate").value = el.dataset.returndate;
             document.getElementById("returnStatus").value = el.dataset.returnstatus;
             document.getElementById("notes").value = el.dataset.notes;
+
+            // Populate button type fields
+            document.getElementById("buttonType").value = el.dataset.buttontype || "Plan";
+            document.getElementById("buttonAmount").value = el.dataset.buttonamount || "";
+            document.getElementById("withMatel").value = el.dataset.withmatel || "";
+            document.getElementById("withTich").value = el.dataset.withtich || "";
+
+            // Trigger field visibility based on button type
+            toggleButtonFields();
         }
 
         function clearPaymentForm() {

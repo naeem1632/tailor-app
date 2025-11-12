@@ -57,10 +57,10 @@ public class ClientReportController {
         addHeaderSection(document, subTitleFont, startDate, endDate);
 
         // 🧾 Table setup
-        PdfPTable table = new PdfPTable(9);
+        PdfPTable table = new PdfPTable(10);
         table.setWidthPercentage(100);
         // Wider Date, smaller Count fields
-        table.setWidths(new float[]{14, 26, 7, 7, 10, 10, 10, 8, 8});
+        table.setWidths(new float[]{12, 24, 7, 7, 9, 9, 8, 10, 7, 7});
 
         addHeaderCell(table, "Date", headerFont);
         addHeaderCell(table, "Client (ID - Name)", headerFont);
@@ -68,6 +68,7 @@ public class ClientReportController {
         addHeaderCell(table, "Waistcoat Count", headerFont);
         addHeaderCell(table, "Dress Amt", headerFont);
         addHeaderCell(table, "Waistcoat Amt", headerFont);
+        addHeaderCell(table, "Button Amt", headerFont);
         addHeaderCell(table, "Total Amt", headerFont);
         addHeaderCell(table, "Paid", headerFont);
         addHeaderCell(table, "Remaining", headerFont);
@@ -75,7 +76,7 @@ public class ClientReportController {
         List<Client> clients = clientService.findAll();
 
         long grandDressCount = 0, grandWaistcoatCount = 0;
-        long grandDressAmount = 0, grandWaistcoatAmount = 0;
+        long grandDressAmount = 0, grandWaistcoatAmount = 0, grandButtonAmount = 0;
         long grandTotal = 0, grandPaid = 0, grandRemain = 0;
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
@@ -98,7 +99,21 @@ public class ClientReportController {
                 long waistcoatCount = p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0;
                 long dressAmount = (p.getDressRate() != null ? p.getDressRate() : 0) * dressCount;
                 long waistcoatAmount = (p.getWaistcoatRate() != null ? p.getWaistcoatRate() : 0) * waistcoatCount;
-                long totalAmount = dressAmount + waistcoatAmount;
+
+                // Calculate button amount
+                long buttonAmount = 0;
+                if (p.getButtonType() != null && !"Plan".equalsIgnoreCase(p.getButtonType())) {
+                    long buttonRate = p.getButtonAmount() != null ? p.getButtonAmount() : 0;
+                    if ("Matel".equalsIgnoreCase(p.getButtonType())) {
+                        int withMatel = p.getWithMatel() != null ? p.getWithMatel() : 0;
+                        buttonAmount = withMatel * buttonRate;
+                    } else if ("Tich".equalsIgnoreCase(p.getButtonType())) {
+                        int withTich = p.getWithTich() != null ? p.getWithTich() : 0;
+                        buttonAmount = withTich * buttonRate;
+                    }
+                }
+
+                long totalAmount = dressAmount + waistcoatAmount + buttonAmount;
                 long paidAmount = p.getPaidAmount() != null ? p.getPaidAmount() : 0;
                 long remainingAmount = totalAmount - paidAmount;
 
@@ -108,6 +123,7 @@ public class ClientReportController {
                 addCellCenter(table, String.valueOf(waistcoatCount), cellFont);
                 addCellRight(table, String.valueOf(dressAmount), cellFont);
                 addCellRight(table, String.valueOf(waistcoatAmount), cellFont);
+                addCellRight(table, String.valueOf(buttonAmount), cellFont);
                 addCellRight(table, String.valueOf(totalAmount), cellFont);
                 addCellRight(table, String.valueOf(paidAmount), cellFont);
                 addCellRight(table, String.valueOf(remainingAmount), cellFont);
@@ -116,6 +132,7 @@ public class ClientReportController {
                 grandWaistcoatCount += waistcoatCount;
                 grandDressAmount += dressAmount;
                 grandWaistcoatAmount += waistcoatAmount;
+                grandButtonAmount += buttonAmount;
                 grandTotal += totalAmount;
                 grandPaid += paidAmount;
                 grandRemain += remainingAmount;
@@ -136,6 +153,7 @@ public class ClientReportController {
         addSummaryCell(table, grandWaistcoatCount);
         addSummaryCell(table, grandDressAmount);
         addSummaryCell(table, grandWaistcoatAmount);
+        addSummaryCell(table, grandButtonAmount);
         addSummaryCell(table, grandTotal);
         addSummaryCell(table, grandPaid);
         addSummaryCell(table, grandRemain);
