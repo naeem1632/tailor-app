@@ -63,14 +63,14 @@ public class ClientReportController {
         table.setWidths(new float[]{10, 20, 12, 6, 6, 9, 9, 8, 10, 6, 6});
 
         addHeaderCell(table, "Date", headerFont);
-        addHeaderCell(table, "Client (ID - Name)", headerFont);
+        addHeaderCell(table, "Name", headerFont);
         addHeaderCell(table, "Mobile#", headerFont);
-        addHeaderCell(table, "Dress Count", headerFont);
-        addHeaderCell(table, "Waistcoat Count", headerFont);
-        addHeaderCell(table, "Dress Amt", headerFont);
-        addHeaderCell(table, "Waistcoat Amt", headerFont);
-        addHeaderCell(table, "Button Amt", headerFont);
-        addHeaderCell(table, "Total Amt", headerFont);
+        addHeaderCell(table, "Dress qty", headerFont);
+        addHeaderCell(table, "W/C qty", headerFont);
+        addHeaderCell(table, "Dress $", headerFont);
+        addHeaderCell(table, "W/C $", headerFont);
+        addHeaderCell(table, "Button $", headerFont);
+        addHeaderCell(table, "Total", headerFont);
         addHeaderCell(table, "Paid", headerFont);
         addHeaderCell(table, "Remaining", headerFont);
 
