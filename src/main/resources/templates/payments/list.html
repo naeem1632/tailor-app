@@ -179,7 +179,9 @@
                         <input type="number" name="withMatel" id="withMatel" style="display:none;" onchange="calculateTotals()"/>
                         <input type="number" name="withTich" id="withTich" style="display:none;" onchange="calculateTotals()"/>
                     </td>
-                    <td colspan="4"></td>
+                    <td colspan="4">
+                        <div id="buttonCountError" style="color: #dc3545; font-weight:600; display:none; font-size:14px; padding-top:6px;"></div>
+                    </td>
                 </tr>
                 <tr>
                     <th>Return Date</th><td><input type="date" name="returnDate" id="returnDate" required/></td>
@@ -414,16 +416,27 @@
             const withMatel = parseFloat(document.getElementById("withMatel").value) || 0;
             const withTich = parseFloat(document.getElementById("withTich").value) || 0;
             const totalButtonCount = withMatel + withTich;
+            const errorDiv = document.getElementById("buttonCountError");
 
             if (totalButtonCount > dCount) {
-                alert("Error: Total button count (With Matel + With Tich) cannot exceed total dress count!");
+                errorDiv.textContent = "Error: Total button count (With Matel + With Tich) cannot exceed total dress count!";
+                errorDiv.style.display = "block";
+                // Scroll to error for better UX
+                errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
                 return false;
             }
+            errorDiv.style.display = "none";
+            errorDiv.textContent = "";
             return true;
         }
 
         [dressCount, dressRate, waistcoatCount, waistcoatRate].forEach(el => {
             el.addEventListener("input", calculateTotals);
+        });
+
+        // Live validation for button count fields
+        [document.getElementById("withMatel"), document.getElementById("withTich"), dressCount].forEach(el => {
+            el.addEventListener("input", validateButtonCount);
         });
 
         // Add validation on form submit

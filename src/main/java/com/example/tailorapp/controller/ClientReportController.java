@@ -57,13 +57,14 @@ public class ClientReportController {
         addHeaderSection(document, subTitleFont, startDate, endDate);
 
         // 🧾 Table setup
-        PdfPTable table = new PdfPTable(10);
+        PdfPTable table = new PdfPTable(11);
         table.setWidthPercentage(100);
         // Wider Date, smaller Count fields
-        table.setWidths(new float[]{12, 24, 7, 7, 9, 9, 8, 10, 7, 7});
+        table.setWidths(new float[]{10, 20, 12, 6, 6, 9, 9, 8, 10, 6, 6});
 
         addHeaderCell(table, "Date", headerFont);
         addHeaderCell(table, "Client (ID - Name)", headerFont);
+        addHeaderCell(table, "Mobile#", headerFont);
         addHeaderCell(table, "Dress Count", headerFont);
         addHeaderCell(table, "Waistcoat Count", headerFont);
         addHeaderCell(table, "Dress Amt", headerFont);
@@ -119,8 +120,9 @@ public class ClientReportController {
 
                 addCellCenter(table, reportDate.format(formatter), cellFont);
                 addLeftAlignedCell(table, client.getId() + " - " + client.getName(), boldCellFont);
-                addCellCenter(table, String.valueOf(dressCount), cellFont);
-                addCellCenter(table, String.valueOf(waistcoatCount), cellFont);
+                addCellCenter(table, client.getMobile() != null ? client.getMobile() : "-", cellFont);
+                addCellRight(table, String.valueOf(dressCount), cellFont);
+                addCellRight(table, String.valueOf(waistcoatCount), cellFont);
                 addCellRight(table, String.valueOf(dressAmount), cellFont);
                 addCellRight(table, String.valueOf(waistcoatAmount), cellFont);
                 addCellRight(table, String.valueOf(buttonAmount), cellFont);
@@ -144,7 +146,7 @@ public class ClientReportController {
         summaryCell.setBackgroundColor(Color.DARK_GRAY);
         summaryCell.setHorizontalAlignment(Element.ALIGN_CENTER);
         summaryCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        summaryCell.setColspan(2);
+        summaryCell.setColspan(3);
         summaryCell.setPadding(5f);
         summaryCell.setPhrase(new Phrase("TOTAL", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.WHITE)));
         table.addCell(summaryCell);
