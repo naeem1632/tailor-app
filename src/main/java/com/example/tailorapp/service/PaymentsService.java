@@ -40,8 +40,33 @@ public class PaymentsService {
 
     // ✅ Save & re-sync totals
     public void saveAndSync(Payments payment) {
+        calculateTotalAmount(payment); // Calculate total including button costs
         syncTotals(payment);
         paymentsRepository.save(payment);
+    }
+
+    // ✅ Calculate total amount including button costs
+    public void calculateTotalAmount(Payments payment) {
+        long dressTotal = (payment.getDressCount() != null ? payment.getDressCount() : 0) *
+                         (payment.getDressRate() != null ? payment.getDressRate() : 0);
+
+        long waistcoatTotal = (payment.getWaistcoatCount() != null ? payment.getWaistcoatCount() : 0) *
+                             (payment.getWaistcoatRate() != null ? payment.getWaistcoatRate() : 0);
+
+        long buttonTotal = 0;
+        if (payment.getButtonType() != null && !"Plan".equalsIgnoreCase(payment.getButtonType())) {
+            long buttonAmount = payment.getButtonAmount() != null ? payment.getButtonAmount() : 0;
+
+            if ("Matel".equalsIgnoreCase(payment.getButtonType())) {
+                int withMatel = payment.getWithMatel() != null ? payment.getWithMatel() : 0;
+                buttonTotal = withMatel * buttonAmount;
+            } else if ("Tich".equalsIgnoreCase(payment.getButtonType())) {
+                int withTich = payment.getWithTich() != null ? payment.getWithTich() : 0;
+                buttonTotal = withTich * buttonAmount;
+            }
+        }
+
+        payment.setTotalAmount(dressTotal + waistcoatTotal + buttonTotal);
     }
 
     // ✅ Central total syncing method
