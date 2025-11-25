@@ -266,13 +266,13 @@
 
     <div>
       <label>Daman Type:</label>
-      <select th:field="*{damanType}">
+      <select id="damanType" th:field="*{damanType}">
         <option value="Square">Square</option>
         <option value="Round">Round</option>
       </select>
     </div>
 
-    <div>
+    <div id="damanStitchingDiv">
       <label>Daman Stitching:</label>
       <select th:field="*{damanStitching}">
         <option value="Single">Single</option>
@@ -319,8 +319,8 @@
     <div>
       <label>Front Patti design:</label>
       <select th:field="*{frontPattiType}">
-        <option value="Round">Round</option>
         <option value="Square">Square</option>
+        <option value="Round">Round</option>
         <option value="Nock">Nock</option>
       </select>
     </div>
@@ -713,6 +713,7 @@
   document.addEventListener("DOMContentLoaded", function() {
     const checkbox = document.getElementById("frontPocketCheckbox");
     const pocketDesign = document.getElementById("frontPocketDesign");
+    const pocketRadios = document.querySelectorAll("input[name='frontPocketType']");
 
     // Initial visibility
     pocketDesign.style.display = checkbox.checked ? "flex" : "none";
@@ -720,7 +721,34 @@
     // Toggle on change
     checkbox.addEventListener("change", () => {
       pocketDesign.style.display = checkbox.checked ? "flex" : "none";
+
+      // Clear radio selection when unchecked
+      if (!checkbox.checked) {
+        pocketRadios.forEach(radio => radio.checked = false);
+      }
     });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const damanType = document.getElementById("damanType");
+    const damanStitchingDiv = document.getElementById("damanStitchingDiv");
+
+    function toggleDamanStitching() {
+      // Hide Daman Stitching when Daman Type is Square
+      if (damanType.value === "Square") {
+        damanStitchingDiv.style.display = "none";
+      } else {
+        damanStitchingDiv.style.display = "block";
+      }
+    }
+
+    // Initial visibility
+    toggleDamanStitching();
+
+    // Toggle on change
+    damanType.addEventListener("change", toggleDamanStitching);
   });
 </script>
 

@@ -67,53 +67,72 @@ public class PrintController {
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
-        Document document = new Document(slipSize, 15, 15, 10, 20); // extra bottom margin for footer
+        Document document = new Document(slipSize, 15, 15, 3, 20); // reduced top margin from 5 to 3
         String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
-        writer.setPageEvent(new FooterHandler(now)); // attach footer handler
+        writer.setPageEvent(new FooterHandler(dressMeasurement.getNotes())); // pass notes to footer
         document.open();
 
-        // === Title ===
-        Paragraph title = new Paragraph(nvl(client.getName() + " (" + client.getId() + ")"),
-                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10));
-        title.setAlignment(Element.ALIGN_CENTER);
-        title.setSpacingAfter(3f);
-        document.add(title);
+        // === Header: Name (center) and Print Date (right) on same line ===
+        PdfPTable headerTable = new PdfPTable(3);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new float[]{30f, 40f, 30f});
 
-// === Extra Info Row (Dress Qty, Collar, Bain, Design) ===
-        PdfPTable infoTable = new PdfPTable(4);
+        // Left: empty
+        PdfPCell leftCell = new PdfPCell(new Phrase(""));
+        leftCell.setBorder(Rectangle.NO_BORDER);
+        headerTable.addCell(leftCell);
+
+        // Center: Name
+        PdfPCell nameCell = new PdfPCell(new Phrase(nvl(client.getName() + " (" + client.getId() + ")"),
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
+        nameCell.setBorder(Rectangle.NO_BORDER);
+        nameCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        nameCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(nameCell);
+
+        // Right: Print date
+        PdfPCell dateCell = new PdfPCell(new Phrase("Printed: " + now,
+                FontFactory.getFont(FontFactory.HELVETICA, 6)));
+        dateCell.setBorder(Rectangle.NO_BORDER);
+        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(dateCell);
+
+        headerTable.setSpacingAfter(1f);
+        document.add(headerTable);
+
+        // === Header: Info Row (Dress Qty, Collar, Bain, Design, Pajama) ===
+        PdfPTable infoTable = new PdfPTable(5);
         infoTable.setWidthPercentage(100);
-        infoTable.setWidths(new float[]{25f, 25f, 25f, 25f});
-        infoTable.setSpacingAfter(6f);
+        infoTable.setWidths(new float[]{20f, 20f, 20f, 20f, 20f});
+        infoTable.setSpacingAfter(1.5f);
 
-// Row content
         infoTable.addCell(makeInfoCell("Dress Qty: " + nvl(dressMeasurement.getDressQty())));
-        infoTable.addCell(makeInfoCell("With Collar: " + nvl(dressMeasurement.getWithCollar())));
-        infoTable.addCell(makeInfoCell("With Bain: " + nvl(dressMeasurement.getWithBain())));
-        infoTable.addCell(makeInfoCell("With Design: " + nvl(dressMeasurement.getWithDesign())));
+        infoTable.addCell(makeInfoCell("W/Collar: " + nvl(dressMeasurement.getWithCollar())));
+        infoTable.addCell(makeInfoCell("W/Bain: " + nvl(dressMeasurement.getWithBain())));
+        infoTable.addCell(makeInfoCell("W/Design: " + nvl(dressMeasurement.getWithDesign())));
+        infoTable.addCell(makeInfoCell("W/Pajama: " + nvl(dressMeasurement.getWithPajama())));
 
         document.add(infoTable);
-
-        document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
 
         // === Measurements ===
             addKameezSection(document, dressMeasurement);
             addShalwarSection(document, dressMeasurement);
             addPajamaSection(document, dressMeasurement);
             addDesignSection(document, dressMeasurement);
-            addNotesSection(document, dressMeasurement.getNotes());
 
         document.close();
     }
 
     private PdfPCell makeInfoCell(String text) {
         PdfPCell cell = new PdfPCell(new Phrase(nvl(text),
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                FontFactory.getFont(FontFactory.HELVETICA, 7))); // reduced from 9 to 7
         cell.setBorder(Rectangle.NO_BORDER);
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
         cell.setVerticalAlignment(Element.ALIGN_CENTER);
-        cell.setPadding(2f);
+        cell.setPadding(1f); // reduced from 1.5f
         return cell;
     }
 
@@ -130,7 +149,7 @@ public class PrintController {
         addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Chest fitting", nvl(m.getChestFitting()));
         addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Hip", nvl(m.getHip()));
         doc.add(table);
-        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
     }
 
     // === Shalwar Section ===
@@ -141,7 +160,7 @@ public class PrintController {
         addRow4IfNotNull(table,"Asan", nvl(m.getAsan()), "Payncha", nvl(m.getPayncha()));
 
         doc.add(table);
-        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
     }
 
     // === Pajama Section ===
@@ -153,7 +172,7 @@ public class PrintController {
         addRow4IfNotNull(table, "Lower Fitting", nvl(m.getLowerFitting()), "Pajama Pocket", nvl(m.getPajamaPocket()));
 
         doc.add(table);
-        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
     }
 
     // === Design Section ===
@@ -171,30 +190,8 @@ public class PrintController {
         addRow4IfNotNull(table, "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No", "Jali", nvl(m.getJali()));
 
         doc.add(table);
-        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+        // No spacing after Design section since notes follow immediately
     }
-
-    // === Notes Section ===
-    private void addNotesSection(Document doc, String note) throws DocumentException {
-        Paragraph heading = new Paragraph("Notes:",
-                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7));
-        heading.setSpacingBefore(3f);
-        doc.add(heading);
-
-        PdfPCell cell = new PdfPCell(new Phrase(nvl(note), FontFactory.getFont(FontFactory.HELVETICA, 6)));
-        cell.setFixedHeight(15f); // roughly 3 lines
-        cell.setVerticalAlignment(Element.ALIGN_TOP);
-        cell.setPadding(4f);
-        cell.setBorder(Rectangle.NO_BORDER); // ✅ remove all borders
-
-        PdfPTable noteTable = new PdfPTable(1);
-        noteTable.setWidthPercentage(100);
-        noteTable.addCell(cell);
-        noteTable.getDefaultCell().setBorder(Rectangle.NO_BORDER); // ensure table has no border too
-
-        doc.add(noteTable);
-    }
-
 
     // === Helpers ===
     private PdfPTable createSectionTable(String title) throws DocumentException {
@@ -204,11 +201,11 @@ public class PrintController {
         table.setWidths(new float[]{30f, 15f, 30f, 15f});
 
         PdfPCell headingCell = new PdfPCell(
-                new Phrase(title, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+                new Phrase(title, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, Color.WHITE))); // increased from 7 to 7.5
         headingCell.setBackgroundColor(Color.DARK_GRAY);
         headingCell.setColspan(4);
         headingCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        headingCell.setPadding(2f);
+        headingCell.setPadding(2f); // increased from 1.5f to 2f
         table.addCell(headingCell);
 
         return table;
@@ -252,19 +249,19 @@ public class PrintController {
 
     private PdfPCell makeLabelCell(String text) {
         PdfPCell cell = new PdfPCell(new Phrase(text,
-                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 6)));
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f))); // increased from 7 to 7.5
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-        cell.setPadding(3f); // increased for more readable rows
+        cell.setPadding(3f); // increased from 2.5f
         return cell;
     }
 
     private PdfPCell makeValueCell(String text) {
         PdfPCell cell = new PdfPCell(new Phrase(nvl(text),
-                FontFactory.getFont(FontFactory.HELVETICA, 7)));
+                FontFactory.getFont(FontFactory.HELVETICA, 8.5f))); // increased from 8 to 8.5
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);   // center horizontally
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);     // center vertically
-        cell.setPadding(1.5f);
+        cell.setPadding(2f); // increased from 1.5f
         return cell;
     }
 
@@ -332,24 +329,44 @@ public class PrintController {
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
-        Document document = new Document(slipSize, 15, 15, 25, 20); // extra bottom margin for footer
+        Document document = new Document(slipSize, 15, 15, 3, 20); // consistent with dress measurements
         String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
-        writer.setPageEvent(new FooterHandler(now)); // attach footer handler
+        writer.setPageEvent(new FooterHandler(waistcoatMeasurements.getNotes())); // pass notes to footer
         document.open();
 
-        // === Title ===
-        Paragraph title = new Paragraph(nvl(client.getName()),
-                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10));
-        title.setAlignment(Element.ALIGN_CENTER);
-        document.add(title);
+        // === Header: Name (center) and Print Date (right) on same line ===
+        PdfPTable headerTable = new PdfPTable(3);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new float[]{30f, 40f, 30f});
 
-        document.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+        // Left: empty
+        PdfPCell leftCell = new PdfPCell(new Phrase(""));
+        leftCell.setBorder(Rectangle.NO_BORDER);
+        headerTable.addCell(leftCell);
+
+        // Center: Name
+        PdfPCell nameCell = new PdfPCell(new Phrase(nvl(client.getName()),
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+        nameCell.setBorder(Rectangle.NO_BORDER);
+        nameCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        nameCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(nameCell);
+
+        // Right: Print date
+        PdfPCell dateCell = new PdfPCell(new Phrase("Printed: " + now,
+                FontFactory.getFont(FontFactory.HELVETICA, 6)));
+        dateCell.setBorder(Rectangle.NO_BORDER);
+        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(dateCell);
+
+        headerTable.setSpacingAfter(1.5f);
+        document.add(headerTable);
 
         // === Measurements ===
             addWaistcoatSection(document, waistcoatMeasurements);
-            addNotesSection(document, waistcoatMeasurements.getNotes());
 
         document.close();
     }
