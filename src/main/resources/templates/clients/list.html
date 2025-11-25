@@ -175,11 +175,22 @@
     const captureBtn = document.getElementById('captureBtn');
     let stream = null;
 
+    // Passport size dimensions (3:4 ratio) - 600x800 pixels
+    const PASSPORT_WIDTH = 600;
+    const PASSPORT_HEIGHT = 800;
+
     startCamBtn.addEventListener('click', async () => {
       cameraContainer.style.display = 'block';
       if (!stream) {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          // Use front camera (facingMode: "user")
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user",
+              width: { ideal: PASSPORT_WIDTH },
+              height: { ideal: PASSPORT_HEIGHT }
+            }
+          });
           video.srcObject = stream;
         } catch (err) {
           alert('Error accessing camera: ' + err.message);
@@ -188,10 +199,38 @@
     });
 
     captureBtn.addEventListener('click', () => {
+      // Set canvas to passport size
+      canvas.width = PASSPORT_WIDTH;
+      canvas.height = PASSPORT_HEIGHT;
+
       const context = canvas.getContext('2d');
       canvas.style.display = 'block';
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/png');
+
+      // Calculate dimensions to fit video into passport size (crop to center)
+      const videoAspect = video.videoWidth / video.videoHeight;
+      const passportAspect = PASSPORT_WIDTH / PASSPORT_HEIGHT;
+
+      let sx, sy, sWidth, sHeight;
+
+      if (videoAspect > passportAspect) {
+        // Video is wider - crop sides
+        sHeight = video.videoHeight;
+        sWidth = video.videoHeight * passportAspect;
+        sx = (video.videoWidth - sWidth) / 2;
+        sy = 0;
+      } else {
+        // Video is taller - crop top/bottom
+        sWidth = video.videoWidth;
+        sHeight = video.videoWidth / passportAspect;
+        sx = 0;
+        sy = (video.videoHeight - sHeight) / 2;
+      }
+
+      // Draw cropped and resized image
+      context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, PASSPORT_WIDTH, PASSPORT_HEIGHT);
+
+      // Convert to data URL with compression
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       imageData.value = dataUrl;
 
       // Stop camera after capture

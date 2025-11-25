@@ -436,6 +436,16 @@ td img, th img {
   object-fit: contain;
 }
 
+/* Passport size photo in client list table */
+table tbody td img {
+  width: 75px;
+  height: 100px;
+  object-fit: cover;
+  object-position: center;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
 /* Slightly smaller top padding for images in sections */
 .section-title img {
   height: 48px;
