@@ -70,6 +70,7 @@ public class DressMeasurement {
     Integer withCollar;
     Integer withBain;
     Integer withDesign;
+    Integer withPajama;
 
     @ManyToOne(fetch = FetchType.LAZY)
     Client client;

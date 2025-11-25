@@ -190,6 +190,7 @@
               <tr><th>With collar</th><td th:text="${m.withCollar}"></td></tr>
               <tr><th>With bain</th><td th:text="${m.withBain}"></td></tr>
               <tr><th>With design</th><td th:text="${m.withDesign}"></td></tr>
+              <tr><th>With pajama</th><td th:text="${m.withPajama}"></td></tr>
             </table>
           </div>
 
@@ -246,13 +247,13 @@
 
     <!-- Section: Pajama -->
     <div class="section-title">Pajama Measurements</div>
-    <div><label>Pajama Asan:</label><input type="text" th:field="*{pajamaAsan}"/></div>
-    <div><label>Pajama Length:</label><input type="text" th:field="*{pajamaLength}"/></div>
+    <div><label>Asan:</label><input type="text" th:field="*{pajamaAsan}"/></div>
+    <div><label>Length:</label><input type="text" th:field="*{pajamaLength}"/></div>
     <div><label>Upper Fitting:</label><input type="text" th:field="*{upperFitting}"/></div>
     <div><label>Middle Fitting:</label><input type="text" th:field="*{middleFitting}"/></div>
     <div><label>Lower Fitting:</label><input type="text" th:field="*{lowerFitting}"/></div>
     <div>
-      <label>Pajama Pocket:</label>
+      <label>Pocket:</label>
       <select th:field="*{pajamaPocket}">
         <option value="No">No</option>
         <option value="1">1</option>
@@ -436,6 +437,18 @@
     <div>
       <label>With design:</label>
       <select th:field="*{withDesign}">
+        <option value=0>0</option>
+        <option value=1>1</option><option value=2>2</option>
+        <option value=3>3</option><option value=4>4</option>
+        <option value=5>5</option><option value=6>6</option>
+        <option value=7>7</option><option value=8>8</option>
+        <option value=9>9</option><option value=10>10</option>
+      </select>
+    </div>
+
+    <div>
+      <label>With pajama:</label>
+      <select th:field="*{withPajama}">
         <option value=0>0</option>
         <option value=1>1</option><option value=2>2</option>
         <option value=3>3</option><option value=4>4</option>
