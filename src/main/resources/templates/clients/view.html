@@ -213,8 +213,12 @@
     <div><label>Cuff Width:</label><input type="text" th:field="*{cuffWidth}"/></div>
     <div><label>Terra:</label><input type="text" th:field="*{terra}" required/></div>
     <div><label>Terra Down:</label><input type="text" th:field="*{terraDown}"/></div>
-    <div><label>Collar Size:</label><input type="text" th:field="*{collarSize}"/></div>
-    <div><label>Bain Size:</label><input type="text" th:field="*{bainSize}" required/></div>
+    <div><label>Collar Size:</label><input type="text" th:field="*{collarSize}" id="collarSize"/></div>
+    <div><label>Bain Size:</label><input type="text" th:field="*{bainSize}" id="bainSize"/></div>
+    <!-- Inline error message for Collar/Bain validation -->
+    <div id="collarBainError"
+         style="grid-column: span 8; color: #dc3545; font-weight:600; display:none; font-size:14px; padding-top:6px;">
+    </div>
     <div><label>Chest:</label><input type="text" th:field="*{chest}" required/></div>
     <div><label>Chest Fitting:</label><input type="text" th:field="*{chestFitting}"/></div>
     <div><label>Waist:</label><input type="text" th:field="*{waist}" required/></div>
@@ -850,7 +854,49 @@
   });
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const collarSize = document.getElementById("collarSize");
+    const bainSize = document.getElementById("bainSize");
+    const collarBainError = document.getElementById("collarBainError");
+    const form = document.getElementById("measurementForm");
 
+    if (!collarSize || !bainSize || !form) return;
+
+    function validateCollarBain() {
+      const collarValue = (collarSize.value || "").trim();
+      const bainValue = (bainSize.value || "").trim();
+
+      // Check if at least one is filled
+      if (collarValue === "" && bainValue === "") {
+        collarBainError.textContent = "❌ Please fill at least one: Collar Size or Bain Size";
+        collarBainError.style.display = "block";
+        collarSize.classList.add("invalid");
+        bainSize.classList.add("invalid");
+        return false;
+      } else {
+        collarBainError.style.display = "none";
+        collarBainError.textContent = "";
+        collarSize.classList.remove("invalid");
+        bainSize.classList.remove("invalid");
+        return true;
+      }
+    }
+
+    // Live validation as user types
+    collarSize.addEventListener("input", validateCollarBain);
+    bainSize.addEventListener("input", validateCollarBain);
+
+    // Validate on form submit
+    form.addEventListener("submit", function (e) {
+      if (!validateCollarBain()) {
+        e.preventDefault();
+        // Scroll to error for better UX
+        collarBainError.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
