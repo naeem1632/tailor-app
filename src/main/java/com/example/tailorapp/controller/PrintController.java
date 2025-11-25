@@ -100,6 +100,7 @@ public class PrintController {
         // === Measurements ===
             addKameezSection(document, dressMeasurement);
             addShalwarSection(document, dressMeasurement);
+            addPajamaSection(document, dressMeasurement);
             addDesignSection(document, dressMeasurement);
             addNotesSection(document, dressMeasurement.getNotes());
 
@@ -138,6 +139,18 @@ public class PrintController {
 
         addRow4IfNotNull(table, "Length", nvl(m.getShalwarLength()),  "Fitting", nvl(m.getShalwarFitting()));
         addRow4IfNotNull(table,"Asan", nvl(m.getAsan()), "Payncha", nvl(m.getPayncha()));
+
+        doc.add(table);
+        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+    }
+
+    // === Pajama Section ===
+    private void addPajamaSection(Document doc, DressMeasurement m) throws DocumentException {
+        PdfPTable table = createSectionTable("Pajama Measurements");
+
+        addRow4IfNotNull(table, "Pajama Asan", nvl(m.getPajamaAsan()), "Pajama Length", nvl(m.getPajamaLength()));
+        addRow4IfNotNull(table, "Upper Fitting", nvl(m.getUpperFitting()), "Middle Fitting", nvl(m.getMiddleFitting()));
+        addRow4IfNotNull(table, "Lower Fitting", nvl(m.getLowerFitting()), "Pajama Pocket", nvl(m.getPajamaPocket()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 4)));

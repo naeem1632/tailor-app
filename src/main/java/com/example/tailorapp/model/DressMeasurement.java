@@ -51,6 +51,14 @@ public class DressMeasurement {
     Boolean kanta; // yes, no
     Boolean shalwarPocket;
 
+    // Pajama Measurements
+    Double pajamaAsan;
+    Double pajamaLength;
+    Double upperFitting;
+    Double middleFitting;
+    Double lowerFitting;
+    String pajamaPocket; // No, 1, 2
+
     String stitchType; // single, double, simple
     Boolean designStitch;
     String buttonType; // plan, metal, touch
