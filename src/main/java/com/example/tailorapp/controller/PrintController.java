@@ -3,9 +3,11 @@ package com.example.tailorapp.controller;
 import com.example.tailorapp.config.AppConstants;
 import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
+import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.model.WaistcoatMeasurement;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.MeasurementService;
+import com.example.tailorapp.service.PaymentsService;
 import com.example.tailorapp.service.StorageProperties;
 import com.example.tailorapp.service.WaistcoatService;
 import com.lowagie.text.*;
@@ -37,14 +39,18 @@ public class PrintController {
     private final MeasurementService measurementService;
     private final StorageProperties storageProperties;
     private final WaistcoatService waistcoatService;
+    private final PaymentsService paymentsService;
 
     public PrintController(ClientService clientService,
                            MeasurementService measurementService,
-                           StorageProperties storageProperties, WaistcoatService waistcoatService) {
+                           StorageProperties storageProperties,
+                           WaistcoatService waistcoatService,
+                           PaymentsService paymentsService) {
         this.clientService = clientService;
         this.measurementService = measurementService;
         this.storageProperties = storageProperties;
         this.waistcoatService = waistcoatService;
+        this.paymentsService = paymentsService;
     }
 
     // Print PDF
@@ -63,15 +69,23 @@ public class PrintController {
 
         DressMeasurement dressMeasurement = latestMeasurement.get();
 
+        // Get latest payment with return date (where status is not "returned" and returnDate is not null)
+        Optional<Payments> latestPaymentWithReturnDate = paymentsService.findByClient(id).stream()
+                .filter(p -> p.getReturnDate() != null && !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .max(Comparator.comparing(Payments::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
-        Document document = new Document(slipSize, 15, 15, 3, 20); // reduced top margin from 5 to 3
+        Document document = new Document(slipSize, 15, 15, 10, 15); // balanced margins for single page printing
         String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
-        writer.setPageEvent(new FooterHandler(dressMeasurement.getNotes())); // pass notes to footer
+        writer.setPageEvent(new FooterHandler(
+                dressMeasurement.getNotes(),
+                latestPaymentWithReturnDate.map(Payments::getReturnDate).orElse(null)
+        )); // pass notes and return date to footer
         document.open();
 
         // === Header: Name (center) and Print Date (right) on same line ===
@@ -120,7 +134,12 @@ public class PrintController {
         // === Measurements ===
             addKameezSection(document, dressMeasurement);
             addShalwarSection(document, dressMeasurement);
-            addPajamaSection(document, dressMeasurement);
+
+            // Only add Pajama section if at least one pajama field has data
+            if (hasPajamaData(dressMeasurement)) {
+                addPajamaSection(document, dressMeasurement);
+            }
+
             addDesignSection(document, dressMeasurement);
 
         document.close();
@@ -325,15 +344,23 @@ public class PrintController {
 
         WaistcoatMeasurement waistcoatMeasurements = latestMeasurement.get();
 
+        // Get latest payment with return date (where status is not "returned" and returnDate is not null)
+        Optional<Payments> latestPaymentWithReturnDate = paymentsService.findByClient(id).stream()
+                .filter(p -> p.getReturnDate() != null && !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .max(Comparator.comparing(Payments::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
         Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
-        Document document = new Document(slipSize, 15, 15, 3, 20); // consistent with dress measurements
+        Document document = new Document(slipSize, 15, 15, 10, 15); // balanced margins for single page printing
         String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
         PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
-        writer.setPageEvent(new FooterHandler(waistcoatMeasurements.getNotes())); // pass notes to footer
+        writer.setPageEvent(new FooterHandler(
+                waistcoatMeasurements.getNotes(),
+                latestPaymentWithReturnDate.map(Payments::getReturnDate).orElse(null)
+        )); // pass notes and return date to footer
         document.open();
 
         // === Header: Name (center) and Print Date (right) on same line ===
@@ -403,6 +430,16 @@ public class PrintController {
         if (value == null || value.isEmpty()) return;
         table.addCell(makeLabelCell(label));
         table.addCell(makeValueCell(value));
+    }
+
+    // Helper method to check if any pajama field has data
+    private boolean hasPajamaData(DressMeasurement m) {
+        return (m.getPajamaAsan() != null && !m.getPajamaAsan().toString().trim().isEmpty()) ||
+               (m.getPajamaLength() != null && !m.getPajamaLength().toString().trim().isEmpty()) ||
+               (m.getUpperFitting() != null && !m.getUpperFitting().toString().trim().isEmpty()) ||
+               (m.getMiddleFitting() != null && !m.getMiddleFitting().toString().trim().isEmpty()) ||
+               (m.getLowerFitting() != null && !m.getLowerFitting().toString().trim().isEmpty()) ||
+               (m.getPajamaPocket() != null && !m.getPajamaPocket().toString().trim().isEmpty());
     }
 
 }

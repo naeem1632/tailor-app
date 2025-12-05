@@ -32,11 +32,17 @@ public class Payments {
     String returnStatus; // returned, Not yet
     String notes;
 
-    // Button Type fields
-    String buttonType; // Plan, Matel, Tich
-    Long buttonAmount;
+    // Button fields (Matel and Tich)
+    Long matelAmount;
     Integer withMatel;
+    Long tichAmount;
     Integer withTich;
+
+    // Kanta and Jali fields
+    Long kantaAmount;
+    Integer withKanta;
+    Long jaliAmount;
+    Integer withJali;
 
     @ManyToOne(fetch = FetchType.LAZY)
     Client client;

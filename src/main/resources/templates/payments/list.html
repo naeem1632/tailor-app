@@ -33,8 +33,11 @@
         <th>Date</th>
         <th>Dress</th>
         <th>Waistcoat</th>
+        <th>Matel</th>
+        <th>Tich</th>
+        <th>Kanta</th>
+        <th>Jali</th>
         <th>Total</th>
-        <th>Total Paid</th>
         <th>Remaining</th>
         <th>Status</th>
         <th>Return Date</th>
@@ -58,8 +61,19 @@
             <td th:text="${(p.waistcoatCount != null or p.waistcoatRate != null)
                 ? p.waistcoatCount + ' @ ' + p.waistcoatRate
                 : ''}"></td>
+            <td th:text="${(p.withMatel != null and p.matelAmount != null)
+                ? p.withMatel + ' @ ' + p.matelAmount
+                : ''}"></td>
+            <td th:text="${(p.withTich != null and p.tichAmount != null)
+                ? p.withTich + ' @ ' + p.tichAmount
+                : ''}"></td>
+            <td th:text="${(p.withKanta != null and p.kantaAmount != null)
+                ? p.withKanta + ' @ ' + p.kantaAmount
+                : ''}"></td>
+            <td th:text="${(p.withJali != null and p.jaliAmount != null)
+                ? p.withJali + ' @ ' + p.jaliAmount
+                : ''}"></td>
             <td th:text="${p.totalAmount}"></td>
-            <td th:text="${p.paidAmount}"></td>
             <td th:text="${p.remainingAmount}"></td>
             <td th:text="${p.paymentStatus}"
                 th:style="${p.paymentStatus == 'Paid' ? 'color:green;' :
@@ -75,8 +89,10 @@
                             data-total=${p.totalAmount}, data-remaining=${p.remainingAmount},
                             data-status=${p.paymentStatus}, data-returndate=${p.returnDate},
                             data-returnstatus=${p.returnStatus}, data-notes=${p.notes},
-                            data-buttontype=${p.buttonType}, data-buttonamount=${p.buttonAmount},
-                            data-withmatel=${p.withMatel}, data-withtich=${p.withTich}"
+                            data-matelamount=${p.matelAmount}, data-withmatel=${p.withMatel},
+                            data-tichamount=${p.tichAmount}, data-withtich=${p.withTich},
+                            data-kantaamount=${p.kantaAmount}, data-withkanta=${p.withKanta},
+                            data-jaliamount=${p.jaliAmount}, data-withjali=${p.withJali}"
                    onclick="openModalFromRow(this)">Edit</a>
 
                 <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete" data-type="payment">Delete</a>
@@ -89,7 +105,7 @@
 
         <!-- ✅ Installments Table -->
         <tr th:id="'installments-' + ${p.id}" class="installment-row" style="display:none;">
-            <td colspan="12">
+            <td colspan="15">
                 <table class="installments-table">
                     <thead>
                     <tr><th>Date</th><th>Paid Amount</th><th>Note</th><th>Actions</th></tr>
@@ -145,10 +161,41 @@
                 <tr>
                     <th>Waistcoat Qty</th><td><input type="number" name="waistcoatCount" id="waistcoatCount"/></td>
                     <th>Waistcoat Rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
-                    <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
                 </tr>
                 <tr>
+                    <th>With Matel</th>
+                    <td><input type="number" name="withMatel" id="withMatel" onchange="calculateTotals()"/></td>
+                    <th>Matel Amount</th>
+                    <td><input type="number" name="matelAmount" id="matelAmount" onchange="calculateTotals()"/></td>
+                </tr>
+                <tr>
+                    <th>With Tich</th>
+                    <td><input type="number" name="withTich" id="withTich" onchange="calculateTotals()"/></td>
+                    <th>Tich Amount</th>
+                    <td><input type="number" name="tichAmount" id="tichAmount" onchange="calculateTotals()"/></td>
+                </tr>
+                <tr>
+                    <th>With Kanta</th>
+                    <td><input type="number" name="withKanta" id="withKanta" onchange="calculateTotals()"/></td>
+                    <th>Kanta Amount</th>
+                    <td><input type="number" name="kantaAmount" id="kantaAmount" onchange="calculateTotals()"/></td>
+                </tr>
+                <tr>
+                    <th>With Jali</th>
+                    <td><input type="number" name="withJali" id="withJali" onchange="calculateTotals()"/></td>
+                    <th>Jali Amount</th>
+                    <td><input type="number" name="jaliAmount" id="jaliAmount" onchange="calculateTotals()"/></td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        <div id="buttonCountError" style="color: #dc3545; font-weight:600; display:none; font-size:14px; padding-top:6px;"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
                     <th>Remaining</th><td><input type="number" name="remainingAmount" id="remainingAmount" readonly/></td>
+                </tr>
+                <tr>
                     <th>Status</th>
                     <td>
                         <select name="paymentStatus" id="paymentStatus">
@@ -157,33 +204,9 @@
                             <option value="Paid">Paid</option>
                         </select>
                     </td>
-                </tr>
-                <tr>
-                    <th>Button Type</th>
-                    <td>
-                        <select name="buttonType" id="buttonType" onchange="toggleButtonFields()">
-                            <option value="Plan">Plan</option>
-                            <option value="Matel">Matel</option>
-                            <option value="Tich">Tich</option>
-                        </select>
-                    </td>
-                    <th id="buttonAmountLabel" style="display:none;">Button Amount</th>
-                    <td id="buttonAmountField" style="display:none;">
-                        <input type="number" name="buttonAmount" id="buttonAmount" onchange="calculateTotals()"/>
-                    </td>
-                </tr>
-                <tr id="buttonCountRow" style="display:none;">
-                    <th id="buttonCountLabel">Dress with <span id="buttonCountType">Matel</span></th>
-                    <td>
-                        <input type="number" name="withMatel" id="withMatel" style="display:none;" onchange="calculateTotals()"/>
-                        <input type="number" name="withTich" id="withTich" style="display:none;" onchange="calculateTotals()"/>
-                    </td>
-                    <td colspan="4">
-                        <div id="buttonCountError" style="color: #dc3545; font-weight:600; display:none; font-size:14px; padding-top:6px;"></div>
-                    </td>
-                </tr>
-                <tr>
                     <th>Return Date</th><td><input type="date" name="returnDate" id="returnDate" required/></td>
+                </tr>
+                <tr>
                     <th>Return Status</th>
                     <td>
                         <select name="returnStatus" id="returnStatus">
@@ -302,14 +325,15 @@
             document.getElementById("returnStatus").value = el.dataset.returnstatus;
             document.getElementById("notes").value = el.dataset.notes;
 
-            // Populate button type fields
-            document.getElementById("buttonType").value = el.dataset.buttontype || "Plan";
-            document.getElementById("buttonAmount").value = el.dataset.buttonamount || "";
+            // Populate all button/embellishment fields
+            document.getElementById("matelAmount").value = el.dataset.matelamount || "";
             document.getElementById("withMatel").value = el.dataset.withmatel || "";
+            document.getElementById("tichAmount").value = el.dataset.tichamount || "";
             document.getElementById("withTich").value = el.dataset.withtich || "";
-
-            // Trigger field visibility based on button type
-            toggleButtonFields();
+            document.getElementById("kantaAmount").value = el.dataset.kantaamount || "";
+            document.getElementById("withKanta").value = el.dataset.withkanta || "";
+            document.getElementById("jaliAmount").value = el.dataset.jaliamount || "";
+            document.getElementById("withJali").value = el.dataset.withjali || "";
         }
 
         function clearPaymentForm() {
@@ -363,20 +387,25 @@
             // Calculate dress and waistcoat totals
             let total = (dCount * dRate) + (wCount * wRate);
 
-            // Add button cost if applicable
-            const buttonType = document.getElementById("buttonType").value;
-            if (buttonType !== "Plan") {
-                const buttonAmount = parseFloat(document.getElementById("buttonAmount").value) || 0;
-                let buttonCount = 0;
+            // Add Matel cost
+            const matelAmount = parseFloat(document.getElementById("matelAmount").value) || 0;
+            const withMatel = parseFloat(document.getElementById("withMatel").value) || 0;
+            total += (matelAmount * withMatel);
 
-                if (buttonType === "Matel") {
-                    buttonCount = parseFloat(document.getElementById("withMatel").value) || 0;
-                } else if (buttonType === "Tich") {
-                    buttonCount = parseFloat(document.getElementById("withTich").value) || 0;
-                }
+            // Add Tich cost
+            const tichAmount = parseFloat(document.getElementById("tichAmount").value) || 0;
+            const withTich = parseFloat(document.getElementById("withTich").value) || 0;
+            total += (tichAmount * withTich);
 
-                total += (buttonCount * buttonAmount);
-            }
+            // Add Kanta cost
+            const kantaAmount = parseFloat(document.getElementById("kantaAmount").value) || 0;
+            const withKanta = parseFloat(document.getElementById("withKanta").value) || 0;
+            total += (kantaAmount * withKanta);
+
+            // Add Jali cost
+            const jaliAmount = parseFloat(document.getElementById("jaliAmount").value) || 0;
+            const withJali = parseFloat(document.getElementById("withJali").value) || 0;
+            total += (jaliAmount * withJali);
 
             document.getElementById("totalAmount").value = total;
             document.getElementById("remainingAmount").value = total;
@@ -426,27 +455,51 @@
             const dCount = parseFloat(dressCount.value) || 0;
             const withMatel = parseFloat(document.getElementById("withMatel").value) || 0;
             const withTich = parseFloat(document.getElementById("withTich").value) || 0;
-            const totalButtonCount = withMatel + withTich;
+            const withKanta = parseFloat(document.getElementById("withKanta").value) || 0;
+            const withJali = parseFloat(document.getElementById("withJali").value) || 0;
             const errorDiv = document.getElementById("buttonCountError");
 
-            if (totalButtonCount > dCount) {
-                errorDiv.textContent = "Error: Total button count (With Matel + With Tich) cannot exceed total dress count!";
+            // Validate: (Matel + Tich) combined should not exceed dress count
+            const buttonTotal = withMatel + withTich;
+            if (buttonTotal > dCount) {
+                errorDiv.textContent = "Error: Total button count (With Matel + With Tich) cannot exceed dress count!";
                 errorDiv.style.display = "block";
-                // Scroll to error for better UX
                 errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
                 return false;
             }
+
+            // Validate: Kanta alone should not exceed dress count
+            if (withKanta > dCount) {
+                errorDiv.textContent = "Error: With Kanta cannot exceed dress count!";
+                errorDiv.style.display = "block";
+                errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+                return false;
+            }
+
+            // Validate: Jali alone should not exceed dress count
+            if (withJali > dCount) {
+                errorDiv.textContent = "Error: With Jali cannot exceed dress count!";
+                errorDiv.style.display = "block";
+                errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+                return false;
+            }
+
             errorDiv.style.display = "none";
             errorDiv.textContent = "";
             return true;
         }
 
-        [dressCount, dressRate, waistcoatCount, waistcoatRate].forEach(el => {
+        [dressCount, dressRate, waistcoatCount, waistcoatRate,
+         document.getElementById("matelAmount"), document.getElementById("withMatel"),
+         document.getElementById("tichAmount"), document.getElementById("withTich"),
+         document.getElementById("kantaAmount"), document.getElementById("withKanta"),
+         document.getElementById("jaliAmount"), document.getElementById("withJali")].forEach(el => {
             el.addEventListener("input", calculateTotals);
         });
 
-        // Live validation for button count fields
-        [document.getElementById("withMatel"), document.getElementById("withTich"), dressCount].forEach(el => {
+        // Live validation for embellishment count fields
+        [document.getElementById("withMatel"), document.getElementById("withTich"),
+         document.getElementById("withKanta"), document.getElementById("withJali"), dressCount].forEach(el => {
             el.addEventListener("input", validateButtonCount);
         });
 

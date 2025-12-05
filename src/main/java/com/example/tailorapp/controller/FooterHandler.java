@@ -6,12 +6,18 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 // === Page Event Helper ===
 class FooterHandler extends PdfPageEventHelper {
     private final String note;
+    private final LocalDate returnDate;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yy");
 
-    public FooterHandler(String note) {
+    public FooterHandler(String note, LocalDate returnDate) {
         this.note = note;
+        this.returnDate = returnDate;
     }
 
     @Override
@@ -36,17 +42,20 @@ class FooterHandler extends PdfPageEventHelper {
             leftCell.setVerticalAlignment(Element.ALIGN_TOP);
             footer.addCell(leftCell);
 
-            // Right: Return date line
-            PdfPCell rightCell = new PdfPCell(new Phrase("Return Date: __________",
+            // Right: Return date line (show actual date if available, otherwise blank line)
+            String returnDateText = returnDate != null
+                    ? "Return Date: " + returnDate.format(DATE_FORMATTER)
+                    : "Return Date: __________";
+            PdfPCell rightCell = new PdfPCell(new Phrase(returnDateText,
                     FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7)));
             rightCell.setBorder(Rectangle.NO_BORDER);
             rightCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
             footer.addCell(rightCell);
 
-            // Write at fixed position (bottom margin)
+            // Write at fixed position (positioned to avoid printer cutoff while fitting on single page)
             footer.writeSelectedRows(0, -1,
                     document.leftMargin(),
-                    document.bottomMargin() - 2, // just above bottom margin
+                    document.bottomMargin() + 5, // balanced position for single page printing
                     writer.getDirectContent());
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);

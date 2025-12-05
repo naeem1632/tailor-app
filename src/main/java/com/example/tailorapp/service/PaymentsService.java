@@ -45,7 +45,7 @@ public class PaymentsService {
         paymentsRepository.save(payment);
     }
 
-    // ✅ Calculate total amount including button costs
+    // ✅ Calculate total amount including button, kanta, and jali costs
     public void calculateTotalAmount(Payments payment) {
         long dressTotal = (payment.getDressCount() != null ? payment.getDressCount() : 0) *
                          (payment.getDressRate() != null ? payment.getDressRate() : 0);
@@ -53,20 +53,31 @@ public class PaymentsService {
         long waistcoatTotal = (payment.getWaistcoatCount() != null ? payment.getWaistcoatCount() : 0) *
                              (payment.getWaistcoatRate() != null ? payment.getWaistcoatRate() : 0);
 
-        long buttonTotal = 0;
-        if (payment.getButtonType() != null && !"Plan".equalsIgnoreCase(payment.getButtonType())) {
-            long buttonAmount = payment.getButtonAmount() != null ? payment.getButtonAmount() : 0;
-
-            if ("Matel".equalsIgnoreCase(payment.getButtonType())) {
-                int withMatel = payment.getWithMatel() != null ? payment.getWithMatel() : 0;
-                buttonTotal = withMatel * buttonAmount;
-            } else if ("Tich".equalsIgnoreCase(payment.getButtonType())) {
-                int withTich = payment.getWithTich() != null ? payment.getWithTich() : 0;
-                buttonTotal = withTich * buttonAmount;
-            }
+        // Calculate Matel button total
+        long matelTotal = 0;
+        if (payment.getMatelAmount() != null && payment.getWithMatel() != null) {
+            matelTotal = payment.getWithMatel() * payment.getMatelAmount();
         }
 
-        payment.setTotalAmount(dressTotal + waistcoatTotal + buttonTotal);
+        // Calculate Tich button total
+        long tichTotal = 0;
+        if (payment.getTichAmount() != null && payment.getWithTich() != null) {
+            tichTotal = payment.getWithTich() * payment.getTichAmount();
+        }
+
+        // Calculate Kanta total
+        long kantaTotal = 0;
+        if (payment.getKantaAmount() != null && payment.getWithKanta() != null) {
+            kantaTotal = payment.getWithKanta() * payment.getKantaAmount();
+        }
+
+        // Calculate Jali total
+        long jaliTotal = 0;
+        if (payment.getJaliAmount() != null && payment.getWithJali() != null) {
+            jaliTotal = payment.getWithJali() * payment.getJaliAmount();
+        }
+
+        payment.setTotalAmount(dressTotal + waistcoatTotal + matelTotal + tichTotal + kantaTotal + jaliTotal);
     }
 
     // ✅ Central total syncing method
