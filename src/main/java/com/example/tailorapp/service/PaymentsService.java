@@ -26,6 +26,10 @@ public class PaymentsService {
         return paymentsRepository.findByClientId(clientId);
     }
 
+    public List<Payments> findAll() {
+        return paymentsRepository.findAll();
+    }
+
     public Optional<Payments> findById(Long id) {
         return paymentsRepository.findById(id);
     }
@@ -132,5 +136,38 @@ public class PaymentsService {
         syncTotals(parent);
         paymentsRepository.save(parent);
         return Optional.of(parent);
+    }
+
+    // ✅ Dashboard helper methods
+
+    // Count active orders (not returned)
+    public long countActiveOrders() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getReturnStatus() == null || !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .count();
+    }
+
+    // Sum all pending payment amounts
+    public long sumPendingPayments() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getRemainingAmount() != null && p.getRemainingAmount() > 0)
+                .mapToLong(Payments::getRemainingAmount)
+                .sum();
+    }
+
+    // Count orders due for return (overdue + within 7 days)
+    public long countDueReturns() {
+        LocalDate today = LocalDate.now();
+        LocalDate sevenDaysLater = today.plusDays(7);
+
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getReturnDate() != null)
+                .filter(p -> p.getReturnStatus() == null || !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> {
+                    LocalDate returnDate = p.getReturnDate();
+                    // Include both overdue (< today) and upcoming 7 days (<= sevenDaysLater)
+                    return !returnDate.isAfter(sevenDaysLater);
+                })
+                .count();
     }
 }

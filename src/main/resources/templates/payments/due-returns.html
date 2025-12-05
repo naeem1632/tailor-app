@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Due Returns - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .due-badge {
+            background-color: #17a2b8;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .urgent {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Include Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 20px;">
+
+<h1><i class="fas fa-calendar-check"></i> Orders Due for Return (Overdue & Next 7 Days)</h1>
+
+<div class="toolbar-3">
+    <div class="toolbar-left">
+        <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+
+<!-- Due Returns Table -->
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Client Name</th>
+        <th>Phone</th>
+        <th>Dress Count</th>
+        <th>Waistcoat Count</th>
+        <th>Return Date</th>
+        <th>Return Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="payment : ${payments}">
+        <td th:text="${payment.id}"></td>
+        <td th:text="${payment.client.name}"></td>
+        <td th:text="${payment.client.mobile}"></td>
+        <td>
+            <span th:if="${payment.dressCount != null and payment.dressCount > 0}"
+                  th:text="${payment.dressCount}"
+                  class="badge bg-primary"></span>
+            <span th:unless="${payment.dressCount != null and payment.dressCount > 0}"
+                  style="color: #6c757d;">-</span>
+        </td>
+        <td>
+            <span th:if="${payment.waistcoatCount != null and payment.waistcoatCount > 0}"
+                  th:text="${payment.waistcoatCount}"
+                  class="badge bg-success"></span>
+            <span th:unless="${payment.waistcoatCount != null and payment.waistcoatCount > 0}"
+                  style="color: #6c757d;">-</span>
+        </td>
+        <td>
+            <span class="due-badge"
+                  th:classappend="${payment.returnDate.isBefore(T(java.time.LocalDate).now()) ? 'urgent' : ''}"
+                  th:text="${#temporals.format(payment.returnDate, 'dd-MMM-yyyy')}">
+            </span>
+        </td>
+        <td th:text="${payment.returnStatus ?: 'Not Yet'}"
+            th:style="${'returned'.equalsIgnoreCase(payment.returnStatus) ? 'color:green; font-weight:600;' : 'color:#ff9800; font-weight:600;'}"></td>
+        <td>
+            <a th:href="@{'/clients/details/' + ${payment.client.id}}" class="btn-action btn-measure">
+                View Client
+            </a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(payments)}">
+        <td colspan="8" style="text-align: center; color: #6c757d; padding: 30px;">
+            <i class="fas fa-check-circle" style="font-size: 3rem; color: #28a745;"></i><br>
+            <strong>No overdue or upcoming orders due for return!</strong>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</div><!-- Close container-fluid -->
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

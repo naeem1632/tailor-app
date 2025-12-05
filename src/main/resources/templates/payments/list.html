@@ -4,18 +4,18 @@
     <title>Client Payments - Stitch & Style</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-    <!-- Master stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 
 <body>
-<header class="site-header">
-    <div class="logo-container">
-        <span class="logo-text">Stitch & Style</span>
-    </div>
-</header>
+
+<!-- Include Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 20px;">
 
 <h1 th:text="'Payments & Schedule for ' + ${client.name}"></h1>
 
@@ -559,5 +559,8 @@
         });
 </script>
 
+</div><!-- Close container-fluid -->
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

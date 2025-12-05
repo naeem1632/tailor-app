@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Navbar Fragment (includes nav, modal, and script) -->
+<div th:fragment="navbar">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="fas fa-cut"></i> Stitch & Style</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clients">
+                            <i class="fas fa-users"></i> Clients
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="openReportModalGlobal(); return false;">Client Payment Report</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Global Report Modal (Available on all pages with navbar) -->
+    <div id="globalReportModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
+        <div style="background-color:#fff; margin:10% auto; padding:30px; width:400px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+            <span onclick="closeReportModalGlobal()" style="float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+            <h3 style="text-align:center; margin-bottom:20px;">Client Payment Report</h3>
+
+            <form th:action="@{/print/report}" method="get">
+                <div class="mb-3">
+                    <label class="form-label">Start Date:</label>
+                    <input type="date" name="startDate" id="globalReportStartDate" class="form-control" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">End Date:</label>
+                    <input type="date" name="endDate" id="globalReportEndDate" class="form-control" required/>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> View Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openReportModalGlobal() {
+            // Set default dates: 1st of current month and today
+            const today = new Date();
+            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            // Format dates to YYYY-MM-DD for date input
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            document.getElementById('globalReportStartDate').value = formatDate(firstOfMonth);
+            document.getElementById('globalReportEndDate').value = formatDate(today);
+            document.getElementById('globalReportModal').style.display = 'block';
+        }
+
+        function closeReportModalGlobal() {
+            document.getElementById('globalReportModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('globalReportModal');
+            if (event.target === modal) {
+                closeReportModalGlobal();
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

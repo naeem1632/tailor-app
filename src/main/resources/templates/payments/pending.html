@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pending Payments - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .summary-section {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #dc3545;
+        }
+        .summary-label {
+            font-weight: 600;
+        }
+        .summary-value {
+            font-weight: 600;
+            color: #495057;
+        }
+        .pending-badge {
+            background-color: #ffc107;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Include Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 20px;">
+
+<h1><i class="fas fa-exclamation-circle"></i> Pending Payments</h1>
+
+<div class="toolbar-3">
+    <div class="toolbar-left">
+        <a href="/clients" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Clients</a>
+    </div>
+</div>
+
+<!-- Pending Payments Table -->
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Client Name</th>
+        <th>Mobile</th>
+        <th>Total Amount</th>
+        <th>Paid Amount</th>
+        <th>Remaining Amount</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="payment : ${payments}">
+        <td th:text="${payment.id}"></td>
+        <td th:text="${#temporals.format(payment.date, 'dd-MMM-yyyy')}"></td>
+        <td th:text="${payment.client.name}"></td>
+        <td th:text="${payment.client.mobile}"></td>
+        <td th:text="${payment.totalAmount}"></td>
+        <td th:text="${payment.paidAmount}"></td>
+        <td>
+            <span class="pending-badge" th:text="${payment.remainingAmount}"></span>
+        </td>
+        <td th:text="${payment.paymentStatus}"
+            th:style="${payment.paymentStatus == 'Paid' ? 'color:green;' :
+                      (payment.paymentStatus == 'Partial' ? 'color:orange;' : 'color:red;')}"></td>
+        <td>
+            <a th:href="@{'/clients/details/' + ${payment.client.id}}" class="btn-action btn-measure">
+                View Client
+            </a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(payments)}">
+        <td colspan="9" style="text-align: center; color: #6c757d; padding: 30px;">
+            <i class="fas fa-check-circle" style="font-size: 3rem; color: #28a745;"></i><br>
+            <strong>No pending payments!</strong><br>
+            All payments have been settled.
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Summary Section -->
+<div class="summary-section" th:if="${!#lists.isEmpty(payments)}">
+    <h3 style="margin-bottom: 20px;"><i class="fas fa-calculator"></i> Summary</h3>
+    <div class="summary-row">
+        <span class="summary-label">Total Amount:</span>
+        <span class="summary-value" th:text="${totalAmount}">0</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Total Paid:</span>
+        <span class="summary-value" style="color: #28a745;" th:text="${totalPaid}">0</span>
+    </div>
+    <div class="summary-row">
+        <span class="summary-label">Total Remaining:</span>
+        <span class="summary-value" style="color: #dc3545; font-size: 1.3rem;" th:text="${totalRemaining}">0</span>
+    </div>
+</div>
+
+</div><!-- Close container-fluid -->
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

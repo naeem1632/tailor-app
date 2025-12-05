@@ -140,4 +140,60 @@ public class PaymentsController {
         ra.addFlashAttribute("message", "Installment updated successfully");
         return "redirect:/payments/client/" + payment.getClient().getId();
     }
+
+    // ✅ Show all pending payments (remainingAmount > 0)
+    @GetMapping("/pending")
+    public String listPendingPayments(Model model) {
+        List<Payments> allPayments = paymentsService.findAll();
+
+        // Filter pending payments (remainingAmount > 0)
+        List<Payments> pendingPayments = allPayments.stream()
+                .filter(p -> p.getRemainingAmount() != null && p.getRemainingAmount() > 0)
+                .sorted(Comparator.comparing(Payments::getDate).reversed())
+                .toList();
+
+        // Calculate totals
+        long totalAmount = pendingPayments.stream()
+                .mapToLong(p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0)
+                .sum();
+
+        long totalPaid = pendingPayments.stream()
+                .mapToLong(p -> p.getPaidAmount() != null ? p.getPaidAmount() : 0)
+                .sum();
+
+        long totalRemaining = pendingPayments.stream()
+                .mapToLong(p -> p.getRemainingAmount() != null ? p.getRemainingAmount() : 0)
+                .sum();
+
+        model.addAttribute("payments", pendingPayments);
+        model.addAttribute("totalAmount", totalAmount);
+        model.addAttribute("totalPaid", totalPaid);
+        model.addAttribute("totalRemaining", totalRemaining);
+
+        return "payments/pending";
+    }
+
+    // ✅ Show orders due for return within 7 days and all overdue orders
+    @GetMapping("/due-returns")
+    public String listDueReturns(Model model) {
+        LocalDate today = LocalDate.now();
+        LocalDate sevenDaysLater = today.plusDays(7);
+
+        List<Payments> allPayments = paymentsService.findAll();
+
+        // Filter overdue orders and orders due within 7 days (not yet returned)
+        List<Payments> dueReturns = allPayments.stream()
+                .filter(p -> p.getReturnDate() != null)
+                .filter(p -> p.getReturnStatus() == null || !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> {
+                    LocalDate returnDate = p.getReturnDate();
+                    // Include both overdue (< today) and upcoming 7 days (<= sevenDaysLater)
+                    return !returnDate.isAfter(sevenDaysLater);
+                })
+                .sorted(Comparator.comparing(Payments::getReturnDate))
+                .toList();
+
+        model.addAttribute("payments", dueReturns);
+        return "payments/due-returns";
+    }
 }

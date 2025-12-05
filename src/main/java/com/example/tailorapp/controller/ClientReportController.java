@@ -13,6 +13,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.draw.LineSeparator;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,8 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/print")
@@ -35,10 +37,118 @@ public class ClientReportController {
         this.paymentsService = paymentsService;
     }
 
+    // HTML report view
     @GetMapping("/report")
-    public void generateReport(@RequestParam("startDate") LocalDate startDate,
-                               @RequestParam("endDate") LocalDate endDate,
-                               HttpServletResponse response) throws Exception {
+    public String viewReport(@RequestParam("startDate") LocalDate startDate,
+                             @RequestParam("endDate") LocalDate endDate,
+                             Model model) {
+
+        List<Client> clients = clientService.findAll();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
+
+        // Prepare report data with all calculations
+        List<Map<String, Object>> reportData = new ArrayList<>();
+
+        long grandDressCount = 0, grandWaistcoatCount = 0;
+        long grandDressAmount = 0, grandWaistcoatAmount = 0;
+        long grandMatelAmount = 0, grandTichAmount = 0, grandKantaAmount = 0, grandJaliAmount = 0;
+        long grandTotal = 0, grandPaid = 0, grandRemain = 0;
+
+        for (Client client : clients) {
+            List<Payments> clientPayments = paymentsService.findByClient(client.getId()).stream()
+                    .filter(p -> p.getDate() != null &&
+                            !p.getDate().isBefore(startDate) &&
+                            !p.getDate().isAfter(endDate))
+                    .sorted(Comparator.comparing(Payments::getDate))
+                    .toList();
+
+            for (Payments p : clientPayments) {
+                long dressCount = p.getDressCount() != null ? p.getDressCount() : 0;
+                long waistcoatCount = p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0;
+                long dressAmount = (p.getDressRate() != null ? p.getDressRate() : 0) * dressCount;
+                long waistcoatAmount = (p.getWaistcoatRate() != null ? p.getWaistcoatRate() : 0) * waistcoatCount;
+
+                long matelAmount = 0;
+                if (p.getMatelAmount() != null && p.getWithMatel() != null) {
+                    matelAmount = p.getWithMatel() * p.getMatelAmount();
+                }
+
+                long tichAmount = 0;
+                if (p.getTichAmount() != null && p.getWithTich() != null) {
+                    tichAmount = p.getWithTich() * p.getTichAmount();
+                }
+
+                long kantaAmount = 0;
+                if (p.getKantaAmount() != null && p.getWithKanta() != null) {
+                    kantaAmount = p.getWithKanta() * p.getKantaAmount();
+                }
+
+                long jaliAmount = 0;
+                if (p.getJaliAmount() != null && p.getWithJali() != null) {
+                    jaliAmount = p.getWithJali() * p.getJaliAmount();
+                }
+
+                long totalAmount = dressAmount + waistcoatAmount + matelAmount + tichAmount + kantaAmount + jaliAmount;
+                long paidAmount = p.getPaidAmount() != null ? p.getPaidAmount() : 0;
+                long remainingAmount = totalAmount - paidAmount;
+
+                Map<String, Object> row = new HashMap<>();
+                row.put("date", p.getDate().format(formatter));
+                row.put("clientId", client.getId());
+                row.put("clientName", client.getName());
+                row.put("mobile", client.getMobile() != null ? client.getMobile() : "-");
+                row.put("dressCount", dressCount);
+                row.put("waistcoatCount", waistcoatCount);
+                row.put("dressAmount", dressAmount);
+                row.put("waistcoatAmount", waistcoatAmount);
+                row.put("matelAmount", matelAmount);
+                row.put("tichAmount", tichAmount);
+                row.put("kantaAmount", kantaAmount);
+                row.put("jaliAmount", jaliAmount);
+                row.put("totalAmount", totalAmount);
+                row.put("paidAmount", paidAmount);
+                row.put("remainingAmount", remainingAmount);
+                reportData.add(row);
+
+                grandDressCount += dressCount;
+                grandWaistcoatCount += waistcoatCount;
+                grandDressAmount += dressAmount;
+                grandWaistcoatAmount += waistcoatAmount;
+                grandMatelAmount += matelAmount;
+                grandTichAmount += tichAmount;
+                grandKantaAmount += kantaAmount;
+                grandJaliAmount += jaliAmount;
+                grandTotal += totalAmount;
+                grandPaid += paidAmount;
+                grandRemain += remainingAmount;
+            }
+        }
+
+        model.addAttribute("reportData", reportData);
+        model.addAttribute("startDate", startDate.format(formatter));
+        model.addAttribute("endDate", endDate.format(formatter));
+        model.addAttribute("startDateParam", startDate.toString());
+        model.addAttribute("endDateParam", endDate.toString());
+        model.addAttribute("grandDressCount", grandDressCount);
+        model.addAttribute("grandWaistcoatCount", grandWaistcoatCount);
+        model.addAttribute("grandDressAmount", grandDressAmount);
+        model.addAttribute("grandWaistcoatAmount", grandWaistcoatAmount);
+        model.addAttribute("grandMatelAmount", grandMatelAmount);
+        model.addAttribute("grandTichAmount", grandTichAmount);
+        model.addAttribute("grandKantaAmount", grandKantaAmount);
+        model.addAttribute("grandJaliAmount", grandJaliAmount);
+        model.addAttribute("grandTotal", grandTotal);
+        model.addAttribute("grandPaid", grandPaid);
+        model.addAttribute("grandRemain", grandRemain);
+
+        return "report/client-payment-report";
+    }
+
+    // PDF generation
+    @GetMapping("/report/pdf")
+    public void generateReportPdf(@RequestParam("startDate") LocalDate startDate,
+                                  @RequestParam("endDate") LocalDate endDate,
+                                  HttpServletResponse response) throws Exception {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_report.pdf");
@@ -49,9 +159,9 @@ public class ClientReportController {
 
         // 🎨 Fonts
         Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA, 12, Color.DARK_GRAY);
-        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
-        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
-        Font boldCellFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font boldCellFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
 
         // 🖼️ Header section (with logo support)
         addHeaderSection(document, subTitleFont, startDate, endDate);
@@ -59,14 +169,14 @@ public class ClientReportController {
         // 🧾 Table setup
         PdfPTable table = new PdfPTable(14);
         table.setWidthPercentage(100);
-        // Wider Date, smaller Count fields, separate embellishment columns
-        table.setWidths(new float[]{8, 18, 10, 5, 5, 8, 8, 6, 6, 6, 6, 9, 6, 6});
+        // Optimized column widths to prevent header text wrapping
+        table.setWidths(new float[]{7, 16, 9, 6, 6, 7, 7, 7, 6, 7, 6, 8, 6, 8});
 
         addHeaderCell(table, "Date", headerFont);
         addHeaderCell(table, "Name", headerFont);
         addHeaderCell(table, "Mobile#", headerFont);
-        addHeaderCell(table, "Dress qty", headerFont);
-        addHeaderCell(table, "W/C qty", headerFont);
+        addHeaderCell(table, "Dress Qty", headerFont);
+        addHeaderCell(table, "W/C Qty", headerFont);
         addHeaderCell(table, "Dress $", headerFont);
         addHeaderCell(table, "W/C $", headerFont);
         addHeaderCell(table, "Matel $", headerFont);
@@ -229,28 +339,46 @@ public class ClientReportController {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setBackgroundColor(Color.LIGHT_GRAY);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setPadding(5f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPaddingTop(4f);
+        cell.setPaddingBottom(4f);
+        cell.setPaddingLeft(2f);
+        cell.setPaddingRight(2f);
+        cell.setMinimumHeight(16f);
+        cell.setNoWrap(true);
         table.addCell(cell);
     }
 
     private void addCellCenter(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setPadding(4f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPaddingTop(3f);
+        cell.setPaddingBottom(3f);
+        cell.setPaddingLeft(2f);
+        cell.setPaddingRight(2f);
         table.addCell(cell);
     }
 
     private void addLeftAlignedCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-        cell.setPadding(4f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPaddingTop(3f);
+        cell.setPaddingBottom(3f);
+        cell.setPaddingLeft(2f);
+        cell.setPaddingRight(2f);
         table.addCell(cell);
     }
 
     private void addCellRight(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        cell.setPadding(4f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPaddingTop(3f);
+        cell.setPaddingBottom(3f);
+        cell.setPaddingLeft(2f);
+        cell.setPaddingRight(2f);
         table.addCell(cell);
     }
 

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Client Details - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .client-info-card {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .info-value {
+            color: #212529;
+        }
+        .client-picture {
+            max-width: 150px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Include Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 20px;">
+
+<h1><i class="fas fa-user-circle"></i> Client Details</h1>
+
+<div class="toolbar-3">
+    <div class="toolbar-left">
+        <a href="/clients" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Clients</a>
+        <a th:href="@{'/clients/view/' + ${client.id}}" class="btn btn-primary">
+            <i class="fas fa-ruler"></i> View Measurements
+        </a>
+        <a th:href="@{'/payments/client/' + ${client.id}}" class="btn btn-success">
+            <i class="fas fa-money-bill-wave"></i> Manage Payments
+        </a>
+    </div>
+</div>
+
+<!-- Client Information Card -->
+<div class="client-info-card">
+    <h3 style="margin-bottom: 20px;"><i class="fas fa-info-circle"></i> Personal Information</h3>
+    <div class="row">
+        <div class="col-md-9">
+            <div class="info-row">
+                <span class="info-label">ID:</span>
+                <span class="info-value" th:text="${client.id}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Name:</span>
+                <span class="info-value" th:text="${client.name}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mobile:</span>
+                <span class="info-value" th:text="${client.mobile}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">WhatsApp:</span>
+                <span class="info-value" th:text="${client.whatsAppNo ?: 'N/A'}"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Address:</span>
+                <span class="info-value" th:text="${client.address ?: 'N/A'}"></span>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <img th:if="${client.pictureFilename}"
+                 th:src="@{${client.pictureFilename}}"
+                 alt="Client Picture"
+                 class="client-picture"/>
+            <div th:unless="${client.pictureFilename}" style="color: #6c757d;">
+                <i class="fas fa-user fa-5x"></i><br>
+                <small>No picture</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History -->
+<h3><i class="fas fa-history"></i> Payment History</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Dress</th>
+        <th>Waistcoat</th>
+        <th>Total Amount</th>
+        <th>Paid Amount</th>
+        <th>Remaining Amount</th>
+        <th>Status</th>
+        <th>Return Date</th>
+        <th>Return Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="payment : ${payments}">
+        <td th:text="${payment.id}"></td>
+        <td th:text="${#temporals.format(payment.date, 'dd-MMM-yyyy')}"></td>
+        <td th:text="${(payment.dressCount != null and payment.dressCount > 0)
+            ? payment.dressCount + ' @ ' + payment.dressRate : '-'}"></td>
+        <td th:text="${(payment.waistcoatCount != null and payment.waistcoatCount > 0)
+            ? payment.waistcoatCount + ' @ ' + payment.waistcoatRate : '-'}"></td>
+        <td th:text="${payment.totalAmount}"></td>
+        <td th:text="${payment.paidAmount}" style="color: #28a745; font-weight: 600;"></td>
+        <td th:text="${payment.remainingAmount}"
+            th:style="${payment.remainingAmount > 0 ? 'color:#dc3545; font-weight:600;' : 'color:#28a745;'}"></td>
+        <td th:text="${payment.paymentStatus}"
+            th:style="${payment.paymentStatus == 'Paid' ? 'color:green;' :
+                      (payment.paymentStatus == 'Partial' ? 'color:orange;' : 'color:red;')}"></td>
+        <td th:text="${payment.returnDate != null ? #temporals.format(payment.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
+        <td th:text="${payment.returnStatus ?: 'N/A'}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(payments)}">
+        <td colspan="10" style="text-align: center; color: #6c757d; padding: 30px;">
+            <i class="fas fa-info-circle" style="font-size: 2rem;"></i><br>
+            <strong>No payment records found for this client.</strong>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</div><!-- Close container-fluid -->
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

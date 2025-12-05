@@ -2,9 +2,11 @@ package com.example.tailorapp.controller;
 
 import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
+import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.model.WaistcoatMeasurement;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.MeasurementService;
+import com.example.tailorapp.service.PaymentsService;
 import com.example.tailorapp.service.StorageProperties;
 
 import com.example.tailorapp.service.WaistcoatService;
@@ -33,15 +35,18 @@ public class ClientController {
     private final MeasurementService measurementService;
     private final StorageProperties storageProperties;
     private final WaistcoatService waistcoatService;
+    private final PaymentsService paymentsService;
 
     public ClientController(ClientService clientService,
                             MeasurementService measurementService,
                             StorageProperties storageProperties,
-                            WaistcoatService waistcoatService) {
+                            WaistcoatService waistcoatService,
+                            PaymentsService paymentsService) {
         this.clientService = clientService;
         this.measurementService = measurementService;
         this.storageProperties = storageProperties;
         this.waistcoatService = waistcoatService;
+        this.paymentsService = paymentsService;
     }
 
     // List clients
@@ -151,6 +156,24 @@ public class ClientController {
         model.addAttribute("client", client);
         return "clients/view";
     }
+
+    // View client details with payment history
+    @GetMapping("/details/{id}")
+    public String details(@PathVariable Long id, Model model) {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) return "redirect:/clients";
+
+        Client client = c.get();
+
+        // Get all payments for this client sorted by date (newest first)
+        List<Payments> payments = paymentsService.findByClient(id);
+        payments.sort(Comparator.comparing(Payments::getDate).reversed());
+
+        model.addAttribute("client", client);
+        model.addAttribute("payments", payments);
+        return "clients/details";
+    }
+
     // Add dressMeasurement
     @PostMapping("/addMeasurement/{id}")
     public String addMeasurement(@PathVariable Long id,

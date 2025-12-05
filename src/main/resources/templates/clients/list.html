@@ -5,17 +5,17 @@
     <title>Clients - Stitch & Style</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
 
-<header class="site-header">
-    <div class="logo-container">
-        <!-- If you later have an image, use this: <img src="/images/logo.png" alt="Stitch & Style Logo" class="logo-img"> -->
-        <span class="logo-text">Stitch & Style</span>
-    </div>
-</header>
+<!-- Include Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 20px;">
 
 <h1>All Clients</h1>
 
@@ -32,37 +32,7 @@
             <a th:href="@{/clients}">Reset</a>
         </form>
     </div>
-
-    <!-- ✅ Right side -->
-    <div class="toolbar-right">
-        <button class="btn-secondary" onclick="openReportModal()">📄 Generate Report</button>
-    </div>
 </div>
-
-<!-- ✅ REPORT FILTER MODAL -->
-<div id="reportModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeReportModal()">&times;</span>
-        <h3 style="text-align:center;">Generate Client Payment Report</h3>
-
-        <form th:action="@{/print/report}" method="get" target="_blank">
-            <table>
-                <tr>
-                    <th>From Date</th>
-                    <td><input type="date" name="startDate" required></td>
-                    <th>To Date</th>
-                    <td><input type="date" name="endDate" required></td>
-                </tr>
-            </table>
-
-            <div class="actions">
-                <button type="submit">Generate PDF</button>
-                <a href="javascript:void(0)" onclick="closeReportModal()">Cancel</a>
-            </div>
-        </form>
-    </div>
-</div>
-
 
 <table>
     <thead>
@@ -93,6 +63,7 @@
                   data-whatsapp=${c.whatsAppNo},
                   data-address=${c.address}"
                onclick="openModalFromRow(this)">Edit</a>
+            <a th:href="@{'/clients/details/' + ${c.id}}" class="btn-action btn-measure">View Client</a>
             <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-payment">Payments</a>
             <a th:href="@{'/clients/view/' + ${c.id}}" class="btn-action btn-measure">Measurements</a>
         </td>
@@ -240,21 +211,22 @@
       }
       video.style.display = 'none';
     });
+
+    // Auto-open Add Client modal if redirected from dashboard
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('add') === 'true') {
+            openModal();
+            // Remove the parameter from URL without reloading
+            const url = new URL(window.location);
+            url.searchParams.delete('add');
+            window.history.replaceState({}, '', url);
+        }
+    });
 </script>
 
-<script>
-    const reportModal = document.getElementById("reportModal");
+</div><!-- Close container-fluid -->
 
-    function openReportModal() {
-      reportModal.classList.add("show");
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeReportModal() {
-      reportModal.classList.remove("show");
-      document.body.style.overflow = "auto";
-    }
-</script>
-
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

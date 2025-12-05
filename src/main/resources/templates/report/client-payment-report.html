@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Client Payment Report - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .report-header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        .report-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .report-period {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .report-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            table-layout: fixed;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 6px;
+            text-align: center;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+            font-size: 0.8rem;
+            border-right: 1px solid #495057;
+        }
+        th:last-child {
+            border-right: none;
+        }
+        td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: right;
+            border-right: 1px solid #e9ecef;
+        }
+        td:last-child {
+            border-right: none;
+        }
+        td:nth-child(1) {
+            text-align: center;
+        }
+        td:nth-child(2) {
+            text-align: left;
+        }
+        td:nth-child(3) {
+            text-align: center;
+        }
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .summary-row {
+            background-color: #343a40 !important;
+            color: white !important;
+            font-weight: bold;
+        }
+        .summary-row td {
+            border-bottom: none !important;
+            padding: 15px 8px;
+            text-align: right !important;
+        }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-pdf {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-pdf:hover {
+            background-color: #c82333;
+            color: white;
+        }
+        @media print {
+            .toolbar, .no-print {
+                display: none !important;
+            }
+            .report-table {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Include Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}" class="no-print"></div>
+
+<div class="container-fluid" style="padding: 20px;">
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <div class="report-title">
+            <i class="fas fa-chart-line"></i> STITCH & STYLE
+        </div>
+        <div style="font-size: 1.3rem; margin: 10px 0;">Client Payment Report</div>
+        <div class="report-period">
+            Period: <span th:text="${startDate}"></span> to <span th:text="${endDate}"></span>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar no-print">
+        <div>
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div class="report-table">
+        <table>
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Mobile#</th>
+                <th>Dress Qty</th>
+                <th>W/C Qty</th>
+                <th>Dress $</th>
+                <th>W/C $</th>
+                <th>Matel $</th>
+                <th>Tich $</th>
+                <th>Kanta $</th>
+                <th>Jali $</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Remaining</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${reportData}">
+                <td th:text="${row.date}" style="text-align: center;"></td>
+                <td th:text="${row.clientId + ' - ' + row.clientName}" style="text-align: left; font-weight: 600;"></td>
+                <td th:text="${row.mobile}" style="text-align: center;"></td>
+                <td th:text="${row.dressCount}"></td>
+                <td th:text="${row.waistcoatCount}"></td>
+                <td th:text="${row.dressAmount}"></td>
+                <td th:text="${row.waistcoatAmount}"></td>
+                <td th:text="${row.matelAmount}"></td>
+                <td th:text="${row.tichAmount}"></td>
+                <td th:text="${row.kantaAmount}"></td>
+                <td th:text="${row.jaliAmount}"></td>
+                <td th:text="${row.totalAmount}" style="font-weight: 600;"></td>
+                <td th:text="${row.paidAmount}" style="color: #28a745; font-weight: 600;"></td>
+                <td th:text="${row.remainingAmount}" style="color: #dc3545; font-weight: 600;"></td>
+            </tr>
+            <!-- Summary Row -->
+            <tr class="summary-row">
+                <td colspan="3" style="text-align: center;">TOTAL</td>
+                <td th:text="${grandDressCount}"></td>
+                <td th:text="${grandWaistcoatCount}"></td>
+                <td th:text="${grandDressAmount}"></td>
+                <td th:text="${grandWaistcoatAmount}"></td>
+                <td th:text="${grandMatelAmount}"></td>
+                <td th:text="${grandTichAmount}"></td>
+                <td th:text="${grandKantaAmount}"></td>
+                <td th:text="${grandJaliAmount}"></td>
+                <td th:text="${grandTotal}"></td>
+                <td th:text="${grandPaid}"></td>
+                <td th:text="${grandRemain}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(reportData)}" style="text-align: center; padding: 50px; color: #6c757d;">
+            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+            <h4>No records found for the selected period</h4>
+            <p>Try selecting a different date range</p>
+        </div>
+    </div>
+
+</div><!-- Close container-fluid -->
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

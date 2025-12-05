@@ -26,4 +26,9 @@ public class ClientService {
         if (q == null || q.isBlank()) return repo.findAll();
         return repo.findByNameContainingIgnoreCaseOrMobileContaining(q, q);
     }
+
+    // Dashboard helper method
+    public long count() {
+        return repo.count();
+    }
 }
