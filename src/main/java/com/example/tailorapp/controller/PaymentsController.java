@@ -5,6 +5,7 @@ import com.example.tailorapp.model.PaymentInstallment;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.PaymentsService;
+import com.example.tailorapp.service.WhatsAppService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +22,12 @@ public class PaymentsController {
 
     private final PaymentsService paymentsService;
     private final ClientService clientService;
+    private final WhatsAppService whatsAppService;
 
-    public PaymentsController(PaymentsService paymentsService, ClientService clientService) {
+    public PaymentsController(PaymentsService paymentsService, ClientService clientService, WhatsAppService whatsAppService) {
         this.paymentsService = paymentsService;
         this.clientService = clientService;
+        this.whatsAppService = whatsAppService;
     }
 
     // ✅ Show all payments for a client
@@ -181,10 +184,10 @@ public class PaymentsController {
 
         List<Payments> allPayments = paymentsService.findAll();
 
-        // Filter overdue orders and orders due within 7 days (not yet returned)
+        // Filter overdue orders and orders due within 7 days (not yet picked up)
         List<Payments> dueReturns = allPayments.stream()
                 .filter(p -> p.getReturnDate() != null)
-                .filter(p -> p.getReturnStatus() == null || !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> !"PICKED_UP".equals(p.getReadyStatus()))
                 .filter(p -> {
                     LocalDate returnDate = p.getReturnDate();
                     // Include both overdue (< today) and upcoming 7 days (<= sevenDaysLater)
@@ -195,5 +198,69 @@ public class PaymentsController {
 
         model.addAttribute("payments", dueReturns);
         return "payments/due-returns";
+    }
+
+    // ✅ WhatsApp Notification Endpoints
+
+    /**
+     * Update ready status for an order
+     */
+    @PostMapping("/update-ready-status")
+    public String updateReadyStatus(@RequestParam("paymentId") Long paymentId,
+                                    @RequestParam("readyStatus") String readyStatus,
+                                    RedirectAttributes ra) {
+        Optional<Payments> paymentOpt = paymentsService.updateReadyStatus(paymentId, readyStatus);
+        if (paymentOpt.isEmpty()) {
+            ra.addFlashAttribute("error", "Payment not found");
+            return "redirect:/clients";
+        }
+
+        ra.addFlashAttribute("message", "Ready status updated to: " + readyStatus);
+        return "redirect:/payments/client/" + paymentOpt.get().getClient().getId();
+    }
+
+    /**
+     * Generate WhatsApp click-to-chat link and mark as notified
+     */
+    @GetMapping("/whatsapp/ready/{paymentId}")
+    public String sendWhatsAppNotification(@PathVariable Long paymentId, RedirectAttributes ra) {
+        Optional<Payments> paymentOpt = paymentsService.findById(paymentId);
+        if (paymentOpt.isEmpty()) {
+            ra.addFlashAttribute("error", "Payment not found");
+            return "redirect:/clients";
+        }
+
+        Payments payment = paymentOpt.get();
+        Client client = payment.getClient();
+
+        // Generate WhatsApp link
+        String whatsappLink = whatsAppService.generateReadyForPickupLink(client, payment);
+
+        // Mark as notified
+        paymentsService.markAsNotified(paymentId);
+
+        // Redirect to WhatsApp link
+        return "redirect:" + whatsappLink;
+    }
+
+    /**
+     * Generate reminder WhatsApp link
+     */
+    @GetMapping("/whatsapp/reminder/{paymentId}")
+    public String sendWhatsAppReminder(@PathVariable Long paymentId, RedirectAttributes ra) {
+        Optional<Payments> paymentOpt = paymentsService.findById(paymentId);
+        if (paymentOpt.isEmpty()) {
+            ra.addFlashAttribute("error", "Payment not found");
+            return "redirect:/clients";
+        }
+
+        Payments payment = paymentOpt.get();
+        Client client = payment.getClient();
+
+        // Generate WhatsApp reminder link
+        String whatsappLink = whatsAppService.generateReminderLink(client, payment);
+
+        // Redirect to WhatsApp link
+        return "redirect:" + whatsappLink;
     }
 }

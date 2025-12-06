@@ -41,7 +41,8 @@
         <th>Remaining</th>
         <th>Status</th>
         <th>Return Date</th>
-        <th>Return Status</th>
+        <th>Ready Status</th>
+        <th>WhatsApp</th>
         <th>Notes</th>
         <th>Actions</th>
     </tr>
@@ -75,11 +76,66 @@
                 : ''}"></td>
             <td th:text="${p.totalAmount}"></td>
             <td th:text="${p.remainingAmount}"></td>
+
+            <!-- Payment Status Column (Auto-calculated) -->
             <td th:text="${p.paymentStatus}"
-                th:style="${p.paymentStatus == 'Paid' ? 'color:green;' :
-                          (p.paymentStatus == 'Partial' ? 'color:orange;' : 'color:red;')}"></td>
+                th:style="${p.paymentStatus == 'Paid' ? 'color: #28a745; font-weight: bold;' :
+                          (p.paymentStatus == 'Partial' ? 'color: #ffc107; font-weight: bold;' :
+                          (p.paymentStatus == 'Unpaid' ? 'color: #dc3545; font-weight: bold;' : ''))}"></td>
+
             <td th:text="${p.returnDate != null ? #temporals.format(p.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
-            <td th:text="${p.returnStatus}"></td>
+
+            <!-- Ready Status Column -->
+            <td>
+                <form th:action="@{/payments/update-ready-status}" method="post" style="display:inline;">
+                    <input type="hidden" name="paymentId" th:value="${p.id}"/>
+                    <select name="readyStatus" onchange="this.form.submit()"
+                            th:style="${p.readyStatus == 'READY' ? 'background-color: #ffc107; font-weight: bold;' :
+                                      (p.readyStatus == 'NOTIFIED' ? 'background-color: #28a745; color: white; font-weight: bold;' :
+                                      (p.readyStatus == 'PICKED_UP' ? 'background-color: #6c757d; color: white;' : ''))}">
+                        <option value="" th:selected="${p.readyStatus == null}">Not Ready</option>
+                        <option value="READY" th:selected="${p.readyStatus == 'READY'}">Ready</option>
+                        <option value="NOTIFIED" th:selected="${p.readyStatus == 'NOTIFIED'}">Notified</option>
+                        <option value="PICKED_UP" th:selected="${p.readyStatus == 'PICKED_UP'}">Picked Up</option>
+                    </select>
+                </form>
+                <div th:if="${p.notifiedAt != null}" style="font-size: 0.8em; color: #666; margin-top: 2px;">
+                    <span th:text="${#temporals.format(p.notifiedAt, 'dd-MMM HH:mm')}"></span>
+                </div>
+            </td>
+
+            <!-- WhatsApp Notification Column -->
+            <td style="text-align: center;">
+                <!-- Show Ready notification button if order is READY or NOTIFIED -->
+                <a th:if="${p.readyStatus == 'READY' or p.readyStatus == 'NOTIFIED'}"
+                   th:href="@{'/payments/whatsapp/ready/' + ${p.id}}"
+                   class="btn-action"
+                   style="background-color: #25D366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block; margin: 2px;"
+                   target="_blank">
+                    <i class="fab fa-whatsapp"></i>
+                    <span th:text="${p.readyStatus == 'NOTIFIED' ? 'Resend' : 'Notify'}"></span>
+                </a>
+
+                <!-- Show Reminder button if order is overdue and NOTIFIED -->
+                <a th:if="${p.readyStatus == 'NOTIFIED' and p.returnDate != null and p.returnDate.isBefore(T(java.time.LocalDate).now())}"
+                   th:href="@{'/payments/whatsapp/reminder/' + ${p.id}}"
+                   class="btn-action"
+                   style="background-color: #FF6B6B; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; display: inline-block; margin: 2px;"
+                   target="_blank">
+                    <i class="fas fa-bell"></i> Remind
+                </a>
+
+                <!-- Show message if not ready yet -->
+                <span th:if="${p.readyStatus == null or p.readyStatus == ''}" style="color: #999; font-size: 0.9em;">
+                    Mark as Ready first
+                </span>
+
+                <!-- Show checkmark if picked up -->
+                <span th:if="${p.readyStatus == 'PICKED_UP'}" style="color: #28a745; font-size: 1.2em;">
+                    <i class="fas fa-check-circle"></i>
+                </span>
+            </td>
+
             <td th:text="${p.notes}"></td>
             <td>
                 <a href="javascript:void(0)" class="btn-action btn-edit"
@@ -88,7 +144,7 @@
                             data-waistcoatcount=${p.waistcoatCount}, data-waistcoatrate=${p.waistcoatRate},
                             data-total=${p.totalAmount}, data-remaining=${p.remainingAmount},
                             data-status=${p.paymentStatus}, data-returndate=${p.returnDate},
-                            data-returnstatus=${p.returnStatus}, data-notes=${p.notes},
+                            data-notes=${p.notes},
                             data-matelamount=${p.matelAmount}, data-withmatel=${p.withMatel},
                             data-tichamount=${p.tichAmount}, data-withtich=${p.withTich},
                             data-kantaamount=${p.kantaAmount}, data-withkanta=${p.withKanta},
@@ -105,7 +161,7 @@
 
         <!-- ✅ Installments Table -->
         <tr th:id="'installments-' + ${p.id}" class="installment-row" style="display:none;">
-            <td colspan="15">
+            <td colspan="16">
                 <table class="installments-table">
                     <thead>
                     <tr><th>Date</th><th>Paid Amount</th><th>Note</th><th>Actions</th></tr>
@@ -194,27 +250,10 @@
                 <tr>
                     <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
                     <th>Remaining</th><td><input type="number" name="remainingAmount" id="remainingAmount" readonly/></td>
-                </tr>
-                <tr>
-                    <th>Status</th>
-                    <td>
-                        <select name="paymentStatus" id="paymentStatus">
-                            <option value="Unpaid">Unpaid</option>
-                            <option value="Partial">Partial</option>
-                            <option value="Paid">Paid</option>
-                        </select>
-                    </td>
                     <th>Return Date</th><td><input type="date" name="returnDate" id="returnDate" required/></td>
                 </tr>
                 <tr>
-                    <th>Return Status</th>
-                    <td>
-                        <select name="returnStatus" id="returnStatus">
-                            <option value="Not yet">Not yet</option>
-                            <option value="Returned">Returned</option>
-                        </select>
-                    </td>
-                    <th>Notes</th><td colspan="3"><textarea name="notes" id="notes"></textarea></td>
+                    <th>Notes</th><td colspan="5"><textarea name="notes" id="notes"></textarea></td>
                 </tr>
             </table>
 
@@ -320,9 +359,7 @@
             document.getElementById("waistcoatRate").value = el.dataset.waistcoatrate;
             document.getElementById("totalAmount").value = el.dataset.total;
             document.getElementById("remainingAmount").value = el.dataset.remaining;
-            document.getElementById("paymentStatus").value = el.dataset.status;
             document.getElementById("returnDate").value = el.dataset.returndate;
-            document.getElementById("returnStatus").value = el.dataset.returnstatus;
             document.getElementById("notes").value = el.dataset.notes;
 
             // Populate all button/embellishment fields

@@ -12,27 +12,49 @@
         }
         .metric-card {
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s;
         }
         .metric-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         .metric-value {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0;
         }
         .metric-label {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #6c757d;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .metric-icon {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             opacity: 0.8;
+        }
+        .item-counts {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .item-counts h4 {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        .count-item {
+            display: inline-block;
+            margin: 0 30px;
+            font-size: 1.1rem;
+        }
+        .count-item .count-value {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #007bff;
         }
         .action-card {
             border: none;
@@ -62,12 +84,12 @@
         <i class="fas fa-tachometer-alt"></i> Stitch & Style Management Dashboard
     </h1>
 
-    <!-- Metrics Cards Row -->
-    <div class="row g-4 mb-5">
+    <!-- Metrics Cards Row 1 (Clickable) -->
+    <div class="row g-3 mb-3">
         <!-- Total Clients -->
         <div class="col-md-4">
             <div class="card metric-card bg-primary text-white">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-3">
                     <i class="fas fa-users metric-icon"></i>
                     <div class="metric-value" th:text="${totalClients}">0</div>
                     <div class="metric-label text-white">Total Clients</div>
@@ -81,7 +103,7 @@
         <!-- Pending Payments -->
         <div class="col-md-4">
             <div class="card metric-card bg-warning text-white">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-3">
                     <i class="fas fa-money-bill-wave metric-icon"></i>
                     <div class="metric-value" th:text="${pendingAmount}">0</div>
                     <div class="metric-label text-white">Pending Payments</div>
@@ -95,7 +117,7 @@
         <!-- Due Returns (overdue + 7 days) -->
         <div class="col-md-4">
             <div class="card metric-card bg-info text-white">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-3">
                     <i class="fas fa-calendar-check metric-icon"></i>
                     <div class="metric-value" th:text="${dueReturns}">0</div>
                     <div class="metric-label text-white">Due Returns (Overdue & 7 Days)</div>
@@ -104,6 +126,57 @@
                     </a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Metrics Cards Row 2 (Non-Clickable) -->
+    <div class="row g-3 mb-4">
+        <!-- In Production Orders -->
+        <div class="col-md-4">
+            <div class="card metric-card" style="background-color: #fd7e14;">
+                <div class="card-body text-center text-white py-3">
+                    <i class="fas fa-cogs metric-icon"></i>
+                    <div class="metric-value" th:text="${inProductionOrders}">0</div>
+                    <div class="metric-label text-white">In Production</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ready Orders -->
+        <div class="col-md-4">
+            <div class="card metric-card bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <i class="fas fa-clipboard-check metric-icon"></i>
+                    <div class="metric-value" th:text="${readyOrders}">0</div>
+                    <div class="metric-label text-white">Ready for Pickup</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="col-md-4">
+            <div class="card metric-card bg-secondary text-white">
+                <div class="card-body text-center py-3">
+                    <i class="fas fa-check-circle metric-icon"></i>
+                    <div class="metric-value" th:text="${completedOrders}">0</div>
+                    <div class="metric-label text-white">Completed Orders</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Counts Section -->
+    <div class="item-counts mb-4">
+        <h4><i class="fas fa-chart-bar"></i> Total Items</h4>
+        <div class="count-item">
+            <i class="fas fa-tshirt" style="color: #007bff;"></i>
+            <span class="count-label">Dresses: </span>
+            <span class="count-value" th:text="${totalDresses}">0</span>
+        </div>
+        <div class="count-item">
+            <i class="fas fa-vest" style="color: #28a745;"></i>
+            <span class="count-label">Waistcoats: </span>
+            <span class="count-value" th:text="${totalWaistcoats}">0</span>
         </div>
     </div>
 

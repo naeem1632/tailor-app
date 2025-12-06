@@ -47,7 +47,7 @@
         <th>Dress Count</th>
         <th>Waistcoat Count</th>
         <th>Return Date</th>
-        <th>Return Status</th>
+        <th>Ready Status</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -76,8 +76,12 @@
                   th:text="${#temporals.format(payment.returnDate, 'dd-MMM-yyyy')}">
             </span>
         </td>
-        <td th:text="${payment.returnStatus ?: 'Not Yet'}"
-            th:style="${'returned'.equalsIgnoreCase(payment.returnStatus) ? 'color:green; font-weight:600;' : 'color:#ff9800; font-weight:600;'}"></td>
+        <td>
+            <span th:if="${payment.readyStatus == 'PICKED_UP'}" style="color:green; font-weight:600;">Picked Up</span>
+            <span th:if="${payment.readyStatus == 'NOTIFIED'}" style="color:#28a745; font-weight:600;">Notified</span>
+            <span th:if="${payment.readyStatus == 'READY'}" style="color:#ffc107; font-weight:600;">Ready</span>
+            <span th:if="${payment.readyStatus == null or payment.readyStatus == ''}" style="color:#ff9800; font-weight:600;">Not Ready</span>
+        </td>
         <td>
             <a th:href="@{'/clients/details/' + ${payment.client.id}}" class="btn-action btn-measure">
                 View Client

@@ -69,9 +69,9 @@ public class PrintController {
 
         DressMeasurement dressMeasurement = latestMeasurement.get();
 
-        // Get latest payment with return date (where status is not "returned" and returnDate is not null)
+        // Get latest payment with return date (where status is not PICKED_UP and returnDate is not null)
         Optional<Payments> latestPaymentWithReturnDate = paymentsService.findByClient(id).stream()
-                .filter(p -> p.getReturnDate() != null && !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> p.getReturnDate() != null && !"PICKED_UP".equals(p.getReadyStatus()))
                 .max(Comparator.comparing(Payments::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
 
         response.setContentType("application/pdf");
@@ -344,9 +344,9 @@ public class PrintController {
 
         WaistcoatMeasurement waistcoatMeasurements = latestMeasurement.get();
 
-        // Get latest payment with return date (where status is not "returned" and returnDate is not null)
+        // Get latest payment with return date (where status is not PICKED_UP and returnDate is not null)
         Optional<Payments> latestPaymentWithReturnDate = paymentsService.findByClient(id).stream()
-                .filter(p -> p.getReturnDate() != null && !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> p.getReturnDate() != null && !"PICKED_UP".equals(p.getReadyStatus()))
                 .max(Comparator.comparing(Payments::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
 
         response.setContentType("application/pdf");

@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,9 @@ public class Payments {
     String paymentStatus; // paid, unpaid, partial
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     LocalDate returnDate;
-    String returnStatus; // returned, Not yet
+    String readyStatus; // NOT_READY, READY, NOTIFIED, PICKED_UP
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    LocalDateTime notifiedAt;
     String notes;
 
     // Button fields (Matel and Tich)

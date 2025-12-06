@@ -114,7 +114,7 @@
         <th>Remaining Amount</th>
         <th>Status</th>
         <th>Return Date</th>
-        <th>Return Status</th>
+        <th>Ready Status</th>
     </tr>
     </thead>
     <tbody>
@@ -133,7 +133,12 @@
             th:style="${payment.paymentStatus == 'Paid' ? 'color:green;' :
                       (payment.paymentStatus == 'Partial' ? 'color:orange;' : 'color:red;')}"></td>
         <td th:text="${payment.returnDate != null ? #temporals.format(payment.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
-        <td th:text="${payment.returnStatus ?: 'N/A'}"></td>
+        <td>
+            <span th:if="${payment.readyStatus == 'PICKED_UP'}" style="color:green; font-weight:600;">Picked Up</span>
+            <span th:if="${payment.readyStatus == 'NOTIFIED'}" style="color:#28a745; font-weight:600;">Notified</span>
+            <span th:if="${payment.readyStatus == 'READY'}" style="color:#ffc107; font-weight:600;">Ready</span>
+            <span th:if="${payment.readyStatus == null or payment.readyStatus == ''}" style="color:#999;">Not Ready</span>
+        </td>
     </tr>
     <tr th:if="${#lists.isEmpty(payments)}">
         <td colspan="10" style="text-align: center; color: #6c757d; padding: 30px;">

@@ -23,6 +23,11 @@ public class HomeController {
         model.addAttribute("totalClients", clientService.count());
         model.addAttribute("pendingAmount", paymentsService.sumPendingPayments());
         model.addAttribute("dueReturns", paymentsService.countDueReturns());
+        model.addAttribute("readyOrders", paymentsService.countReadyOrders());
+        model.addAttribute("completedOrders", paymentsService.countCompletedOrders());
+        model.addAttribute("inProductionOrders", paymentsService.countInProductionOrders());
+        model.addAttribute("totalDresses", paymentsService.countTotalDresses());
+        model.addAttribute("totalWaistcoats", paymentsService.countTotalWaistcoats());
 
         return "index";
     }

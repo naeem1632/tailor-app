@@ -8,6 +8,7 @@ import com.example.tailorapp.repository.PaymentsRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,10 +141,10 @@ public class PaymentsService {
 
     // ✅ Dashboard helper methods
 
-    // Count active orders (not returned)
+    // Count active orders (not picked up)
     public long countActiveOrders() {
         return paymentsRepository.findAll().stream()
-                .filter(p -> p.getReturnStatus() == null || !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> !"PICKED_UP".equals(p.getReadyStatus()))
                 .count();
     }
 
@@ -155,19 +156,99 @@ public class PaymentsService {
                 .sum();
     }
 
-    // Count orders due for return (overdue + within 7 days)
+    // Count orders due for return (overdue + within 7 days, not picked up)
     public long countDueReturns() {
         LocalDate today = LocalDate.now();
         LocalDate sevenDaysLater = today.plusDays(7);
 
         return paymentsRepository.findAll().stream()
                 .filter(p -> p.getReturnDate() != null)
-                .filter(p -> p.getReturnStatus() == null || !"returned".equalsIgnoreCase(p.getReturnStatus()))
+                .filter(p -> !"PICKED_UP".equals(p.getReadyStatus()))
                 .filter(p -> {
                     LocalDate returnDate = p.getReturnDate();
                     // Include both overdue (< today) and upcoming 7 days (<= sevenDaysLater)
                     return !returnDate.isAfter(sevenDaysLater);
                 })
                 .count();
+    }
+
+    // Count orders with READY or NOTIFIED status
+    public long countReadyOrders() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> "READY".equals(p.getReadyStatus()) || "NOTIFIED".equals(p.getReadyStatus()))
+                .count();
+    }
+
+    // Count orders that have been picked up (completed/delivered)
+    public long countCompletedOrders() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> "PICKED_UP".equals(p.getReadyStatus()))
+                .count();
+    }
+
+    // Count orders in production (not ready yet)
+    public long countInProductionOrders() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getReadyStatus() == null || p.getReadyStatus().isEmpty())
+                .count();
+    }
+
+    // Count total dresses across all orders
+    public long countTotalDresses() {
+        return paymentsRepository.findAll().stream()
+                .mapToLong(p -> p.getDressCount() != null ? p.getDressCount() : 0)
+                .sum();
+    }
+
+    // Count total waistcoats across all orders
+    public long countTotalWaistcoats() {
+        return paymentsRepository.findAll().stream()
+                .mapToLong(p -> p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0)
+                .sum();
+    }
+
+    // ✅ WhatsApp Notification - Ready Status Management
+
+    /**
+     * Update ready status and optionally mark as notified
+     */
+    public Optional<Payments> updateReadyStatus(Long paymentId, String readyStatus) {
+        Optional<Payments> paymentOpt = paymentsRepository.findById(paymentId);
+        if (paymentOpt.isEmpty()) return Optional.empty();
+
+        Payments payment = paymentOpt.get();
+        payment.setReadyStatus(readyStatus);
+
+        // If status is NOTIFIED, set timestamp
+        if ("NOTIFIED".equals(readyStatus) && payment.getNotifiedAt() == null) {
+            payment.setNotifiedAt(LocalDateTime.now());
+        }
+
+        paymentsRepository.save(payment);
+        return Optional.of(payment);
+    }
+
+    /**
+     * Mark payment as notified (WhatsApp message sent)
+     */
+    public Optional<Payments> markAsNotified(Long paymentId) {
+        Optional<Payments> paymentOpt = paymentsRepository.findById(paymentId);
+        if (paymentOpt.isEmpty()) return Optional.empty();
+
+        Payments payment = paymentOpt.get();
+        payment.setReadyStatus("NOTIFIED");
+        payment.setNotifiedAt(LocalDateTime.now());
+
+        paymentsRepository.save(payment);
+        return Optional.of(payment);
+    }
+
+    /**
+     * Get all orders ready for pickup but not yet notified
+     */
+    public List<Payments> findReadyButNotNotified() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> "READY".equals(p.getReadyStatus()))
+                .toList();
     }
 }
