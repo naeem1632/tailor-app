@@ -11,6 +11,7 @@ import com.example.tailorapp.service.PaymentsService;
 import com.example.tailorapp.service.StorageProperties;
 import com.example.tailorapp.service.WaistcoatService;
 import com.lowagie.text.*;
+import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
@@ -440,6 +441,450 @@ public class PrintController {
                (m.getMiddleFitting() != null && !m.getMiddleFitting().toString().trim().isEmpty()) ||
                (m.getLowerFitting() != null && !m.getLowerFitting().toString().trim().isEmpty()) ||
                (m.getPajamaPocket() != null && !m.getPajamaPocket().toString().trim().isEmpty());
+    }
+
+    // Print Payment Invoice - Groups orders by same date
+    @GetMapping("/invoice/client/{clientId}/date/{orderDate}")
+    public void printPaymentInvoice(@PathVariable Long clientId,
+                                   @PathVariable String orderDate,
+                                   HttpServletResponse response) throws Exception {
+        Optional<Client> c = clientService.findById(clientId);
+        if (c.isEmpty()) return;
+
+        Client client = c.get();
+
+        // Parse the order date
+        java.time.LocalDate targetDate = java.time.LocalDate.parse(orderDate);
+
+        // Get all payments for this client on this specific date
+        java.util.List<Payments> paymentsOnDate = paymentsService.findByClient(clientId).stream()
+                .filter(p -> p.getDate() != null && p.getDate().equals(targetDate))
+                .sorted(Comparator.comparing(Payments::getId))
+                .toList();
+
+        if (paymentsOnDate.isEmpty()) return;
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "inline; filename=invoice_" + clientId + "_" + orderDate + ".pdf");
+
+        Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
+        Document document = new Document(slipSize, 15, 15, 10, 10);
+        String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
+
+        PdfWriter.getInstance(document, response.getOutputStream());
+        document.open();
+
+        // === STYLISH HEADER WITH BORDER ===
+        Font brandFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, new Color(0, 102, 204));
+        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font valueFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        Font smallFont = FontFactory.getFont(FontFactory.HELVETICA, 7);
+
+        // Header Table with brand name and invoice info
+        PdfPTable headerTable = new PdfPTable(2);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new float[]{60f, 40f});
+
+        // Left: Brand Name
+        PdfPCell brandCell = new PdfPCell(new Phrase("STITCH & STYLE", brandFont));
+        brandCell.setBorder(Rectangle.NO_BORDER);
+        brandCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(brandCell);
+
+        // Right: Invoice Date
+        Paragraph invDatePara = new Paragraph();
+        invDatePara.add(new Phrase("Invoice #" + client.getId() + "-" + targetDate.format(DateTimeFormatter.ofPattern("ddMMyy")) + "\n", valueFont));
+        invDatePara.add(new Phrase(now, smallFont));
+        PdfPCell dateCell = new PdfPCell(invDatePara);
+        dateCell.setBorder(Rectangle.NO_BORDER);
+        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(dateCell);
+
+        headerTable.setSpacingAfter(3f);
+        document.add(headerTable);
+
+        // Horizontal line separator
+        com.lowagie.text.pdf.draw.LineSeparator line = new com.lowagie.text.pdf.draw.LineSeparator();
+        line.setLineWidth(1f);
+        line.setLineColor(new Color(0, 102, 204));
+        document.add(new Chunk(line));
+        document.add(new Paragraph(" ")); // Small space
+
+        // === CLIENT INFO IN TWO COLUMNS ===
+        PdfPTable clientTable = new PdfPTable(2);
+        clientTable.setWidthPercentage(100);
+        clientTable.setWidths(new float[]{50f, 50f});
+
+        // Left Column
+        Paragraph leftCol = new Paragraph();
+        leftCol.add(new Phrase("CUSTOMER\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7, Color.GRAY)));
+        leftCol.add(new Phrase(client.getName() + " (" + client.getId() + ")\n\n", valueFont)); // Extra line break for spacing
+        leftCol.add(new Phrase("Mobile: " + nvl(client.getMobile()) + "\n", smallFont));
+        if (client.getWhatsAppNo() != null && !client.getWhatsAppNo().trim().isEmpty()
+            && !client.getWhatsAppNo().equals(client.getMobile())) {
+            leftCol.add(new Phrase("WhatsApp: " + client.getWhatsAppNo() + "\n", smallFont));
+        }
+
+        PdfPCell leftCell = new PdfPCell(leftCol);
+        leftCell.setBorder(Rectangle.NO_BORDER);
+        leftCell.setPaddingBottom(8f); // Increased padding
+        clientTable.addCell(leftCell);
+
+        // Right Column
+        Paragraph rightCol = new Paragraph();
+        rightCol.add(new Phrase("ORDER INFO\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7, Color.GRAY)));
+        rightCol.add(new Phrase("Order Date: " + targetDate.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy")) + "\n", smallFont));
+
+        PdfPCell rightCell = new PdfPCell(rightCol);
+        rightCell.setBorder(Rectangle.NO_BORDER);
+        rightCell.setPaddingBottom(8f); // Increased padding
+        clientTable.addCell(rightCell);
+
+        document.add(clientTable);
+
+        // === ORDER DETAILS SECTION ===
+        // Section header with background
+        PdfPTable orderHeaderTable = new PdfPTable(1);
+        orderHeaderTable.setWidthPercentage(100);
+        orderHeaderTable.setSpacingBefore(5f); // Increased spacing before order section
+
+        PdfPCell orderHeaderCell = new PdfPCell(new Phrase("ORDER DETAILS", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+        orderHeaderCell.setBackgroundColor(new Color(0, 102, 204));
+        orderHeaderCell.setPadding(4f);
+        orderHeaderCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        orderHeaderTable.addCell(orderHeaderCell);
+        document.add(orderHeaderTable);
+
+        // Calculate totals across all orders on same date
+        long totalDressCount = 0, totalWaistcoatCount = 0;
+        long totalDressAmount = 0, totalWaistcoatAmount = 0;
+        int totalMatelQty = 0, totalTichQty = 0, totalKantaQty = 0, totalJaliQty = 0, totalKrhaiQty = 0;
+        long totalMatel = 0, totalTich = 0, totalKanta = 0, totalJali = 0, totalKrhai = 0;
+        long grandTotal = 0, grandPaid = 0, grandRemaining = 0;
+        java.util.Set<java.time.LocalDate> returnDates = new java.util.HashSet<>();
+        java.util.Set<String> paymentStatuses = new java.util.HashSet<>();
+        java.util.Set<String> readyStatuses = new java.util.HashSet<>();
+        StringBuilder allNotes = new StringBuilder();
+
+        // Track rates for dress and waistcoat (we'll use average if rates differ)
+        long dressRateSum = 0, waistcoatRateSum = 0;
+        int dressRateCount = 0, waistcoatRateCount = 0;
+
+        for (Payments p : paymentsOnDate) {
+            long dressCount = (p.getDressCount() != null ? p.getDressCount() : 0);
+            long waistcoatCount = (p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0);
+
+            totalDressCount += dressCount;
+            totalWaistcoatCount += waistcoatCount;
+
+            // Calculate dress amount
+            if (dressCount > 0 && p.getDressRate() != null) {
+                totalDressAmount += dressCount * p.getDressRate();
+                dressRateSum += p.getDressRate();
+                dressRateCount++;
+            }
+
+            // Calculate waistcoat amount
+            if (waistcoatCount > 0 && p.getWaistcoatRate() != null) {
+                totalWaistcoatAmount += waistcoatCount * p.getWaistcoatRate();
+                waistcoatRateSum += p.getWaistcoatRate();
+                waistcoatRateCount++;
+            }
+
+            if (p.getWithMatel() != null && p.getMatelAmount() != null) {
+                totalMatelQty += p.getWithMatel();
+                totalMatel += p.getWithMatel() * p.getMatelAmount();
+            }
+            if (p.getWithTich() != null && p.getTichAmount() != null) {
+                totalTichQty += p.getWithTich();
+                totalTich += p.getWithTich() * p.getTichAmount();
+            }
+            if (p.getWithKanta() != null && p.getKantaAmount() != null) {
+                totalKantaQty += p.getWithKanta();
+                totalKanta += p.getWithKanta() * p.getKantaAmount();
+            }
+            if (p.getWithJali() != null && p.getJaliAmount() != null) {
+                totalJaliQty += p.getWithJali();
+                totalJali += p.getWithJali() * p.getJaliAmount();
+            }
+            if (p.getWithKrhai() != null && p.getKrhaiAmount() != null) {
+                totalKrhaiQty += p.getWithKrhai();
+                totalKrhai += p.getWithKrhai() * p.getKrhaiAmount();
+            }
+
+            grandTotal += (p.getTotalAmount() != null ? p.getTotalAmount() : 0);
+            grandPaid += (p.getPaidAmount() != null ? p.getPaidAmount() : 0);
+            grandRemaining += (p.getRemainingAmount() != null ? p.getRemainingAmount() : 0);
+
+            if (p.getReturnDate() != null) {
+                returnDates.add(p.getReturnDate());
+            }
+            if (p.getPaymentStatus() != null) {
+                paymentStatuses.add(p.getPaymentStatus());
+            }
+            if (p.getReadyStatus() != null && !p.getReadyStatus().isEmpty()) {
+                readyStatuses.add(p.getReadyStatus());
+            }
+            if (p.getNotes() != null && !p.getNotes().trim().isEmpty()) {
+                if (allNotes.length() > 0) allNotes.append("; ");
+                allNotes.append(p.getNotes());
+            }
+        }
+
+        // Calculate average rates
+        long avgDressRate = dressRateCount > 0 ? dressRateSum / dressRateCount : 0;
+        long avgWaistcoatRate = waistcoatRateCount > 0 ? waistcoatRateSum / waistcoatRateCount : 0;
+
+        // Order items in a clean table format
+        PdfPTable itemsTable = new PdfPTable(3);
+        itemsTable.setWidthPercentage(100);
+        itemsTable.setWidths(new float[]{50f, 20f, 30f});
+        itemsTable.setSpacingBefore(2f);
+
+        Font itemFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font qtyFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        Font amountFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+        if (totalDressCount > 0) {
+            String dressQty = totalDressCount + "@" + avgDressRate;
+            addItemRow(itemsTable, "Dresses", dressQty, String.valueOf(totalDressAmount), itemFont, qtyFont, amountFont);
+        }
+        if (totalWaistcoatCount > 0) {
+            String waistcoatQty = totalWaistcoatCount + "@" + avgWaistcoatRate;
+            addItemRow(itemsTable, "Waistcoats", waistcoatQty, String.valueOf(totalWaistcoatAmount), itemFont, qtyFont, amountFont);
+        }
+        if (totalMatel > 0) {
+            long avgMatelRate = totalMatelQty > 0 ? totalMatel / totalMatelQty : 0;
+            String matelQty = totalMatelQty + "@" + avgMatelRate;
+            addItemRow(itemsTable, "Matel", matelQty, String.valueOf(totalMatel), itemFont, qtyFont, amountFont);
+        }
+        if (totalTich > 0) {
+            long avgTichRate = totalTichQty > 0 ? totalTich / totalTichQty : 0;
+            String tichQty = totalTichQty + "@" + avgTichRate;
+            addItemRow(itemsTable, "Tich", tichQty, String.valueOf(totalTich), itemFont, qtyFont, amountFont);
+        }
+        if (totalKanta > 0) {
+            long avgKantaRate = totalKantaQty > 0 ? totalKanta / totalKantaQty : 0;
+            String kantaQty = totalKantaQty + "@" + avgKantaRate;
+            addItemRow(itemsTable, "Kanta", kantaQty, String.valueOf(totalKanta), itemFont, qtyFont, amountFont);
+        }
+        if (totalJali > 0) {
+            long avgJaliRate = totalJaliQty > 0 ? totalJali / totalJaliQty : 0;
+            String jaliQty = totalJaliQty + "@" + avgJaliRate;
+            addItemRow(itemsTable, "Jali", jaliQty, String.valueOf(totalJali), itemFont, qtyFont, amountFont);
+        }
+        if (totalKrhai > 0) {
+            long avgKrhaiRate = totalKrhaiQty > 0 ? totalKrhai / totalKrhaiQty : 0;
+            String krhaiQty = totalKrhaiQty + "@" + avgKrhaiRate;
+            addItemRow(itemsTable, "Krhai", krhaiQty, String.valueOf(totalKrhai), itemFont, qtyFont, amountFont);
+        }
+
+        document.add(itemsTable);
+
+        // === PAYMENT SUMMARY WITH MODERN DESIGN ===
+        PdfPTable paymentHeaderTable = new PdfPTable(1);
+        paymentHeaderTable.setWidthPercentage(100);
+        paymentHeaderTable.setSpacingBefore(8f); // Increased spacing before payment section
+
+        PdfPCell paymentHeaderCell = new PdfPCell(new Phrase("PAYMENT SUMMARY", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+        paymentHeaderCell.setBackgroundColor(new Color(0, 102, 204));
+        paymentHeaderCell.setPadding(4f);
+        paymentHeaderCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        paymentHeaderTable.addCell(paymentHeaderCell);
+        document.add(paymentHeaderTable);
+
+        // Payment summary table
+        PdfPTable summaryTable = new PdfPTable(2);
+        summaryTable.setWidthPercentage(100);
+        summaryTable.setWidths(new float[]{60f, 40f});
+        summaryTable.setSpacingBefore(2f);
+
+        addSummaryRowStyled(summaryTable, "Total Amount:", String.valueOf(grandTotal), smallFont, amountFont);
+        addSummaryRowStyled(summaryTable, "Paid Amount:", String.valueOf(grandPaid), smallFont, itemFont);
+        addSummaryRowStyled(summaryTable, "Remaining:", String.valueOf(grandRemaining), smallFont, amountFont);
+
+        document.add(summaryTable);
+
+        // === STATUS & INFO SECTION ===
+        PdfPTable statusInfoTable = new PdfPTable(2);
+        statusInfoTable.setWidthPercentage(100);
+        statusInfoTable.setWidths(new float[]{50f, 50f});
+        statusInfoTable.setSpacingBefore(8f); // Increased spacing before status section
+
+        // Left: Payment & Order Status
+        Paragraph leftStatus = new Paragraph();
+        leftStatus.add(new Phrase("STATUS\n\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7, Color.GRAY))); // Added extra line break
+
+        // Payment Status - Calculate based on actual totals
+        String paymentStatusStr;
+        if (grandRemaining <= 0 && grandTotal > 0) {
+            paymentStatusStr = "Paid";
+        } else if (grandPaid > 0 && grandRemaining > 0) {
+            paymentStatusStr = "Partial";
+        } else {
+            paymentStatusStr = "Unpaid";
+        }
+        leftStatus.add(new Phrase("Payment: " + paymentStatusStr + "\n\n", smallFont)); // Added extra line break
+
+        // Order Status - Convert to readable format
+        String orderStatusStr;
+        if (readyStatuses.isEmpty()) {
+            orderStatusStr = "Not Ready Yet";
+        } else if (readyStatuses.contains("PICKED_UP")) {
+            orderStatusStr = "Returned";
+        } else if (readyStatuses.contains("NOTIFIED") || readyStatuses.contains("READY")) {
+            orderStatusStr = "Ready";
+        } else {
+            orderStatusStr = "Not Ready Yet";
+        }
+        leftStatus.add(new Phrase("Order: " + orderStatusStr, smallFont));
+
+        PdfPCell leftStatusCell = new PdfPCell(leftStatus);
+        leftStatusCell.setBorder(Rectangle.NO_BORDER);
+        leftStatusCell.setPaddingBottom(5f); // Added bottom padding
+        statusInfoTable.addCell(leftStatusCell);
+
+        // Right: Return Date
+        Paragraph rightStatus = new Paragraph();
+        rightStatus.add(new Phrase("DELIVERY\n\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7, Color.GRAY))); // Added extra line break
+        if (!returnDates.isEmpty()) {
+            String returnDatesStr = returnDates.stream()
+                    .sorted()
+                    .map(d -> d.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy")))
+                    .collect(java.util.stream.Collectors.joining(", "));
+            rightStatus.add(new Phrase("Return: " + returnDatesStr, smallFont));
+        } else {
+            rightStatus.add(new Phrase("Return: TBD", smallFont));
+        }
+
+        PdfPCell rightStatusCell = new PdfPCell(rightStatus);
+        rightStatusCell.setBorder(Rectangle.NO_BORDER);
+        rightStatusCell.setPaddingBottom(5f); // Added bottom padding
+        statusInfoTable.addCell(rightStatusCell);
+
+        document.add(statusInfoTable);
+
+        // === NOTES (if any) ===
+        if (allNotes.length() > 0) {
+            PdfPTable notesHeaderTable = new PdfPTable(1);
+            notesHeaderTable.setWidthPercentage(100);
+            notesHeaderTable.setSpacingBefore(5f);
+
+            PdfPCell notesHeaderCell = new PdfPCell(new Phrase("NOTES", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+            notesHeaderCell.setBackgroundColor(new Color(0, 102, 204));
+            notesHeaderCell.setPadding(4f);
+            notesHeaderCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            notesHeaderTable.addCell(notesHeaderCell);
+            document.add(notesHeaderTable);
+
+            Paragraph notesContent = new Paragraph(allNotes.toString(), smallFont);
+            notesContent.setSpacingBefore(2f);
+            document.add(notesContent);
+        }
+
+        // === FOOTER ===
+        Font footerFont = FontFactory.getFont(FontFactory.HELVETICA, 6, Color.GRAY);
+
+        Paragraph printDate = new Paragraph("Invoice Date: " + now, footerFont);
+        printDate.setAlignment(Element.ALIGN_CENTER);
+        printDate.setSpacingBefore(5f);
+        document.add(printDate);
+
+        Paragraph developer = new Paragraph("Developed by NS Developers", footerFont);
+        developer.setAlignment(Element.ALIGN_CENTER);
+        developer.setSpacingBefore(2f);
+        document.add(developer);
+
+        document.close();
+    }
+
+    // Helper methods for invoice
+    private void addInfoRow(PdfPTable table, String label, String value) {
+        Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
+        Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 7);
+
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(Rectangle.NO_BORDER);
+        labelCell.setPadding(2f);
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value, valueFont));
+        valueCell.setBorder(Rectangle.NO_BORDER);
+        valueCell.setPadding(2f);
+        table.addCell(valueCell);
+    }
+
+    private void addOrderItemRow(PdfPTable table, String item, String qty, String amount, com.lowagie.text.Font labelFont, com.lowagie.text.Font valueFont) {
+        PdfPCell itemCell = new PdfPCell(new Phrase(item, labelFont));
+        itemCell.setPadding(2f);
+        table.addCell(itemCell);
+
+        PdfPCell qtyCell = new PdfPCell(new Phrase(qty, valueFont));
+        qtyCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        qtyCell.setPadding(2f);
+        table.addCell(qtyCell);
+
+        PdfPCell amountCell = new PdfPCell(new Phrase(amount, valueFont));
+        amountCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        amountCell.setPadding(2f);
+        table.addCell(amountCell);
+    }
+
+    private void addPaymentRow(PdfPTable table, String label, String value, com.lowagie.text.Font labelFont, com.lowagie.text.Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setPadding(3f);
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value, valueFont));
+        valueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        valueCell.setPadding(3f);
+        table.addCell(valueCell);
+    }
+
+    // Helper method for modern item rows
+    private void addItemRow(PdfPTable table, String item, String qty, String amount,
+                           com.lowagie.text.Font itemFont, com.lowagie.text.Font qtyFont, com.lowagie.text.Font amountFont) {
+        PdfPCell itemCell = new PdfPCell(new Phrase(item, itemFont));
+        itemCell.setBorder(Rectangle.NO_BORDER);
+        itemCell.setPaddingTop(3f);
+        itemCell.setPaddingBottom(3f);
+        itemCell.setPaddingLeft(5f);
+        table.addCell(itemCell);
+
+        PdfPCell qtyCell = new PdfPCell(new Phrase(qty, qtyFont));
+        qtyCell.setBorder(Rectangle.NO_BORDER);
+        qtyCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        qtyCell.setPaddingTop(3f);
+        qtyCell.setPaddingBottom(3f);
+        table.addCell(qtyCell);
+
+        PdfPCell amountCell = new PdfPCell(new Phrase(amount, amountFont));
+        amountCell.setBorder(Rectangle.NO_BORDER);
+        amountCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        amountCell.setPaddingTop(3f);
+        amountCell.setPaddingBottom(3f);
+        amountCell.setPaddingRight(5f);
+        table.addCell(amountCell);
+    }
+
+    // Helper method for styled summary rows
+    private void addSummaryRowStyled(PdfPTable table, String label, String value,
+                                    com.lowagie.text.Font labelFont, com.lowagie.text.Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(Rectangle.NO_BORDER);
+        labelCell.setPaddingTop(3f);
+        labelCell.setPaddingBottom(3f);
+        labelCell.setPaddingLeft(5f);
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value, valueFont));
+        valueCell.setBorder(Rectangle.NO_BORDER);
+        valueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        valueCell.setPaddingTop(3f);
+        valueCell.setPaddingBottom(3f);
+        valueCell.setPaddingRight(5f);
+        table.addCell(valueCell);
     }
 
 }

@@ -161,6 +161,10 @@
                 <a href="javascript:void(0)" class="btn-action btn-payment"
                    th:attr="data-id=${p.id}"
                    onclick="openInstallmentModal(this)">Add Installment</a>
+
+                <a th:href="@{'/print/invoice/client/' + ${client.id} + '/date/' + ${p.date}}"
+                   class="btn-action" style="background-color: #dc3545; color: white;"
+                   target="_blank">Print Invoice</a>
             </td>
         </tr>
 

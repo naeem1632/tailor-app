@@ -21,7 +21,7 @@ public class HomeController {
     public String home(Model model) {
         // Dashboard metrics
         model.addAttribute("totalClients", clientService.count());
-        model.addAttribute("pendingAmount", paymentsService.sumPendingPayments());
+        model.addAttribute("pendingAmount", paymentsService.countPendingPayments());
         model.addAttribute("dueReturns", paymentsService.countDueReturns());
         model.addAttribute("readyOrders", paymentsService.countReadyOrders());
         model.addAttribute("completedOrders", paymentsService.countCompletedOrders());

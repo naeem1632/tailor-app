@@ -162,6 +162,13 @@ public class PaymentsService {
                 .sum();
     }
 
+    // Count number of pending payments
+    public long countPendingPayments() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getRemainingAmount() != null && p.getRemainingAmount() > 0)
+                .count();
+    }
+
     // Count orders due for return (overdue + within 7 days, not picked up)
     public long countDueReturns() {
         LocalDate today = LocalDate.now();
