@@ -47,6 +47,10 @@ public class Payments {
     Long jaliAmount;
     Integer withJali;
 
+    // Krhai fields
+    Long krhaiAmount;
+    Integer withKrhai;
+
     @ManyToOne(fetch = FetchType.LAZY)
     Client client;
 

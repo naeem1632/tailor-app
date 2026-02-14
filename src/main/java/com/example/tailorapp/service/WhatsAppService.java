@@ -76,11 +76,6 @@ public class WhatsAppService {
             message.append("\n*Expected Pickup Date:* ").append(payment.getReturnDate().format(formatter)).append("\n");
         }
 
-        // Add payment status if there's remaining amount
-        if (payment.getRemainingAmount() != null && payment.getRemainingAmount() > 0) {
-            message.append("\n*Pending Payment:* Rs. ").append(payment.getRemainingAmount()).append("\n");
-        }
-
         message.append("\nPlease collect it at your earliest convenience.\n\n");
         message.append("Thank you for choosing Stitch & Style! 👔✨");
 
@@ -102,10 +97,6 @@ public class WhatsAppService {
             message.append(" since *").append(payment.getReturnDate().format(formatter)).append("*");
         }
         message.append(".\n\n");
-
-        if (payment.getRemainingAmount() != null && payment.getRemainingAmount() > 0) {
-            message.append("*Pending Payment:* Rs. ").append(payment.getRemainingAmount()).append("\n\n");
-        }
 
         message.append("Please collect it as soon as possible.\n\n");
         message.append("Thank you! 🙏");

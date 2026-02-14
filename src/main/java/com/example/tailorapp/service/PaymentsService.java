@@ -82,7 +82,13 @@ public class PaymentsService {
             jaliTotal = payment.getWithJali() * payment.getJaliAmount();
         }
 
-        payment.setTotalAmount(dressTotal + waistcoatTotal + matelTotal + tichTotal + kantaTotal + jaliTotal);
+        // Calculate Krhai total
+        long krhaiTotal = 0;
+        if (payment.getKrhaiAmount() != null && payment.getWithKrhai() != null) {
+            krhaiTotal = payment.getWithKrhai() * payment.getKrhaiAmount();
+        }
+
+        payment.setTotalAmount(dressTotal + waistcoatTotal + matelTotal + tichTotal + kantaTotal + jaliTotal + krhaiTotal);
     }
 
     // ✅ Central total syncing method

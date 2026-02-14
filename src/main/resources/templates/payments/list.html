@@ -37,6 +37,7 @@
         <th>Tich</th>
         <th>Kanta</th>
         <th>Jali</th>
+        <th>Krhai</th>
         <th>Total</th>
         <th>Remaining</th>
         <th>Status</th>
@@ -73,6 +74,9 @@
                 : ''}"></td>
             <td th:text="${(p.withJali != null and p.jaliAmount != null)
                 ? p.withJali + ' @ ' + p.jaliAmount
+                : ''}"></td>
+            <td th:text="${(p.withKrhai != null and p.krhaiAmount != null)
+                ? p.withKrhai + ' @ ' + p.krhaiAmount
                 : ''}"></td>
             <td th:text="${p.totalAmount}"></td>
             <td th:text="${p.remainingAmount}"></td>
@@ -148,7 +152,8 @@
                             data-matelamount=${p.matelAmount}, data-withmatel=${p.withMatel},
                             data-tichamount=${p.tichAmount}, data-withtich=${p.withTich},
                             data-kantaamount=${p.kantaAmount}, data-withkanta=${p.withKanta},
-                            data-jaliamount=${p.jaliAmount}, data-withjali=${p.withJali}"
+                            data-jaliamount=${p.jaliAmount}, data-withjali=${p.withJali},
+                            data-krhaiamount=${p.krhaiAmount}, data-withkrhai=${p.withKrhai}"
                    onclick="openModalFromRow(this)">Edit</a>
 
                 <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete" data-type="payment">Delete</a>
@@ -161,7 +166,7 @@
 
         <!-- ✅ Installments Table -->
         <tr th:id="'installments-' + ${p.id}" class="installment-row" style="display:none;">
-            <td colspan="16">
+            <td colspan="17">
                 <table class="installments-table">
                     <thead>
                     <tr><th>Date</th><th>Paid Amount</th><th>Note</th><th>Actions</th></tr>
@@ -241,6 +246,12 @@
                     <td><input type="number" name="withJali" id="withJali" onchange="calculateTotals()"/></td>
                     <th>Jali Amount</th>
                     <td><input type="number" name="jaliAmount" id="jaliAmount" onchange="calculateTotals()"/></td>
+                </tr>
+                <tr>
+                    <th>With Krhai</th>
+                    <td><input type="number" name="withKrhai" id="withKrhai" onchange="calculateTotals()"/></td>
+                    <th>Krhai Amount</th>
+                    <td><input type="number" name="krhaiAmount" id="krhaiAmount" onchange="calculateTotals()"/></td>
                 </tr>
                 <tr>
                     <td colspan="6">
@@ -371,6 +382,8 @@
             document.getElementById("withKanta").value = el.dataset.withkanta || "";
             document.getElementById("jaliAmount").value = el.dataset.jaliamount || "";
             document.getElementById("withJali").value = el.dataset.withjali || "";
+            document.getElementById("krhaiAmount").value = el.dataset.krhaiamount || "";
+            document.getElementById("withKrhai").value = el.dataset.withkrhai || "";
         }
 
         function clearPaymentForm() {
@@ -444,6 +457,11 @@
             const withJali = parseFloat(document.getElementById("withJali").value) || 0;
             total += (jaliAmount * withJali);
 
+            // Add Krhai cost
+            const krhaiAmount = parseFloat(document.getElementById("krhaiAmount").value) || 0;
+            const withKrhai = parseFloat(document.getElementById("withKrhai").value) || 0;
+            total += (krhaiAmount * withKrhai);
+
             document.getElementById("totalAmount").value = total;
             document.getElementById("remainingAmount").value = total;
         }
@@ -494,6 +512,7 @@
             const withTich = parseFloat(document.getElementById("withTich").value) || 0;
             const withKanta = parseFloat(document.getElementById("withKanta").value) || 0;
             const withJali = parseFloat(document.getElementById("withJali").value) || 0;
+            const withKrhai = parseFloat(document.getElementById("withKrhai").value) || 0;
             const errorDiv = document.getElementById("buttonCountError");
 
             // Validate: (Matel + Tich) combined should not exceed dress count
@@ -521,6 +540,14 @@
                 return false;
             }
 
+            // Validate: Krhai alone should not exceed dress count
+            if (withKrhai > dCount) {
+                errorDiv.textContent = "Error: With Krhai cannot exceed dress count!";
+                errorDiv.style.display = "block";
+                errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+                return false;
+            }
+
             errorDiv.style.display = "none";
             errorDiv.textContent = "";
             return true;
@@ -530,13 +557,15 @@
          document.getElementById("matelAmount"), document.getElementById("withMatel"),
          document.getElementById("tichAmount"), document.getElementById("withTich"),
          document.getElementById("kantaAmount"), document.getElementById("withKanta"),
-         document.getElementById("jaliAmount"), document.getElementById("withJali")].forEach(el => {
+         document.getElementById("jaliAmount"), document.getElementById("withJali"),
+         document.getElementById("krhaiAmount"), document.getElementById("withKrhai")].forEach(el => {
             el.addEventListener("input", calculateTotals);
         });
 
         // Live validation for embellishment count fields
         [document.getElementById("withMatel"), document.getElementById("withTich"),
-         document.getElementById("withKanta"), document.getElementById("withJali"), dressCount].forEach(el => {
+         document.getElementById("withKanta"), document.getElementById("withJali"),
+         document.getElementById("withKrhai"), dressCount].forEach(el => {
             el.addEventListener("input", validateButtonCount);
         });
 

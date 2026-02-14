@@ -51,7 +51,7 @@ public class ClientReportController {
 
         long grandDressCount = 0, grandWaistcoatCount = 0;
         long grandDressAmount = 0, grandWaistcoatAmount = 0;
-        long grandMatelAmount = 0, grandTichAmount = 0, grandKantaAmount = 0, grandJaliAmount = 0;
+        long grandMatelAmount = 0, grandTichAmount = 0, grandKantaAmount = 0, grandJaliAmount = 0, grandKrhaiAmount = 0;
         long grandTotal = 0, grandPaid = 0, grandRemain = 0;
 
         for (Client client : clients) {
@@ -88,7 +88,12 @@ public class ClientReportController {
                     jaliAmount = p.getWithJali() * p.getJaliAmount();
                 }
 
-                long totalAmount = dressAmount + waistcoatAmount + matelAmount + tichAmount + kantaAmount + jaliAmount;
+                long krhaiAmount = 0;
+                if (p.getKrhaiAmount() != null && p.getWithKrhai() != null) {
+                    krhaiAmount = p.getWithKrhai() * p.getKrhaiAmount();
+                }
+
+                long totalAmount = dressAmount + waistcoatAmount + matelAmount + tichAmount + kantaAmount + jaliAmount + krhaiAmount;
                 long paidAmount = p.getPaidAmount() != null ? p.getPaidAmount() : 0;
                 long remainingAmount = totalAmount - paidAmount;
 
@@ -105,6 +110,7 @@ public class ClientReportController {
                 row.put("tichAmount", tichAmount);
                 row.put("kantaAmount", kantaAmount);
                 row.put("jaliAmount", jaliAmount);
+                row.put("krhaiAmount", krhaiAmount);
                 row.put("totalAmount", totalAmount);
                 row.put("paidAmount", paidAmount);
                 row.put("remainingAmount", remainingAmount);
@@ -118,6 +124,7 @@ public class ClientReportController {
                 grandTichAmount += tichAmount;
                 grandKantaAmount += kantaAmount;
                 grandJaliAmount += jaliAmount;
+                grandKrhaiAmount += krhaiAmount;
                 grandTotal += totalAmount;
                 grandPaid += paidAmount;
                 grandRemain += remainingAmount;
@@ -137,6 +144,7 @@ public class ClientReportController {
         model.addAttribute("grandTichAmount", grandTichAmount);
         model.addAttribute("grandKantaAmount", grandKantaAmount);
         model.addAttribute("grandJaliAmount", grandJaliAmount);
+        model.addAttribute("grandKrhaiAmount", grandKrhaiAmount);
         model.addAttribute("grandTotal", grandTotal);
         model.addAttribute("grandPaid", grandPaid);
         model.addAttribute("grandRemain", grandRemain);
@@ -167,10 +175,10 @@ public class ClientReportController {
         addHeaderSection(document, subTitleFont, startDate, endDate);
 
         // 🧾 Table setup
-        PdfPTable table = new PdfPTable(14);
+        PdfPTable table = new PdfPTable(15);
         table.setWidthPercentage(100);
         // Optimized column widths to prevent header text wrapping
-        table.setWidths(new float[]{7, 16, 9, 6, 6, 7, 7, 7, 6, 7, 6, 8, 6, 8});
+        table.setWidths(new float[]{7, 16, 9, 6, 6, 7, 7, 6, 6, 6, 6, 8, 6, 8});
 
         addHeaderCell(table, "Date", headerFont);
         addHeaderCell(table, "Name", headerFont);
@@ -183,6 +191,7 @@ public class ClientReportController {
         addHeaderCell(table, "Tich $", headerFont);
         addHeaderCell(table, "Kanta $", headerFont);
         addHeaderCell(table, "Jali $", headerFont);
+        addHeaderCell(table, "Krhai $", headerFont);
         addHeaderCell(table, "Total", headerFont);
         addHeaderCell(table, "Paid", headerFont);
         addHeaderCell(table, "Remaining", headerFont);
@@ -191,7 +200,7 @@ public class ClientReportController {
 
         long grandDressCount = 0, grandWaistcoatCount = 0;
         long grandDressAmount = 0, grandWaistcoatAmount = 0;
-        long grandMatelAmount = 0, grandTichAmount = 0, grandKantaAmount = 0, grandJaliAmount = 0;
+        long grandMatelAmount = 0, grandTichAmount = 0, grandKantaAmount = 0, grandJaliAmount = 0, grandKrhaiAmount = 0;
         long grandTotal = 0, grandPaid = 0, grandRemain = 0;
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
@@ -236,7 +245,12 @@ public class ClientReportController {
                     jaliAmount = p.getWithJali() * p.getJaliAmount();
                 }
 
-                long totalAmount = dressAmount + waistcoatAmount + matelAmount + tichAmount + kantaAmount + jaliAmount;
+                long krhaiAmount = 0;
+                if (p.getKrhaiAmount() != null && p.getWithKrhai() != null) {
+                    krhaiAmount = p.getWithKrhai() * p.getKrhaiAmount();
+                }
+
+                long totalAmount = dressAmount + waistcoatAmount + matelAmount + tichAmount + kantaAmount + jaliAmount + krhaiAmount;
                 long paidAmount = p.getPaidAmount() != null ? p.getPaidAmount() : 0;
                 long remainingAmount = totalAmount - paidAmount;
 
@@ -251,6 +265,7 @@ public class ClientReportController {
                 addCellRight(table, String.valueOf(tichAmount), cellFont);
                 addCellRight(table, String.valueOf(kantaAmount), cellFont);
                 addCellRight(table, String.valueOf(jaliAmount), cellFont);
+                addCellRight(table, String.valueOf(krhaiAmount), cellFont);
                 addCellRight(table, String.valueOf(totalAmount), cellFont);
                 addCellRight(table, String.valueOf(paidAmount), cellFont);
                 addCellRight(table, String.valueOf(remainingAmount), cellFont);
@@ -263,6 +278,7 @@ public class ClientReportController {
                 grandTichAmount += tichAmount;
                 grandKantaAmount += kantaAmount;
                 grandJaliAmount += jaliAmount;
+                grandKrhaiAmount += krhaiAmount;
                 grandTotal += totalAmount;
                 grandPaid += paidAmount;
                 grandRemain += remainingAmount;
@@ -287,6 +303,7 @@ public class ClientReportController {
         addSummaryCell(table, grandTichAmount);
         addSummaryCell(table, grandKantaAmount);
         addSummaryCell(table, grandJaliAmount);
+        addSummaryCell(table, grandKrhaiAmount);
         addSummaryCell(table, grandTotal);
         addSummaryCell(table, grandPaid);
         addSummaryCell(table, grandRemain);
