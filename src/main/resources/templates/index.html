@@ -137,7 +137,7 @@
                 <div class="card-body text-center text-white py-3">
                     <i class="fas fa-cogs metric-icon"></i>
                     <div class="metric-value" th:text="${inProductionOrders}">0</div>
-                    <div class="metric-label text-white">In Production</div>
+                    <div class="metric-label text-white">In Production Orders</div>
                 </div>
             </div>
         </div>
@@ -166,17 +166,49 @@
     </div>
 
     <!-- Item Counts Section -->
-    <div class="item-counts mb-4">
-        <h4><i class="fas fa-chart-bar"></i> Total Items</h4>
-        <div class="count-item">
-            <i class="fas fa-tshirt" style="color: #007bff;"></i>
-            <span class="count-label">Dresses: </span>
-            <span class="count-value" th:text="${totalDresses}">0</span>
+    <div class="row g-3 mb-4">
+        <!-- Total Items -->
+        <div class="col-md-6">
+            <div class="item-counts">
+                <h4><i class="fas fa-chart-bar"></i> Total Items</h4>
+                <div class="count-item">
+                    <i class="fas fa-tshirt" style="color: #007bff;"></i>
+                    <span class="count-label">Dresses: </span>
+                    <span class="count-value" th:text="${totalDresses}">0</span>
+                </div>
+                <div class="count-item">
+                    <i class="fas fa-vest" style="color: #28a745;"></i>
+                    <span class="count-label">Waistcoats: </span>
+                    <span class="count-value" th:text="${totalWaistcoats}">0</span>
+                </div>
+                <div class="count-item">
+                    <i class="fas fa-shirt" style="color: #6610f2;"></i>
+                    <span class="count-label">Shirts: </span>
+                    <span class="count-value" th:text="${totalShirts}">0</span>
+                </div>
+            </div>
         </div>
-        <div class="count-item">
-            <i class="fas fa-vest" style="color: #28a745;"></i>
-            <span class="count-label">Waistcoats: </span>
-            <span class="count-value" th:text="${totalWaistcoats}">0</span>
+
+        <!-- In Production Items -->
+        <div class="col-md-6">
+            <div class="item-counts" style="background-color: #fff3cd; border-color: #ffc107;">
+                <h4><i class="fas fa-cogs"></i> In Production</h4>
+                <div class="count-item">
+                    <i class="fas fa-tshirt" style="color: #fd7e14;"></i>
+                    <span class="count-label">Dresses: </span>
+                    <span class="count-value" style="color: #fd7e14;" th:text="${inProductionDresses}">0</span>
+                </div>
+                <div class="count-item">
+                    <i class="fas fa-vest" style="color: #fd7e14;"></i>
+                    <span class="count-label">Waistcoats: </span>
+                    <span class="count-value" style="color: #fd7e14;" th:text="${inProductionWaistcoats}">0</span>
+                </div>
+                <div class="count-item">
+                    <i class="fas fa-shirt" style="color: #fd7e14;"></i>
+                    <span class="count-label">Shirts: </span>
+                    <span class="count-value" style="color: #fd7e14;" th:text="${inProductionShirts}">0</span>
+                </div>
+            </div>
         </div>
     </div>
 

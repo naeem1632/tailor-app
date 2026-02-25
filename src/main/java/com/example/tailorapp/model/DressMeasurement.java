@@ -31,12 +31,14 @@ public class DressMeasurement {
     Double collarSize;
     String collarType; // 1,2,3,4
     Double bainSize;
+    Boolean hasBain; // Whether bain design is selected
     String bainType; //round, square, cut
     String damanType; // round, square
     String damanStitching; // single, double
     String sidePocket; //no, 1, 2
     Boolean frontPocket;
     String frontPocketType; //square, cut, round
+    Boolean hasCuffDesign; // Whether cuff design is selected
     String cuffDesign; // round, square, cut
     Double cuffLength;
     Double cuffWidth;
@@ -52,8 +54,9 @@ public class DressMeasurement {
     Boolean shalwarPocket;
 
     // Pajama Measurements
-    Double pajamaAsan;
     Double pajamaLength;
+    Double pajamaAsan;
+    Double pajamaPayncha;
     Double upperFitting;
     Double middleFitting;
     Double lowerFitting;

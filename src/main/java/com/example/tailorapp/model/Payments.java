@@ -24,6 +24,8 @@ public class Payments {
     Long dressRate;
     Long waistcoatCount;
     Long waistcoatRate;
+    Long shirtCount;
+    Long shirtRate;
     Long totalAmount;
     Long paidAmount;
     Long remainingAmount;
@@ -50,6 +52,9 @@ public class Payments {
     // Krhai fields
     Long krhaiAmount;
     Integer withKrhai;
+
+    // Discount
+    Long discount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     Client client;

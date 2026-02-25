@@ -3,9 +3,12 @@ package com.example.tailorapp.controller;
 import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.PaymentInstallment;
 import com.example.tailorapp.model.Payments;
+import com.example.tailorapp.model.PriceSettings;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.PaymentsService;
+import com.example.tailorapp.service.PriceSettingsService;
 import com.example.tailorapp.service.WhatsAppService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +26,21 @@ public class PaymentsController {
     private final PaymentsService paymentsService;
     private final ClientService clientService;
     private final WhatsAppService whatsAppService;
+    private final PriceSettingsService priceSettingsService;
 
-    public PaymentsController(PaymentsService paymentsService, ClientService clientService, WhatsAppService whatsAppService) {
+    public PaymentsController(PaymentsService paymentsService, ClientService clientService,
+                              WhatsAppService whatsAppService, PriceSettingsService priceSettingsService) {
         this.paymentsService = paymentsService;
         this.clientService = clientService;
         this.whatsAppService = whatsAppService;
+        this.priceSettingsService = priceSettingsService;
+    }
+
+    /** Returns default rates as JSON for the Add Payment form pre-fill. */
+    @GetMapping("/default-rates")
+    @ResponseBody
+    public ResponseEntity<PriceSettings> getDefaultRates() {
+        return ResponseEntity.ok(priceSettingsService.getSettings());
     }
 
     // ✅ Show all payments for a client

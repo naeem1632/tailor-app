@@ -58,6 +58,9 @@ public class PaymentsService {
         long waistcoatTotal = (payment.getWaistcoatCount() != null ? payment.getWaistcoatCount() : 0) *
                              (payment.getWaistcoatRate() != null ? payment.getWaistcoatRate() : 0);
 
+        long shirtTotal = (payment.getShirtCount() != null ? payment.getShirtCount() : 0) *
+                         (payment.getShirtRate() != null ? payment.getShirtRate() : 0);
+
         // Calculate Matel button total
         long matelTotal = 0;
         if (payment.getMatelAmount() != null && payment.getWithMatel() != null) {
@@ -88,7 +91,9 @@ public class PaymentsService {
             krhaiTotal = payment.getWithKrhai() * payment.getKrhaiAmount();
         }
 
-        payment.setTotalAmount(dressTotal + waistcoatTotal + matelTotal + tichTotal + kantaTotal + jaliTotal + krhaiTotal);
+        long subtotal = dressTotal + waistcoatTotal + shirtTotal + matelTotal + tichTotal + kantaTotal + jaliTotal + krhaiTotal;
+        long disc = (payment.getDiscount() != null && payment.getDiscount() > 0) ? payment.getDiscount() : 0;
+        payment.setTotalAmount(Math.max(subtotal - disc, 0));
     }
 
     // ✅ Central total syncing method
@@ -217,6 +222,37 @@ public class PaymentsService {
     public long countTotalWaistcoats() {
         return paymentsRepository.findAll().stream()
                 .mapToLong(p -> p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0)
+                .sum();
+    }
+
+    // Count total shirts across all orders
+    public long countTotalShirts() {
+        return paymentsRepository.findAll().stream()
+                .mapToLong(p -> p.getShirtCount() != null ? p.getShirtCount() : 0)
+                .sum();
+    }
+
+    // Count dresses in production (not ready yet)
+    public long countInProductionDresses() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getReadyStatus() == null || p.getReadyStatus().isEmpty())
+                .mapToLong(p -> p.getDressCount() != null ? p.getDressCount() : 0)
+                .sum();
+    }
+
+    // Count waistcoats in production (not ready yet)
+    public long countInProductionWaistcoats() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getReadyStatus() == null || p.getReadyStatus().isEmpty())
+                .mapToLong(p -> p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0)
+                .sum();
+    }
+
+    // Count shirts in production (not ready yet)
+    public long countInProductionShirts() {
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getReadyStatus() == null || p.getReadyStatus().isEmpty())
+                .mapToLong(p -> p.getShirtCount() != null ? p.getShirtCount() : 0)
                 .sum();
     }
 

@@ -8,6 +8,40 @@
     <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        /* Different colors for action buttons in measurements view */
+        td a[href*='/print/'] {
+            background-color: #6610f2 !important;
+            color: white !important;
+            font-weight: 600;
+        }
+        td a[style*='0d6efd'] {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+        td a[style*='dc3545'] {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+        td a[style*='28a745'] {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+
+        /* Different colors for Add measurement buttons */
+        .actions button[onclick*="measurementForm"] {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+        .actions button[onclick*="waistcoatForm"] {
+            background-color: #6f42c1 !important;
+            color: white !important;
+        }
+        .actions button[onclick*="shirtForm"] {
+            background-color: #17a2b8 !important;
+            color: white !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -34,6 +68,7 @@
 <div class="actions">
   <button type="button" th:if="${#lists.isEmpty(dressMeasurements)}" onclick="toggleForm('measurementForm')">Add Dress Measurement</button>
   <button type="button" th:if="${#lists.isEmpty(waistcoatMeasurements)}" onclick="toggleForm('waistcoatForm')">Add Waistcoat Measurement</button>
+  <button type="button" th:if="${#lists.isEmpty(shirtMeasurements)}" onclick="toggleForm('shirtForm')">Add Shirt Measurement</button>
 </div>
 
 <!-- ===================== DRESS LIST (Accordion + Edit/Delete) ===================== -->
@@ -125,8 +160,9 @@
           <!-- PAJAMA TAB -->
           <div class="accordion-content pajama">
             <table>
-              <tr><th>Pajama Asan</th><td th:text="${m.pajamaAsan}"></td></tr>
               <tr><th>Pajama Length</th><td th:text="${m.pajamaLength}"></td></tr>
+              <tr><th>Pajama Asan</th><td th:text="${m.pajamaAsan}"></td></tr>
+              <tr><th>Pajama Payncha</th><td th:text="${m.pajamaPayncha}"></td></tr>
               <tr><th>Upper Fitting</th><td th:text="${m.upperFitting}"></td></tr>
               <tr><th>Middle Fitting</th><td th:text="${m.middleFitting}"></td></tr>
               <tr><th>Lower Fitting</th><td th:text="${m.lowerFitting}"></td></tr>
@@ -243,8 +279,9 @@
 
     <!-- Section: Pajama -->
     <div class="section-title">Pajama Measurements</div>
-    <div><label>Asan:</label><input type="text" th:field="*{pajamaAsan}"/></div>
     <div><label>Length:</label><input type="text" th:field="*{pajamaLength}"/></div>
+    <div><label>Asan:</label><input type="text" th:field="*{pajamaAsan}"/></div>
+    <div><label>Payncha:</label><input type="text" th:field="*{pajamaPayncha}"/></div>
     <div><label>Upper Fitting:</label><input type="text" th:field="*{upperFitting}"/></div>
     <div><label>Middle Fitting:</label><input type="text" th:field="*{middleFitting}"/></div>
     <div><label>Lower Fitting:</label><input type="text" th:field="*{lowerFitting}"/></div>
@@ -341,8 +378,14 @@
       </select>
     </div>
 
-    <div class="options-row">
+    <!-- Bain Design with Checkbox -->
+    <div>
       <label>Bain Design:</label>
+      <input type="checkbox" id="dressBainCheckbox" th:field="*{hasBain}"/>
+    </div>
+
+    <div class="options-row" id="dressBainDesign" style="display:none;">
+      <label>Bain Style:</label>
       <div class="options-inline">
         <label><input type="radio" th:field="*{bainType}" value="Round-Bain"/><img src="/images/bain_round.png" alt="Round"/> Round</label>
         <label><input type="radio" th:field="*{bainType}" value="Square-Bain"/><img src="/images/bain_square.png" alt="Square"/> Square</label>
@@ -350,8 +393,14 @@
       </div>
     </div>
 
-    <div class="options-row">
+    <!-- Cuff Design with Checkbox -->
+    <div>
       <label>Cuff Design:</label>
+      <input type="checkbox" id="dressCuffDesignCheckbox" th:field="*{hasCuffDesign}"/>
+    </div>
+
+    <div class="options-row" id="dressCuffDesignOptions" style="display:none;">
+      <label>Cuff Style:</label>
       <div class="options-inline">
         <label><input type="radio" th:field="*{cuffDesign}" value="Round-Cuff"/><img src="/images/cuff_round.png" alt="Round"/> Round</label>
         <label><input type="radio" th:field="*{cuffDesign}" value="Square-Cuff"/><img src="/images/cuff_square.png" alt="Square"/> Square</label>
@@ -618,6 +667,252 @@
   </div>
 </form>
 
+<!-- ===================== SHIRT LIST (Accordion + Edit/Delete) ===================== -->
+
+<table>
+  <thead>
+  <tr class="section-title">
+    <th colspan="3">
+      Shirt
+    </th>
+  </tr>
+  <tr class="sub-header">
+    <th>Date</th>
+    <th>Measurements</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <th:block th:each="s, iter : ${shirtMeasurements}">
+    <!-- MAIN ROW -->
+    <tr>
+      <td th:text="${#temporals.format(s.date, 'dd-MMM-yyyy')}" style="font-weight:600;"></td>
+
+      <td>
+        <div class="accordion-tabs">
+          <button class="accordion-btn" data-target="shirt-measurements">Measurements</button>
+          <button class="accordion-btn" data-target="shirt-design">Design</button>
+          <button class="accordion-btn" data-target="shirt-quantity">Quantity</button>
+        </div>
+      </td>
+
+      <td th:if="${iter.index == 0}">
+        <a th:href="@{'/print/shirt/' + ${client.id}}" target="_blank">Print</a> |
+        <a th:href="@{/clients/view/{id}(id=${client.id}, editShirt=${s.id})}" style="color:#0d6efd; font-weight:600;">Edit</a> |
+        <a th:href="@{/clients/deleteShirtMeasurement/{id}(id=${s.id})}" style="color:#dc3545; font-weight:600;">Delete</a> |
+        <a th:href="@{/clients/copyShirtMeasurement/{mid}(mid=${s.id})}" style="color:#28a745; font-weight:600;">Add new</a>
+      </td>
+      <td th:if="${iter.index != 0}"></td>
+    </tr>
+
+    <!-- ACCORDION SUB-ROW -->
+    <tr class="accordion-row">
+      <td colspan="3" class="accordion-cell">
+        <div class="accordion-content-group">
+
+          <!-- Measurements -->
+          <div class="accordion-content shirt-measurements">
+            <table>
+              <tr><th>Length</th><td th:text="${s.kameezLength}"></td></tr>
+              <tr><th>Arm</th><td th:text="${s.arm}"></td></tr>
+              <tr><th>Shoulder-arm</th><td th:text="${s.shoulderArm}"></td></tr>
+              <tr><th>Upper Arm</th><td th:text="${s.upperArm}"></td></tr>
+              <tr><th>Center Arm</th><td th:text="${s.centerArm}"></td></tr>
+              <tr><th>Lower Arm</th><td th:text="${s.lowerArm}"></td></tr>
+              <tr><th>Cuff Length</th><td th:text="${s.cuffLength}"></td></tr>
+              <tr><th>Cuff Width</th><td th:text="${s.cuffWidth}"></td></tr>
+              <tr><th>Terra</th><td th:text="${s.terra}"></td></tr>
+              <tr><th>Terra Down</th><td th:text="${s.terraDown}"></td></tr>
+              <tr><th>Collar Size</th><td th:text="${s.collarSize}"></td></tr>
+              <tr><th>Bain Size</th><td th:text="${s.bainSize}"></td></tr>
+              <tr><th>Chest</th><td th:text="${s.chest}"></td></tr>
+              <tr><th>Chest Fitting</th><td th:text="${s.chestFitting}"></td></tr>
+              <tr><th>Waist</th><td th:text="${s.waist}"></td></tr>
+              <tr><th>Hip</th><td th:text="${s.hip}"></td></tr>
+              <tr><th>Notes</th><td th:text="${s.notes}"></td></tr>
+            </table>
+          </div>
+
+          <!-- Design -->
+          <div class="accordion-content shirt-design">
+            <table>
+              <tr><th>Collar Design</th><td th:text="${s.collarType}"></td></tr>
+              <tr><th>Bain Style</th><td th:text="${s.bainType}"></td></tr>
+              <tr><th>Front Pocket</th><td th:text="${s.frontPocket} ? 'Yes' : 'No'"></td></tr>
+              <tr><th>Front Pocket Type</th><td th:text="${s.frontPocketType}"></td></tr>
+              <tr><th>Cuff Design</th><td th:text="${s.cuffDesign}"></td></tr>
+              <tr><th>Cuff Type</th><td th:text="${s.cuffType}"></td></tr>
+              <tr><th>Stitch Type</th><td th:text="${s.stitchType}"></td></tr>
+              <tr><th>Button Type</th><td th:text="${s.buttonType}"></td></tr>
+              <tr><th>Front Patti Kaj</th><td th:text="${s.frontPattiKaj}"></td></tr>
+              <tr><th>Front Patti Type</th><td th:text="${s.frontPattiType}"></td></tr>
+            </table>
+          </div>
+
+          <!-- Quantity -->
+          <div class="accordion-content shirt-quantity">
+            <table>
+              <tr><th>Shirt quantity</th><td th:text="${s.qty}"></td></tr>
+            </table>
+          </div>
+
+        </div>
+      </td>
+    </tr>
+  </th:block>
+  </tbody>
+</table>
+
+<!-- ===================== SHIRT FORM ===================== -->
+<form id="shirtForm"
+      class="measure-form"
+      th:action="@{${shirtFormAction}}"
+      method="post"
+      th:object="${shirtMeasurement}"
+      th:attr="data-open=${shirtMeasurement.id} != null ? 'true' : 'false'"
+      th:style="${shirtMeasurement.id} != null ? 'display:block;' : 'display:none;'">
+
+  <input type="hidden" th:field="*{id}"/>
+  <input type="hidden" th:field="*{client.id}"/>
+
+  <div class="grid-8">
+    <!-- Section: Shirt Measurements (same fields & order as Kameez) -->
+    <div class="section-title">Shirt Measurements</div>
+
+    <div><label>Length:</label><input type="text" th:field="*{kameezLength}" required/></div>
+    <div><label>Arm:</label><input type="text" th:field="*{arm}" required/></div>
+    <div><label>Shoulder-arm:</label><input type="text" th:field="*{shoulderArm}" required/></div>
+    <div><label>Upper Arm:</label><input type="text" th:field="*{upperArm}"/></div>
+    <div><label>Center Arm:</label><input type="text" th:field="*{centerArm}" required/></div>
+    <div><label>Lower Arm:</label><input type="text" th:field="*{lowerArm}"/></div>
+    <div><label>Cuff Length:</label><input type="text" th:field="*{cuffLength}"/></div>
+    <div><label>Cuff Width:</label><input type="text" th:field="*{cuffWidth}"/></div>
+    <div><label>Terra:</label><input type="text" th:field="*{terra}" required/></div>
+    <div><label>Terra Down:</label><input type="text" th:field="*{terraDown}"/></div>
+    <div><label>Collar Size:</label><input type="text" th:field="*{collarSize}"/></div>
+    <div><label>Bain Size:</label><input type="text" th:field="*{bainSize}"/></div>
+    <div><label>Chest:</label><input type="text" th:field="*{chest}" required/></div>
+    <div><label>Chest Fitting:</label><input type="text" th:field="*{chestFitting}"/></div>
+    <div><label>Waist:</label><input type="text" th:field="*{waist}" required/></div>
+    <div><label>Hip:</label><input type="text" th:field="*{hip}" required/></div>
+
+    <!-- Section: Design & Finishing -->
+    <div class="section-title">Design &amp; Finishing</div>
+
+    <div>
+      <label>Collar Design:</label>
+      <select th:field="*{collarType}">
+        <option value="No">No</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option>
+        <option value="9">9</option><option value="10">10</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Cuff Type:</label>
+      <select th:field="*{cuffType}">
+        <option value="Single">Single</option>
+        <option value="Double">Double</option>
+        <option value="Open">Open</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Stitch Type:</label>
+      <select th:field="*{stitchType}">
+        <option value="Single">Single</option>
+        <option value="Double">Double</option>
+        <option value="Simple">Simple</option>
+      </select>
+    </div>
+
+    <!-- Bain Design with Checkbox -->
+    <div>
+      <label>Bain Design:</label>
+      <input type="checkbox" id="shirtBainCheckbox" th:field="*{hasBain}"/>
+    </div>
+
+    <div class="options-row" id="shirtBainDesign" style="display:none;">
+      <label>Bain Style:</label>
+      <div class="options-inline">
+        <label><input type="radio" th:field="*{bainType}" value="Round-Bain"/><img src="/images/bain_round.png" alt="Round"/> Round</label>
+        <label><input type="radio" th:field="*{bainType}" value="Square-Bain"/><img src="/images/bain_square.png" alt="Square"/> Square</label>
+        <label><input type="radio" th:field="*{bainType}" value="Cut-Bain"/><img src="/images/bain_cut.png" alt="Cut"/> Cut</label>
+      </div>
+    </div>
+
+    <!-- Cuff Design with Checkbox -->
+    <div>
+      <label>Cuff Design:</label>
+      <input type="checkbox" id="shirtCuffDesignCheckbox" th:field="*{hasCuffDesign}"/>
+    </div>
+
+    <div class="options-row" id="shirtCuffDesignOptions" style="display:none;">
+      <label>Cuff Style:</label>
+      <div class="options-inline">
+        <label><input type="radio" th:field="*{cuffDesign}" value="Round-Cuff"/><img src="/images/cuff_round.png" alt="Round"/> Round</label>
+        <label><input type="radio" th:field="*{cuffDesign}" value="Square-Cuff"/><img src="/images/cuff_square.png" alt="Square"/> Square</label>
+        <label><input type="radio" th:field="*{cuffDesign}" value="Cut-Cuff"/><img src="/images/cuff_cut.png" alt="Cut"/> Cut</label>
+      </div>
+    </div>
+
+    <!-- Front Pocket -->
+    <div>
+      <label>Front Pocket:</label>
+      <input type="checkbox" id="shirtFrontPocketCheckbox" th:field="*{frontPocket}"/>
+    </div>
+
+    <div class="options-row" id="shirtFrontPocketDesign" style="display:none;">
+      <label>Pocket Design:</label>
+      <div class="options-inline">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" th:field="*{frontPocketType}" value="Round"/>
+          <img src="/images/pocket_round.png" alt="Round" style="width:32px; height:32px;"/> Round
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" th:field="*{frontPocketType}" value="Cut"/>
+          <img src="/images/pocket_cut.png" alt="Cut" style="width:32px; height:32px;"/> Cut
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" th:field="*{frontPocketType}" value="Square"/>
+          <img src="/images/pocket_square.png" alt="Square" style="width:32px; height:32px;"/> Square
+        </label>
+      </div>
+    </div>
+
+    <div style="grid-column: span 8;">
+      <label>Notes:</label>
+      <textarea th:field="*{notes}"></textarea>
+    </div>
+  </div>
+
+  <!-- Section: Quantity -->
+  <div class="section-title">Shirt Quantity</div>
+  <div>
+    <label>Shirt quantity:</label>
+    <select th:field="*{qty}">
+      <option value="0">0</option>
+      <option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option>
+      <option value="5">5</option><option value="6">6</option>
+      <option value="7">7</option><option value="8">8</option>
+      <option value="9">9</option><option value="10">10</option>
+    </select>
+  </div>
+
+  <div class="actions">
+    <button type="submit">Save Shirt Measurement</button>
+    <a th:href="@{/clients/view/{id}(id=${client.id})}"
+       style="margin-left:10px; padding:10px 20px; background:#6c757d; color:#fff; border-radius:6px; font-weight:600; text-decoration:none;">
+      ✖ Cancel
+    </a>
+  </div>
+</form>
+
 <!-- ✅ Go Back Button -->
 <div class="go-back-container">
   <a th:href="@{/clients}" class="go-back-btn">Go Back Home</a>
@@ -696,17 +991,22 @@
     /* ================= KEEP FORM OPEN WHEN EDITING ================= */
     const dressForm = document.getElementById("measurementForm");
     const waistForm = document.getElementById("waistcoatForm");
+    const shirtForm = document.getElementById("shirtForm");
     if (dressForm && dressForm.getAttribute("data-open") === "true") {
       dressForm.style.display = "block";
     }
     if (waistForm && waistForm.getAttribute("data-open") === "true") {
       waistForm.style.display = "block";
     }
+    if (shirtForm && shirtForm.getAttribute("data-open") === "true") {
+      shirtForm.style.display = "block";
+    }
   });
 </script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
+    // Dress front pocket toggle
     const checkbox = document.getElementById("frontPocketCheckbox");
     const pocketDesign = document.getElementById("frontPocketDesign");
     const pocketRadios = document.querySelectorAll("input[name='frontPocketType']");
@@ -723,6 +1023,75 @@
         pocketRadios.forEach(radio => radio.checked = false);
       }
     });
+
+    // Dress bain design toggle
+    const dressBainCheckbox = document.getElementById("dressBainCheckbox");
+    const dressBainDesign = document.getElementById("dressBainDesign");
+    if (dressBainCheckbox && dressBainDesign) {
+      dressBainDesign.style.display = dressBainCheckbox.checked ? "flex" : "none";
+      dressBainCheckbox.addEventListener("change", () => {
+        dressBainDesign.style.display = dressBainCheckbox.checked ? "flex" : "none";
+        if (!dressBainCheckbox.checked) {
+          dressBainDesign.querySelectorAll("input[type='radio']").forEach(r => r.checked = false);
+        }
+      });
+    }
+
+    // Dress cuff design toggle
+    const dressCuffCheckbox = document.getElementById("dressCuffDesignCheckbox");
+    const dressCuffDesignOptions = document.getElementById("dressCuffDesignOptions");
+    if (dressCuffCheckbox && dressCuffDesignOptions) {
+      dressCuffDesignOptions.style.display = dressCuffCheckbox.checked ? "flex" : "none";
+      dressCuffCheckbox.addEventListener("change", () => {
+        dressCuffDesignOptions.style.display = dressCuffCheckbox.checked ? "flex" : "none";
+        if (!dressCuffCheckbox.checked) {
+          dressCuffDesignOptions.querySelectorAll("input[type='radio']").forEach(r => r.checked = false);
+        }
+      });
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Shirt front pocket toggle
+    const shirtCheckbox = document.getElementById("shirtFrontPocketCheckbox");
+    const shirtPocketDesign = document.getElementById("shirtFrontPocketDesign");
+    if (shirtCheckbox && shirtPocketDesign) {
+      shirtPocketDesign.style.display = shirtCheckbox.checked ? "flex" : "none";
+      shirtCheckbox.addEventListener("change", () => {
+        shirtPocketDesign.style.display = shirtCheckbox.checked ? "flex" : "none";
+        if (!shirtCheckbox.checked) {
+          shirtPocketDesign.querySelectorAll("input[type='radio']").forEach(r => r.checked = false);
+        }
+      });
+    }
+
+    // Shirt bain design toggle
+    const shirtBainCheckbox = document.getElementById("shirtBainCheckbox");
+    const shirtBainDesign = document.getElementById("shirtBainDesign");
+    if (shirtBainCheckbox && shirtBainDesign) {
+      shirtBainDesign.style.display = shirtBainCheckbox.checked ? "flex" : "none";
+      shirtBainCheckbox.addEventListener("change", () => {
+        shirtBainDesign.style.display = shirtBainCheckbox.checked ? "flex" : "none";
+        if (!shirtBainCheckbox.checked) {
+          shirtBainDesign.querySelectorAll("input[type='radio']").forEach(r => r.checked = false);
+        }
+      });
+    }
+
+    // Shirt cuff design toggle
+    const shirtCuffCheckbox = document.getElementById("shirtCuffDesignCheckbox");
+    const shirtCuffDesignOptions = document.getElementById("shirtCuffDesignOptions");
+    if (shirtCuffCheckbox && shirtCuffDesignOptions) {
+      shirtCuffDesignOptions.style.display = shirtCuffCheckbox.checked ? "flex" : "none";
+      shirtCuffCheckbox.addEventListener("change", () => {
+        shirtCuffDesignOptions.style.display = shirtCuffCheckbox.checked ? "flex" : "none";
+        if (!shirtCuffCheckbox.checked) {
+          shirtCuffDesignOptions.querySelectorAll("input[type='radio']").forEach(r => r.checked = false);
+        }
+      });
+    }
   });
 </script>
 
@@ -801,7 +1170,7 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const numericFields = document.querySelectorAll(
-      "#measurementForm input[type='text'], #waistcoatForm input[type='text']"
+      "#measurementForm input[type='text'], #waistcoatForm input[type='text'], #shirtForm input[type='text']"
     );
 
     // Common numeric field names
@@ -867,7 +1236,7 @@
     }
 
     // Attach submit listeners to forms
-    ["measurementForm", "waistcoatForm"].forEach(formId => {
+    ["measurementForm", "waistcoatForm", "shirtForm"].forEach(formId => {
       const form = document.getElementById(formId);
       if (!form) return;
 
@@ -891,7 +1260,7 @@
     const cancelBtn = document.getElementById("cancelDeleteBtn");
 
     // Intercept all delete links
-    document.querySelectorAll("a[href*='/deleteMeasurement/'], a[href*='/deleteWaistcoatMeasurement/']").forEach(link => {
+    document.querySelectorAll("a[href*='/deleteMeasurement/'], a[href*='/deleteWaistcoatMeasurement/'], a[href*='/deleteShirtMeasurement/']").forEach(link => {
       link.addEventListener("click", function (e) {
         e.preventDefault(); // stop immediate navigation
         deleteUrl = this.getAttribute("href");

@@ -8,6 +8,43 @@
     <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        /* Action buttons on payments listing page - arranged in two rows */
+        .payments-list-btn {
+            font-size: 11px !important;
+            padding: 4px 8px !important;
+            margin: 2px !important;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        /* Two-row button layout for Actions column */
+        td.actions-cell {
+            white-space: normal !important;
+            max-width: 160px;
+        }
+
+        /* Different colors for each button */
+        .btn-edit-payment {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+
+        .btn-delete-payment {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        .btn-installment {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+
+        .btn-invoice {
+            background-color: #ff8c00 !important;
+            color: white !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -33,11 +70,13 @@
         <th>Date</th>
         <th>Dress</th>
         <th>Waistcoat</th>
+        <th>Shirt</th>
         <th>Matel</th>
         <th>Tich</th>
         <th>Kanta</th>
         <th>Jali</th>
         <th>Krhai</th>
+        <th>Discount</th>
         <th>Total</th>
         <th>Remaining</th>
         <th>Status</th>
@@ -56,12 +95,15 @@
                         th:attr="onclick='toggleInstallments(' + ${p.id} + ')'">▼</button>
             </td>
             <td th:text="${#temporals.format(p.date, 'dd-MMM-yyyy')}"></td>
-            <td th:text="${(p.dressCount != null or p.dressRate != null)
+            <td th:text="${(p.dressCount != null and p.dressCount > 0)
                 ? p.dressCount + ' @ ' + p.dressRate
                 : ''}"></td>
 
-            <td th:text="${(p.waistcoatCount != null or p.waistcoatRate != null)
+            <td th:text="${(p.waistcoatCount != null and p.waistcoatCount > 0)
                 ? p.waistcoatCount + ' @ ' + p.waistcoatRate
+                : ''}"></td>
+            <td th:text="${(p.shirtCount != null and p.shirtCount > 0)
+                ? p.shirtCount + ' @ ' + p.shirtRate
                 : ''}"></td>
             <td th:text="${(p.withMatel != null and p.matelAmount != null)
                 ? p.withMatel + ' @ ' + p.matelAmount
@@ -78,6 +120,7 @@
             <td th:text="${(p.withKrhai != null and p.krhaiAmount != null)
                 ? p.withKrhai + ' @ ' + p.krhaiAmount
                 : ''}"></td>
+            <td th:text="${p.discount != null and p.discount > 0 ? p.discount : ''}"></td>
             <td th:text="${p.totalAmount}"></td>
             <td th:text="${p.remainingAmount}"></td>
 
@@ -141,11 +184,13 @@
             </td>
 
             <td th:text="${p.notes}"></td>
-            <td>
-                <a href="javascript:void(0)" class="btn-action btn-edit"
+            <td class="actions-cell">
+                <a href="javascript:void(0)" class="btn-action payments-list-btn btn-edit-payment"
                    th:attr="data-id=${p.id}, data-date=${p.date},
                             data-dresscount=${p.dressCount}, data-dressrate=${p.dressRate},
                             data-waistcoatcount=${p.waistcoatCount}, data-waistcoatrate=${p.waistcoatRate},
+                            data-shirtcount=${p.shirtCount}, data-shirtrate=${p.shirtRate},
+                            data-discount=${p.discount},
                             data-total=${p.totalAmount}, data-remaining=${p.remainingAmount},
                             data-status=${p.paymentStatus}, data-returndate=${p.returnDate},
                             data-notes=${p.notes},
@@ -156,21 +201,21 @@
                             data-krhaiamount=${p.krhaiAmount}, data-withkrhai=${p.withKrhai}"
                    onclick="openModalFromRow(this)">Edit</a>
 
-                <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete" data-type="payment">Delete</a>
+                <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete payments-list-btn btn-delete-payment" data-type="payment">Delete</a>
 
-                <a href="javascript:void(0)" class="btn-action btn-payment"
+                <a href="javascript:void(0)" class="btn-action payments-list-btn btn-installment"
                    th:attr="data-id=${p.id}"
-                   onclick="openInstallmentModal(this)">Add Installment</a>
+                   onclick="openInstallmentModal(this)">Installment</a>
 
                 <a th:href="@{'/print/invoice/client/' + ${client.id} + '/date/' + ${p.date}}"
-                   class="btn-action" style="background-color: #dc3545; color: white;"
-                   target="_blank">Print Invoice</a>
+                   class="btn-action payments-list-btn btn-invoice"
+                   target="_blank">Invoice</a>
             </td>
         </tr>
 
         <!-- ✅ Installments Table -->
         <tr th:id="'installments-' + ${p.id}" class="installment-row" style="display:none;">
-            <td colspan="17">
+            <td colspan="19">
                 <table class="installments-table">
                     <thead>
                     <tr><th>Date</th><th>Paid Amount</th><th>Note</th><th>Actions</th></tr>
@@ -228,6 +273,10 @@
                     <th>Waistcoat Rate</th><td><input type="number" name="waistcoatRate" id="waistcoatRate"/></td>
                 </tr>
                 <tr>
+                    <th>Shirt Qty</th><td><input type="number" name="shirtCount" id="shirtCount"/></td>
+                    <th>Shirt Rate</th><td><input type="number" name="shirtRate" id="shirtRate"/></td>
+                </tr>
+                <tr>
                     <th>With Matel</th>
                     <td><input type="number" name="withMatel" id="withMatel" onchange="calculateTotals()"/></td>
                     <th>Matel Amount</th>
@@ -261,6 +310,10 @@
                     <td colspan="6">
                         <div id="buttonCountError" style="color: #dc3545; font-weight:600; display:none; font-size:14px; padding-top:6px;"></div>
                     </td>
+                </tr>
+                <tr>
+                    <th>Discount</th><td><input type="number" name="discount" id="discount" min="0" placeholder="0"/></td>
+                    <th></th><td></td>
                 </tr>
                 <tr>
                     <th>Total</th><td><input type="number" name="totalAmount" id="totalAmount" readonly/></td>
@@ -356,6 +409,20 @@
             document.body.style.overflow = "hidden";
             document.getElementById("modalTitle").innerText = "Add Payment";
             clearPaymentForm();
+            // Pre-fill default rates from settings (only for new payments)
+            fetch('/payments/default-rates')
+                .then(r => r.json())
+                .then(rates => {
+                    if (rates.dressRate)    document.getElementById("dressRate").value    = rates.dressRate;
+                    if (rates.waistcoatRate) document.getElementById("waistcoatRate").value = rates.waistcoatRate;
+                    if (rates.shirtRate)    document.getElementById("shirtRate").value    = rates.shirtRate;
+                    if (rates.matelRate)    document.getElementById("matelAmount").value  = rates.matelRate;
+                    if (rates.tichRate)     document.getElementById("tichAmount").value   = rates.tichRate;
+                    if (rates.kantaRate)    document.getElementById("kantaAmount").value  = rates.kantaRate;
+                    if (rates.jaliRate)     document.getElementById("jaliAmount").value   = rates.jaliRate;
+                    if (rates.krhaiRate)    document.getElementById("krhaiAmount").value  = rates.krhaiRate;
+                })
+                .catch(() => {}); // silently ignore if rates not set
         }
 
         function closeModal() {
@@ -372,6 +439,9 @@
             document.getElementById("dressRate").value = el.dataset.dressrate;
             document.getElementById("waistcoatCount").value = el.dataset.waistcoatcount;
             document.getElementById("waistcoatRate").value = el.dataset.waistcoatrate;
+            document.getElementById("shirtCount").value = el.dataset.shirtcount || "";
+            document.getElementById("shirtRate").value = el.dataset.shirtrate || "";
+            document.getElementById("discount").value = el.dataset.discount || "";
             document.getElementById("totalAmount").value = el.dataset.total;
             document.getElementById("remainingAmount").value = el.dataset.remaining;
             document.getElementById("returnDate").value = el.dataset.returndate;
@@ -395,6 +465,8 @@
             document.querySelector(".payment-form").reset();
             document.getElementById("totalAmount").value = "";
             document.getElementById("remainingAmount").value = "";
+            // Auto-set today's date for new entries
+            document.getElementById("date").value = new Date().toISOString().split('T')[0];
         }
 
         function openInstallmentModal(el) {
@@ -438,8 +510,11 @@
             const wCount = parseFloat(waistcoatCount.value) || 0;
             const wRate = parseFloat(waistcoatRate.value) || 0;
 
-            // Calculate dress and waistcoat totals
-            let total = (dCount * dRate) + (wCount * wRate);
+            const sCount = parseFloat(document.getElementById("shirtCount").value) || 0;
+            const sRate = parseFloat(document.getElementById("shirtRate").value) || 0;
+
+            // Calculate dress, waistcoat, and shirt totals
+            let total = (dCount * dRate) + (wCount * wRate) + (sCount * sRate);
 
             // Add Matel cost
             const matelAmount = parseFloat(document.getElementById("matelAmount").value) || 0;
@@ -465,6 +540,10 @@
             const krhaiAmount = parseFloat(document.getElementById("krhaiAmount").value) || 0;
             const withKrhai = parseFloat(document.getElementById("withKrhai").value) || 0;
             total += (krhaiAmount * withKrhai);
+
+            // Subtract discount
+            const discount = parseFloat(document.getElementById("discount").value) || 0;
+            total = Math.max(total - discount, 0);
 
             document.getElementById("totalAmount").value = total;
             document.getElementById("remainingAmount").value = total;
@@ -558,6 +637,8 @@
         }
 
         [dressCount, dressRate, waistcoatCount, waistcoatRate,
+         document.getElementById("shirtCount"), document.getElementById("shirtRate"),
+         document.getElementById("discount"),
          document.getElementById("matelAmount"), document.getElementById("withMatel"),
          document.getElementById("tichAmount"), document.getElementById("withTich"),
          document.getElementById("kantaAmount"), document.getElementById("withKanta"),

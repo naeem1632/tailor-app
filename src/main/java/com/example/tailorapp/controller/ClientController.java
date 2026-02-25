@@ -3,10 +3,12 @@ package com.example.tailorapp.controller;
 import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
 import com.example.tailorapp.model.Payments;
+import com.example.tailorapp.model.ShirtMeasurement;
 import com.example.tailorapp.model.WaistcoatMeasurement;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.MeasurementService;
 import com.example.tailorapp.service.PaymentsService;
+import com.example.tailorapp.service.ShirtService;
 import com.example.tailorapp.service.StorageProperties;
 
 import com.example.tailorapp.service.WaistcoatService;
@@ -35,17 +37,20 @@ public class ClientController {
     private final MeasurementService measurementService;
     private final StorageProperties storageProperties;
     private final WaistcoatService waistcoatService;
+    private final ShirtService shirtService;
     private final PaymentsService paymentsService;
 
     public ClientController(ClientService clientService,
                             MeasurementService measurementService,
                             StorageProperties storageProperties,
                             WaistcoatService waistcoatService,
+                            ShirtService shirtService,
                             PaymentsService paymentsService) {
         this.clientService = clientService;
         this.measurementService = measurementService;
         this.storageProperties = storageProperties;
         this.waistcoatService = waistcoatService;
+        this.shirtService = shirtService;
         this.paymentsService = paymentsService;
     }
 
@@ -116,6 +121,7 @@ public class ClientController {
     public String view(@PathVariable Long id,
                        @RequestParam(required = false) Long edit,
                        @RequestParam(required = false) Long editWaistcoat,
+                       @RequestParam(required = false) Long editShirt,
                        Model model) {
         Optional<Client> c = clientService.findById(id);
         if (c.isEmpty()) return "redirect:/clients";
@@ -136,7 +142,14 @@ public class ClientController {
                 .toList();
         model.addAttribute("waistcoatMeasurements", waistcoatMeasurements);
 
-        // Form handling
+        // Shirt measurements
+        List<ShirtMeasurement> shirtMeasurements = shirtService.findByClient(id)
+                .stream()
+                .sorted(Comparator.comparing(ShirtMeasurement::getDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        model.addAttribute("shirtMeasurements", shirtMeasurements);
+
+        // Form handling - Dress
         if (edit != null) {
             model.addAttribute("dressMeasurement", measurementService.findById(edit).orElse(new DressMeasurement()));
             model.addAttribute("formAction", "/clients/updateMeasurement/" + edit);
@@ -145,12 +158,22 @@ public class ClientController {
             model.addAttribute("formAction", "/clients/addMeasurement/" + client.getId());
         }
 
+        // Form handling - Waistcoat
         if (editWaistcoat != null) {
             model.addAttribute("waistcoatMeasurement", waistcoatService.findById(editWaistcoat).orElse(new WaistcoatMeasurement()));
             model.addAttribute("waistcoatFormAction", "/clients/updateWaistcoatMeasurement/" + editWaistcoat);
         } else {
             model.addAttribute("waistcoatMeasurement", new WaistcoatMeasurement());
             model.addAttribute("waistcoatFormAction", "/clients/addWaistcoatMeasurement/" + client.getId());
+        }
+
+        // Form handling - Shirt
+        if (editShirt != null) {
+            model.addAttribute("shirtMeasurement", shirtService.findById(editShirt).orElse(new ShirtMeasurement()));
+            model.addAttribute("shirtFormAction", "/clients/updateShirtMeasurement/" + editShirt);
+        } else {
+            model.addAttribute("shirtMeasurement", new ShirtMeasurement());
+            model.addAttribute("shirtFormAction", "/clients/addShirtMeasurement/" + client.getId());
         }
 
         model.addAttribute("client", client);
@@ -315,7 +338,73 @@ public class ClientController {
         copy.setDate(LocalDate.now());
         waistcoatService.save(copy);
 
-        ra.addFlashAttribute("message", "Waistcoat measurement copied with today’s date");
+        ra.addFlashAttribute("message", "Waistcoat measurement copied with today's date");
+        return "redirect:/clients/view/" + original.getClient().getId();
+    }
+
+    // ===================== SHIRT ENDPOINTS =====================
+
+    // Shirt Add
+    @PostMapping("/addShirtMeasurement/{id}")
+    public String addShirt(@PathVariable Long id,
+                           @ModelAttribute ShirtMeasurement shirtMeasurement,
+                           RedirectAttributes ra) {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) {
+            ra.addFlashAttribute("error", "Client not found");
+            return "redirect:/clients";
+        }
+        shirtMeasurement.setClient(c.get());
+        shirtMeasurement.setDate(LocalDate.now());
+        shirtService.save(shirtMeasurement);
+        ra.addFlashAttribute("message", "Shirt Measurement added successfully");
+        return "redirect:/clients/view/" + id;
+    }
+
+    // Shirt Update
+    @PostMapping("/updateShirtMeasurement/{id}")
+    public String updateShirt(@PathVariable Long id,
+                              @ModelAttribute ShirtMeasurement shirtMeasurement,
+                              RedirectAttributes ra) {
+        Optional<ShirtMeasurement> existing = shirtService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+        ShirtMeasurement db = existing.get();
+        shirtMeasurement.setClient(db.getClient());
+        shirtService.save(shirtMeasurement);
+        ra.addFlashAttribute("message", "Shirt Measurement updated successfully");
+        return "redirect:/clients/view/" + db.getClient().getId();
+    }
+
+    // Shirt Delete
+    @GetMapping("/deleteShirtMeasurement/{id}")
+    public String deleteShirt(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<ShirtMeasurement> m = shirtService.findById(id);
+        if (m.isPresent()) {
+            Long clientId = m.get().getClient().getId();
+            shirtService.deleteById(id);
+            ra.addFlashAttribute("message", "Shirt Measurement deleted successfully");
+            return "redirect:/clients/view/" + clientId;
+        }
+        return "redirect:/clients";
+    }
+
+    // Shirt Copy
+    @GetMapping("/copyShirtMeasurement/{id}")
+    public String copyShirt(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<ShirtMeasurement> existing = shirtService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+        ShirtMeasurement original = existing.get();
+        ShirtMeasurement copy = new ShirtMeasurement();
+        org.springframework.beans.BeanUtils.copyProperties(original, copy, "id", "date");
+        copy.setDate(LocalDate.now());
+        shirtService.save(copy);
+        ra.addFlashAttribute("message", "Shirt measurement copied with today's date");
         return "redirect:/clients/view/" + original.getClient().getId();
     }
 

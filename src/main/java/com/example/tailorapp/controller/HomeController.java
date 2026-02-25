@@ -28,6 +28,10 @@ public class HomeController {
         model.addAttribute("inProductionOrders", paymentsService.countInProductionOrders());
         model.addAttribute("totalDresses", paymentsService.countTotalDresses());
         model.addAttribute("totalWaistcoats", paymentsService.countTotalWaistcoats());
+        model.addAttribute("totalShirts", paymentsService.countTotalShirts());
+        model.addAttribute("inProductionDresses", paymentsService.countInProductionDresses());
+        model.addAttribute("inProductionWaistcoats", paymentsService.countInProductionWaistcoats());
+        model.addAttribute("inProductionShirts", paymentsService.countInProductionShirts());
 
         return "index";
     }

@@ -4,10 +4,12 @@ import com.example.tailorapp.config.AppConstants;
 import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
 import com.example.tailorapp.model.Payments;
+import com.example.tailorapp.model.ShirtMeasurement;
 import com.example.tailorapp.model.WaistcoatMeasurement;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.MeasurementService;
 import com.example.tailorapp.service.PaymentsService;
+import com.example.tailorapp.service.ShirtService;
 import com.example.tailorapp.service.StorageProperties;
 import com.example.tailorapp.service.WaistcoatService;
 import com.lowagie.text.*;
@@ -40,17 +42,20 @@ public class PrintController {
     private final MeasurementService measurementService;
     private final StorageProperties storageProperties;
     private final WaistcoatService waistcoatService;
+    private final ShirtService shirtService;
     private final PaymentsService paymentsService;
 
     public PrintController(ClientService clientService,
                            MeasurementService measurementService,
                            StorageProperties storageProperties,
                            WaistcoatService waistcoatService,
+                           ShirtService shirtService,
                            PaymentsService paymentsService) {
         this.clientService = clientService;
         this.measurementService = measurementService;
         this.storageProperties = storageProperties;
         this.waistcoatService = waistcoatService;
+        this.shirtService = shirtService;
         this.paymentsService = paymentsService;
     }
 
@@ -78,7 +83,7 @@ public class PrintController {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
-        Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
+        Rectangle slipSize = new Rectangle(PageSize.LEGAL.getWidth() / 2, PageSize.LEGAL.getHeight() / 2);
         Document document = new Document(slipSize, 15, 15, 10, 15); // balanced margins for single page printing
         String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
@@ -187,9 +192,10 @@ public class PrintController {
     private void addPajamaSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Pajama Measurements");
 
-        addRow4IfNotNull(table, "Pajama Asan", nvl(m.getPajamaAsan()), "Pajama Length", nvl(m.getPajamaLength()));
-        addRow4IfNotNull(table, "Upper Fitting", nvl(m.getUpperFitting()), "Middle Fitting", nvl(m.getMiddleFitting()));
-        addRow4IfNotNull(table, "Lower Fitting", nvl(m.getLowerFitting()), "Pajama Pocket", nvl(m.getPajamaPocket()));
+        addRow4IfNotNull(table, "Pajama Length", nvl(m.getPajamaLength()), "Pajama Asan", nvl(m.getPajamaAsan()));
+        addRow4IfNotNull(table, "Pajama Payncha", nvl(m.getPajamaPayncha()), "Upper Fitting", nvl(m.getUpperFitting()));
+        addRow4IfNotNull(table, "Middle Fitting", nvl(m.getMiddleFitting()), "Lower Fitting", nvl(m.getLowerFitting()));
+        addRow4IfNotNull(table, "Pajama Pocket", nvl(m.getPajamaPocket()), "", null);
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
@@ -200,7 +206,15 @@ public class PrintController {
         PdfPTable table = createSectionTable("Design & Finishing");
 
         addRow4IfNotNull(table,"Collar design", nvl(m.getCollarType()), "", null);
-        addImageRow4(table, "Bain design", m.getBainType(), "Cuff design", m.getCuffDesign());
+
+        // Only show bain and cuff designs if selected (checkbox checked)
+        if (m.getHasBain() != null && m.getHasBain() && m.getBainType() != null) {
+            addImageRow4(table, "Bain design", m.getBainType(), "", null);
+        }
+        if (m.getHasCuffDesign() != null && m.getHasCuffDesign() && m.getCuffDesign() != null) {
+            addImageRow4(table, "Cuff design", m.getCuffDesign(), "", null);
+        }
+
         addImageRow4(table, "Front pocket", m.getFrontPocket() ? "Yes" : "No", "Front pocket design", m.getFrontPocketType());
         addRow4IfNotNull(table, "Side pocket", nvl(m.getSidePocket()), "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No");
         addRow4IfNotNull(table, "Daman type", m.getDamanType(), "Daman stitching", nvl(m.getDamanStitching()));
@@ -353,7 +367,7 @@ public class PrintController {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_slip.pdf");
 
-        Rectangle slipSize = new Rectangle(PageSize.A4.getWidth() / 2, PageSize.A4.getHeight() / 2);
+        Rectangle slipSize = new Rectangle(PageSize.LEGAL.getWidth() / 2, PageSize.LEGAL.getHeight() / 2);
         Document document = new Document(slipSize, 15, 15, 10, 15); // balanced margins for single page printing
         String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
 
@@ -375,7 +389,7 @@ public class PrintController {
         headerTable.addCell(leftCell);
 
         // Center: Name
-        PdfPCell nameCell = new PdfPCell(new Phrase(nvl(client.getName()),
+        PdfPCell nameCell = new PdfPCell(new Phrase(nvl(client.getName() + " (" + client.getId() + ")"),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
         nameCell.setBorder(Rectangle.NO_BORDER);
         nameCell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -435,12 +449,122 @@ public class PrintController {
 
     // Helper method to check if any pajama field has data
     private boolean hasPajamaData(DressMeasurement m) {
-        return (m.getPajamaAsan() != null && !m.getPajamaAsan().toString().trim().isEmpty()) ||
-               (m.getPajamaLength() != null && !m.getPajamaLength().toString().trim().isEmpty()) ||
+        return (m.getPajamaLength() != null && !m.getPajamaLength().toString().trim().isEmpty()) ||
+               (m.getPajamaAsan() != null && !m.getPajamaAsan().toString().trim().isEmpty()) ||
+               (m.getPajamaPayncha() != null && !m.getPajamaPayncha().toString().trim().isEmpty()) ||
                (m.getUpperFitting() != null && !m.getUpperFitting().toString().trim().isEmpty()) ||
                (m.getMiddleFitting() != null && !m.getMiddleFitting().toString().trim().isEmpty()) ||
                (m.getLowerFitting() != null && !m.getLowerFitting().toString().trim().isEmpty()) ||
                (m.getPajamaPocket() != null && !m.getPajamaPocket().toString().trim().isEmpty());
+    }
+
+    // Print PDF - Shirt
+    @GetMapping("/shirt/{id}")
+    public void printShirtSlip(@PathVariable Long id, HttpServletResponse response) throws Exception {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) return;
+
+        Client client = c.get();
+
+        Optional<ShirtMeasurement> latestMeasurement = shirtService.findByClient(id)
+                .stream()
+                .max(Comparator.comparing(ShirtMeasurement::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        if (latestMeasurement.isEmpty()) return;
+
+        ShirtMeasurement shirt = latestMeasurement.get();
+
+        Optional<Payments> latestPaymentWithReturnDate = paymentsService.findByClient(id).stream()
+                .filter(p -> p.getReturnDate() != null && !"PICKED_UP".equals(p.getReadyStatus()))
+                .max(Comparator.comparing(Payments::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "inline; filename=client_" + id + "_shirt_slip.pdf");
+
+        Rectangle slipSize = new Rectangle(PageSize.LEGAL.getWidth() / 2, PageSize.LEGAL.getHeight() / 2);
+        Document document = new Document(slipSize, 15, 15, 10, 15);
+        String now = LocalDateTime.now().format(DATE_TIME_FORMATTER);
+
+        PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
+        writer.setPageEvent(new FooterHandler(
+                shirt.getNotes(),
+                latestPaymentWithReturnDate.map(Payments::getReturnDate).orElse(null)
+        ));
+        document.open();
+
+        // === Header ===
+        PdfPTable headerTable = new PdfPTable(3);
+        headerTable.setWidthPercentage(100);
+        headerTable.setWidths(new float[]{30f, 40f, 30f});
+
+        PdfPCell leftCell = new PdfPCell(new Phrase(""));
+        leftCell.setBorder(Rectangle.NO_BORDER);
+        headerTable.addCell(leftCell);
+
+        PdfPCell nameCell = new PdfPCell(new Phrase(nvl(client.getName() + " (" + client.getId() + ")"),
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
+        nameCell.setBorder(Rectangle.NO_BORDER);
+        nameCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        nameCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(nameCell);
+
+        PdfPCell dateCell = new PdfPCell(new Phrase("Printed: " + now,
+                FontFactory.getFont(FontFactory.HELVETICA, 6)));
+        dateCell.setBorder(Rectangle.NO_BORDER);
+        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        headerTable.addCell(dateCell);
+
+        headerTable.setSpacingAfter(1f);
+        document.add(headerTable);
+
+        // === Qty info row ===
+        PdfPTable infoTable = new PdfPTable(1);
+        infoTable.setWidthPercentage(100);
+        infoTable.setSpacingAfter(1.5f);
+        infoTable.addCell(makeInfoCell("Shirt Qty: " + nvl(shirt.getQty())));
+        document.add(infoTable);
+
+        // === Shirt measurements section ===
+        addShirtMeasurementsSection(document, shirt);
+        addShirtDesignSection(document, shirt);
+
+        document.close();
+    }
+
+    // === Shirt Measurements Section (same fields/order as Kameez) ===
+    private void addShirtMeasurementsSection(Document doc, ShirtMeasurement m) throws DocumentException {
+        PdfPTable table = createSectionTable("Shirt Measurements");
+
+        addRow4IfNotNull(table, "Length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
+        addRow4IfNotNull(table, "Shoulder-arm", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
+        addRow4IfNotNull(table, "Center arm", nvl(m.getCenterArm()), "Lower arm", nvl(m.getLowerArm()));
+        addRow4IfNotNull(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
+        addRow4IfNotNull(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
+        addRow4IfNotNull(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));
+        addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Chest fitting", nvl(m.getChestFitting()));
+        addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Hip", nvl(m.getHip()));
+
+        doc.add(table);
+        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2)));
+    }
+
+    // === Shirt Design Section ===
+    private void addShirtDesignSection(Document doc, ShirtMeasurement m) throws DocumentException {
+        PdfPTable table = createSectionTable("Design & Finishing");
+
+        addRow4IfNotNull(table, "Collar design", nvl(m.getCollarType()), "", null);
+        // Only show bain and cuff designs if selected (checkbox checked)
+        if (m.getHasBain() != null && m.getHasBain()) {
+            addImageRow4(table, "Bain design", m.getBainType(), "", null);
+        }
+        if (m.getHasCuffDesign() != null && m.getHasCuffDesign()) {
+            addImageRow4(table, "Cuff design", m.getCuffDesign(), "", null);
+        }
+        addImageRow4(table, "Front pocket", m.getFrontPocket() != null && m.getFrontPocket() ? "Yes" : "No", "Front pocket design", m.getFrontPocketType());
+        addRow4IfNotNull(table, "Cuff type", nvl(m.getCuffType()), "Stitching", nvl(m.getStitchType()));
+
+        doc.add(table);
     }
 
     // Print Payment Invoice - Groups orders by same date
@@ -485,10 +609,15 @@ public class PrintController {
         headerTable.setWidthPercentage(100);
         headerTable.setWidths(new float[]{60f, 40f});
 
-        // Left: Brand Name
-        PdfPCell brandCell = new PdfPCell(new Phrase("STITCH & STYLE", brandFont));
+        // Left: Brand Name + contact
+        Paragraph brandPara = new Paragraph();
+        brandPara.add(new Phrase("STITCH & STYLE\n", brandFont));
+        brandPara.add(new Phrase("\n", FontFactory.getFont(FontFactory.HELVETICA, 4)));
+        brandPara.add(new Phrase("CH Naseer  |  03002645111", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, new Color(30, 30, 30))));
+        PdfPCell brandCell = new PdfPCell(brandPara);
         brandCell.setBorder(Rectangle.NO_BORDER);
         brandCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        brandCell.setPaddingBottom(4f);
         headerTable.addCell(brandCell);
 
         // Right: Invoice Date
@@ -543,149 +672,132 @@ public class PrintController {
 
         document.add(clientTable);
 
-        // === ORDER DETAILS SECTION ===
-        // Section header with background
-        PdfPTable orderHeaderTable = new PdfPTable(1);
-        orderHeaderTable.setWidthPercentage(100);
-        orderHeaderTable.setSpacingBefore(5f); // Increased spacing before order section
-
-        PdfPCell orderHeaderCell = new PdfPCell(new Phrase("ORDER DETAILS", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
-        orderHeaderCell.setBackgroundColor(new Color(0, 102, 204));
-        orderHeaderCell.setPadding(4f);
-        orderHeaderCell.setHorizontalAlignment(Element.ALIGN_LEFT);
-        orderHeaderTable.addCell(orderHeaderCell);
-        document.add(orderHeaderTable);
-
-        // Calculate totals across all orders on same date
-        long totalDressCount = 0, totalWaistcoatCount = 0;
-        long totalDressAmount = 0, totalWaistcoatAmount = 0;
-        int totalMatelQty = 0, totalTichQty = 0, totalKantaQty = 0, totalJaliQty = 0, totalKrhaiQty = 0;
-        long totalMatel = 0, totalTich = 0, totalKanta = 0, totalJali = 0, totalKrhai = 0;
-        long grandTotal = 0, grandPaid = 0, grandRemaining = 0;
-        java.util.Set<java.time.LocalDate> returnDates = new java.util.HashSet<>();
-        java.util.Set<String> paymentStatuses = new java.util.HashSet<>();
-        java.util.Set<String> readyStatuses = new java.util.HashSet<>();
-        StringBuilder allNotes = new StringBuilder();
-
-        // Track rates for dress and waistcoat (we'll use average if rates differ)
-        long dressRateSum = 0, waistcoatRateSum = 0;
-        int dressRateCount = 0, waistcoatRateCount = 0;
-
+        // === ORDER DETAILS — grouped by returnDate ===
+        // Group payments by returnDate (null returnDate goes in its own group keyed by null)
+        java.util.LinkedHashMap<java.time.LocalDate, java.util.List<Payments>> byReturnDate = new java.util.LinkedHashMap<>();
         for (Payments p : paymentsOnDate) {
-            long dressCount = (p.getDressCount() != null ? p.getDressCount() : 0);
-            long waistcoatCount = (p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0);
-
-            totalDressCount += dressCount;
-            totalWaistcoatCount += waistcoatCount;
-
-            // Calculate dress amount
-            if (dressCount > 0 && p.getDressRate() != null) {
-                totalDressAmount += dressCount * p.getDressRate();
-                dressRateSum += p.getDressRate();
-                dressRateCount++;
-            }
-
-            // Calculate waistcoat amount
-            if (waistcoatCount > 0 && p.getWaistcoatRate() != null) {
-                totalWaistcoatAmount += waistcoatCount * p.getWaistcoatRate();
-                waistcoatRateSum += p.getWaistcoatRate();
-                waistcoatRateCount++;
-            }
-
-            if (p.getWithMatel() != null && p.getMatelAmount() != null) {
-                totalMatelQty += p.getWithMatel();
-                totalMatel += p.getWithMatel() * p.getMatelAmount();
-            }
-            if (p.getWithTich() != null && p.getTichAmount() != null) {
-                totalTichQty += p.getWithTich();
-                totalTich += p.getWithTich() * p.getTichAmount();
-            }
-            if (p.getWithKanta() != null && p.getKantaAmount() != null) {
-                totalKantaQty += p.getWithKanta();
-                totalKanta += p.getWithKanta() * p.getKantaAmount();
-            }
-            if (p.getWithJali() != null && p.getJaliAmount() != null) {
-                totalJaliQty += p.getWithJali();
-                totalJali += p.getWithJali() * p.getJaliAmount();
-            }
-            if (p.getWithKrhai() != null && p.getKrhaiAmount() != null) {
-                totalKrhaiQty += p.getWithKrhai();
-                totalKrhai += p.getWithKrhai() * p.getKrhaiAmount();
-            }
-
-            grandTotal += (p.getTotalAmount() != null ? p.getTotalAmount() : 0);
-            grandPaid += (p.getPaidAmount() != null ? p.getPaidAmount() : 0);
-            grandRemaining += (p.getRemainingAmount() != null ? p.getRemainingAmount() : 0);
-
-            if (p.getReturnDate() != null) {
-                returnDates.add(p.getReturnDate());
-            }
-            if (p.getPaymentStatus() != null) {
-                paymentStatuses.add(p.getPaymentStatus());
-            }
-            if (p.getReadyStatus() != null && !p.getReadyStatus().isEmpty()) {
-                readyStatuses.add(p.getReadyStatus());
-            }
-            if (p.getNotes() != null && !p.getNotes().trim().isEmpty()) {
-                if (allNotes.length() > 0) allNotes.append("; ");
-                allNotes.append(p.getNotes());
-            }
+            java.time.LocalDate key = p.getReturnDate(); // null is a valid key
+            byReturnDate.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(p);
         }
-
-        // Calculate average rates
-        long avgDressRate = dressRateCount > 0 ? dressRateSum / dressRateCount : 0;
-        long avgWaistcoatRate = waistcoatRateCount > 0 ? waistcoatRateSum / waistcoatRateCount : 0;
-
-        // Order items in a clean table format
-        PdfPTable itemsTable = new PdfPTable(3);
-        itemsTable.setWidthPercentage(100);
-        itemsTable.setWidths(new float[]{50f, 20f, 30f});
-        itemsTable.setSpacingBefore(2f);
 
         Font itemFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
         Font qtyFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
         Font amountFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
 
-        if (totalDressCount > 0) {
-            String dressQty = totalDressCount + "@" + avgDressRate;
-            addItemRow(itemsTable, "Dresses", dressQty, String.valueOf(totalDressAmount), itemFont, qtyFont, amountFont);
-        }
-        if (totalWaistcoatCount > 0) {
-            String waistcoatQty = totalWaistcoatCount + "@" + avgWaistcoatRate;
-            addItemRow(itemsTable, "Waistcoats", waistcoatQty, String.valueOf(totalWaistcoatAmount), itemFont, qtyFont, amountFont);
-        }
-        if (totalMatel > 0) {
-            long avgMatelRate = totalMatelQty > 0 ? totalMatel / totalMatelQty : 0;
-            String matelQty = totalMatelQty + "@" + avgMatelRate;
-            addItemRow(itemsTable, "Matel", matelQty, String.valueOf(totalMatel), itemFont, qtyFont, amountFont);
-        }
-        if (totalTich > 0) {
-            long avgTichRate = totalTichQty > 0 ? totalTich / totalTichQty : 0;
-            String tichQty = totalTichQty + "@" + avgTichRate;
-            addItemRow(itemsTable, "Tich", tichQty, String.valueOf(totalTich), itemFont, qtyFont, amountFont);
-        }
-        if (totalKanta > 0) {
-            long avgKantaRate = totalKantaQty > 0 ? totalKanta / totalKantaQty : 0;
-            String kantaQty = totalKantaQty + "@" + avgKantaRate;
-            addItemRow(itemsTable, "Kanta", kantaQty, String.valueOf(totalKanta), itemFont, qtyFont, amountFont);
-        }
-        if (totalJali > 0) {
-            long avgJaliRate = totalJaliQty > 0 ? totalJali / totalJaliQty : 0;
-            String jaliQty = totalJaliQty + "@" + avgJaliRate;
-            addItemRow(itemsTable, "Jali", jaliQty, String.valueOf(totalJali), itemFont, qtyFont, amountFont);
-        }
-        if (totalKrhai > 0) {
-            long avgKrhaiRate = totalKrhaiQty > 0 ? totalKrhai / totalKrhaiQty : 0;
-            String krhaiQty = totalKrhaiQty + "@" + avgKrhaiRate;
-            addItemRow(itemsTable, "Krhai", krhaiQty, String.valueOf(totalKrhai), itemFont, qtyFont, amountFont);
+        // Overall grand totals (across all groups) for PAYMENT SUMMARY
+        long grandTotal = 0, grandPaid = 0, grandRemaining = 0, grandDiscount = 0;
+        StringBuilder allNotes = new StringBuilder();
+
+        // Render one "ORDER DETAILS" block per returnDate group
+        boolean firstGroup = true;
+        for (java.util.Map.Entry<java.time.LocalDate, java.util.List<Payments>> entry : byReturnDate.entrySet()) {
+            java.time.LocalDate groupReturnDate = entry.getKey();
+            java.util.List<Payments> group = entry.getValue();
+
+            // Section header
+            PdfPTable orderHeaderTable = new PdfPTable(1);
+            orderHeaderTable.setWidthPercentage(100);
+            orderHeaderTable.setSpacingBefore(firstGroup ? 5f : 8f);
+            firstGroup = false;
+
+            String headerLabel = "ORDER DETAILS";
+            PdfPCell orderHeaderCell = new PdfPCell(new Phrase(headerLabel, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+            orderHeaderCell.setBackgroundColor(new Color(0, 102, 204));
+            orderHeaderCell.setPadding(4f);
+            orderHeaderCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            orderHeaderTable.addCell(orderHeaderCell);
+            document.add(orderHeaderTable);
+
+            // Aggregate this group
+            long grpDressCount = 0, grpWaistcoatCount = 0, grpShirtCount = 0;
+            long grpDressAmount = 0, grpWaistcoatAmount = 0, grpShirtAmount = 0;
+            long grpDressRateSum = 0, grpWaistcoatRateSum = 0, grpShirtRateSum = 0;
+            int grpDressRateCount = 0, grpWaistcoatRateCount = 0, grpShirtRateCount = 0;
+            int grpMatelQty = 0, grpTichQty = 0, grpKantaQty = 0, grpJaliQty = 0, grpKrhaiQty = 0;
+            long grpMatel = 0, grpTich = 0, grpKanta = 0, grpJali = 0, grpKrhai = 0;
+            java.util.Set<String> grpReadyStatuses = new java.util.HashSet<>();
+
+            for (Payments p : group) {
+                long dc = p.getDressCount() != null ? p.getDressCount() : 0;
+                long wc = p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0;
+                long sc = p.getShirtCount() != null ? p.getShirtCount() : 0;
+                grpDressCount += dc;
+                grpWaistcoatCount += wc;
+                grpShirtCount += sc;
+                if (dc > 0 && p.getDressRate() != null) {
+                    grpDressAmount += dc * p.getDressRate();
+                    grpDressRateSum += p.getDressRate();
+                    grpDressRateCount++;
+                }
+                if (wc > 0 && p.getWaistcoatRate() != null) {
+                    grpWaistcoatAmount += wc * p.getWaistcoatRate();
+                    grpWaistcoatRateSum += p.getWaistcoatRate();
+                    grpWaistcoatRateCount++;
+                }
+                if (sc > 0 && p.getShirtRate() != null) {
+                    grpShirtAmount += sc * p.getShirtRate();
+                    grpShirtRateSum += p.getShirtRate();
+                    grpShirtRateCount++;
+                }
+                if (p.getWithMatel() != null && p.getMatelAmount() != null) { grpMatelQty += p.getWithMatel(); grpMatel += (long) p.getWithMatel() * p.getMatelAmount(); }
+                if (p.getWithTich()  != null && p.getTichAmount()  != null) { grpTichQty  += p.getWithTich();  grpTich  += (long) p.getWithTich()  * p.getTichAmount();  }
+                if (p.getWithKanta() != null && p.getKantaAmount() != null) { grpKantaQty += p.getWithKanta(); grpKanta += (long) p.getWithKanta() * p.getKantaAmount(); }
+                if (p.getWithJali()  != null && p.getJaliAmount()  != null) { grpJaliQty  += p.getWithJali();  grpJali  += (long) p.getWithJali()  * p.getJaliAmount();  }
+                if (p.getWithKrhai() != null && p.getKrhaiAmount() != null) { grpKrhaiQty += p.getWithKrhai(); grpKrhai += (long) p.getWithKrhai() * p.getKrhaiAmount(); }
+
+                long pTotal   = p.getTotalAmount()  != null ? p.getTotalAmount()  : 0;
+                long pDisc    = p.getDiscount()     != null ? p.getDiscount()     : 0;
+                long pPaid    = p.getPaidAmount()   != null ? p.getPaidAmount()   : 0;
+                // Recompute remaining live (stored value may be stale if discount was added later)
+                long pRemain  = Math.max(pTotal - pPaid, 0);
+
+                grandTotal     += pTotal;
+                grandPaid      += pPaid;
+                grandRemaining += pRemain;
+                grandDiscount  += pDisc;
+
+                if (p.getReadyStatus() != null && !p.getReadyStatus().isEmpty()) grpReadyStatuses.add(p.getReadyStatus());
+                if (p.getNotes() != null && !p.getNotes().trim().isEmpty()) {
+                    if (allNotes.length() > 0) allNotes.append("; ");
+                    allNotes.append(p.getNotes());
+                }
+            }
+
+            long avgDressRate     = grpDressRateCount     > 0 ? grpDressRateSum     / grpDressRateCount     : 0;
+            long avgWaistcoatRate = grpWaistcoatRateCount > 0 ? grpWaistcoatRateSum / grpWaistcoatRateCount : 0;
+            long avgShirtRate     = grpShirtRateCount     > 0 ? grpShirtRateSum     / grpShirtRateCount     : 0;
+
+            // Items table for this group
+            PdfPTable itemsTable = new PdfPTable(3);
+            itemsTable.setWidthPercentage(100);
+            itemsTable.setWidths(new float[]{50f, 20f, 30f});
+            itemsTable.setSpacingBefore(2f);
+
+            if (grpDressCount > 0)     addItemRow(itemsTable, "Dresses",    grpDressCount     + "@" + avgDressRate,                             String.valueOf(grpDressAmount),     itemFont, qtyFont, amountFont);
+            if (grpWaistcoatCount > 0) addItemRow(itemsTable, "Waistcoats", grpWaistcoatCount + "@" + avgWaistcoatRate,                         String.valueOf(grpWaistcoatAmount), itemFont, qtyFont, amountFont);
+            if (grpShirtCount > 0)     addItemRow(itemsTable, "Shirts",     grpShirtCount     + "@" + avgShirtRate,                             String.valueOf(grpShirtAmount),     itemFont, qtyFont, amountFont);
+            if (grpMatel > 0)  addItemRow(itemsTable, "Matel",  grpMatelQty  + "@" + (grpMatelQty  > 0 ? grpMatel  / grpMatelQty  : 0), String.valueOf(grpMatel),  itemFont, qtyFont, amountFont);
+            if (grpTich  > 0)  addItemRow(itemsTable, "Tich",   grpTichQty   + "@" + (grpTichQty   > 0 ? grpTich   / grpTichQty   : 0), String.valueOf(grpTich),   itemFont, qtyFont, amountFont);
+            if (grpKanta > 0)  addItemRow(itemsTable, "Kanta",  grpKantaQty  + "@" + (grpKantaQty  > 0 ? grpKanta  / grpKantaQty  : 0), String.valueOf(grpKanta),  itemFont, qtyFont, amountFont);
+            if (grpJali  > 0)  addItemRow(itemsTable, "Jali",   grpJaliQty   + "@" + (grpJaliQty   > 0 ? grpJali   / grpJaliQty   : 0), String.valueOf(grpJali),   itemFont, qtyFont, amountFont);
+            if (grpKrhai > 0)  addItemRow(itemsTable, "Krhai",  grpKrhaiQty  + "@" + (grpKrhaiQty  > 0 ? grpKrhai  / grpKrhaiQty  : 0), String.valueOf(grpKrhai),  itemFont, qtyFont, amountFont);
+
+            document.add(itemsTable);
+
+            // Display return date for this group (after dress details)
+            if (groupReturnDate != null) {
+                Paragraph returnDatePara = new Paragraph();
+                returnDatePara.add(new Phrase("Return Date: " + groupReturnDate.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy")),
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                returnDatePara.setSpacingBefore(3f);
+                document.add(returnDatePara);
+            }
         }
 
-        document.add(itemsTable);
-
-        // === PAYMENT SUMMARY WITH MODERN DESIGN ===
+        // === PAYMENT SUMMARY (combined across all groups) ===
         PdfPTable paymentHeaderTable = new PdfPTable(1);
         paymentHeaderTable.setWidthPercentage(100);
-        paymentHeaderTable.setSpacingBefore(8f); // Increased spacing before payment section
+        paymentHeaderTable.setSpacingBefore(8f);
 
         PdfPCell paymentHeaderCell = new PdfPCell(new Phrase("PAYMENT SUMMARY", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
         paymentHeaderCell.setBackgroundColor(new Color(0, 102, 204));
@@ -694,76 +806,17 @@ public class PrintController {
         paymentHeaderTable.addCell(paymentHeaderCell);
         document.add(paymentHeaderTable);
 
-        // Payment summary table
         PdfPTable summaryTable = new PdfPTable(2);
         summaryTable.setWidthPercentage(100);
         summaryTable.setWidths(new float[]{60f, 40f});
         summaryTable.setSpacingBefore(2f);
 
         addSummaryRowStyled(summaryTable, "Total Amount:", String.valueOf(grandTotal), smallFont, amountFont);
-        addSummaryRowStyled(summaryTable, "Paid Amount:", String.valueOf(grandPaid), smallFont, itemFont);
-        addSummaryRowStyled(summaryTable, "Remaining:", String.valueOf(grandRemaining), smallFont, amountFont);
+        if (grandDiscount > 0) {
+            addSummaryRowStyled(summaryTable, "Discount:", "-" + grandDiscount, smallFont, itemFont);
+        }
 
         document.add(summaryTable);
-
-        // === STATUS & INFO SECTION ===
-        PdfPTable statusInfoTable = new PdfPTable(2);
-        statusInfoTable.setWidthPercentage(100);
-        statusInfoTable.setWidths(new float[]{50f, 50f});
-        statusInfoTable.setSpacingBefore(8f); // Increased spacing before status section
-
-        // Left: Payment & Order Status
-        Paragraph leftStatus = new Paragraph();
-        leftStatus.add(new Phrase("STATUS\n\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7, Color.GRAY))); // Added extra line break
-
-        // Payment Status - Calculate based on actual totals
-        String paymentStatusStr;
-        if (grandRemaining <= 0 && grandTotal > 0) {
-            paymentStatusStr = "Paid";
-        } else if (grandPaid > 0 && grandRemaining > 0) {
-            paymentStatusStr = "Partial";
-        } else {
-            paymentStatusStr = "Unpaid";
-        }
-        leftStatus.add(new Phrase("Payment: " + paymentStatusStr + "\n\n", smallFont)); // Added extra line break
-
-        // Order Status - Convert to readable format
-        String orderStatusStr;
-        if (readyStatuses.isEmpty()) {
-            orderStatusStr = "Not Ready Yet";
-        } else if (readyStatuses.contains("PICKED_UP")) {
-            orderStatusStr = "Returned";
-        } else if (readyStatuses.contains("NOTIFIED") || readyStatuses.contains("READY")) {
-            orderStatusStr = "Ready";
-        } else {
-            orderStatusStr = "Not Ready Yet";
-        }
-        leftStatus.add(new Phrase("Order: " + orderStatusStr, smallFont));
-
-        PdfPCell leftStatusCell = new PdfPCell(leftStatus);
-        leftStatusCell.setBorder(Rectangle.NO_BORDER);
-        leftStatusCell.setPaddingBottom(5f); // Added bottom padding
-        statusInfoTable.addCell(leftStatusCell);
-
-        // Right: Return Date
-        Paragraph rightStatus = new Paragraph();
-        rightStatus.add(new Phrase("DELIVERY\n\n", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7, Color.GRAY))); // Added extra line break
-        if (!returnDates.isEmpty()) {
-            String returnDatesStr = returnDates.stream()
-                    .sorted()
-                    .map(d -> d.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy")))
-                    .collect(java.util.stream.Collectors.joining(", "));
-            rightStatus.add(new Phrase("Return: " + returnDatesStr, smallFont));
-        } else {
-            rightStatus.add(new Phrase("Return: TBD", smallFont));
-        }
-
-        PdfPCell rightStatusCell = new PdfPCell(rightStatus);
-        rightStatusCell.setBorder(Rectangle.NO_BORDER);
-        rightStatusCell.setPaddingBottom(5f); // Added bottom padding
-        statusInfoTable.addCell(rightStatusCell);
-
-        document.add(statusInfoTable);
 
         // === NOTES (if any) ===
         if (allNotes.length() > 0) {
