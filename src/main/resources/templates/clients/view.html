@@ -288,6 +288,7 @@
     <div>
       <label>Pocket:</label>
       <select th:field="*{pajamaPocket}">
+        <option value="">Select</option>
         <option value="No">No</option>
         <option value="1">1</option>
         <option value="2">2</option>
@@ -744,9 +745,6 @@
               <tr><th>Cuff Design</th><td th:text="${s.cuffDesign}"></td></tr>
               <tr><th>Cuff Type</th><td th:text="${s.cuffType}"></td></tr>
               <tr><th>Stitch Type</th><td th:text="${s.stitchType}"></td></tr>
-              <tr><th>Button Type</th><td th:text="${s.buttonType}"></td></tr>
-              <tr><th>Front Patti Kaj</th><td th:text="${s.frontPattiKaj}"></td></tr>
-              <tr><th>Front Patti Type</th><td th:text="${s.frontPattiType}"></td></tr>
             </table>
           </div>
 
@@ -774,7 +772,6 @@
       th:style="${shirtMeasurement.id} != null ? 'display:block;' : 'display:none;'">
 
   <input type="hidden" th:field="*{id}"/>
-  <input type="hidden" th:field="*{client.id}"/>
 
   <div class="grid-8">
     <!-- Section: Shirt Measurements (same fields & order as Kameez) -->

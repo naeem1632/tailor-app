@@ -112,11 +112,11 @@ public class PrintController {
         nameCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         headerTable.addCell(nameCell);
 
-        // Right: Print date
+        // Right: Print date (aligned to left side)
         PdfPCell dateCell = new PdfPCell(new Phrase("Printed: " + now,
                 FontFactory.getFont(FontFactory.HELVETICA, 6)));
         dateCell.setBorder(Rectangle.NO_BORDER);
-        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setHorizontalAlignment(Element.ALIGN_LEFT); // Changed from RIGHT to LEFT
         dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         headerTable.addCell(dateCell);
 
@@ -396,11 +396,11 @@ public class PrintController {
         nameCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         headerTable.addCell(nameCell);
 
-        // Right: Print date
+        // Right: Print date (aligned to left side)
         PdfPCell dateCell = new PdfPCell(new Phrase("Printed: " + now,
                 FontFactory.getFont(FontFactory.HELVETICA, 6)));
         dateCell.setBorder(Rectangle.NO_BORDER);
-        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setHorizontalAlignment(Element.ALIGN_LEFT); // Changed from RIGHT to LEFT
         dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         headerTable.addCell(dateCell);
 
@@ -447,15 +447,10 @@ public class PrintController {
         table.addCell(makeValueCell(value));
     }
 
-    // Helper method to check if any pajama field has data
+    // Helper method to check if pajama measurements exist
+    // Only print pajama section if pajamaLength has a value
     private boolean hasPajamaData(DressMeasurement m) {
-        return (m.getPajamaLength() != null && !m.getPajamaLength().toString().trim().isEmpty()) ||
-               (m.getPajamaAsan() != null && !m.getPajamaAsan().toString().trim().isEmpty()) ||
-               (m.getPajamaPayncha() != null && !m.getPajamaPayncha().toString().trim().isEmpty()) ||
-               (m.getUpperFitting() != null && !m.getUpperFitting().toString().trim().isEmpty()) ||
-               (m.getMiddleFitting() != null && !m.getMiddleFitting().toString().trim().isEmpty()) ||
-               (m.getLowerFitting() != null && !m.getLowerFitting().toString().trim().isEmpty()) ||
-               (m.getPajamaPocket() != null && !m.getPajamaPocket().toString().trim().isEmpty());
+        return m.getPajamaLength() != null && !m.getPajamaLength().toString().trim().isEmpty();
     }
 
     // Print PDF - Shirt
@@ -511,7 +506,7 @@ public class PrintController {
         PdfPCell dateCell = new PdfPCell(new Phrase("Printed: " + now,
                 FontFactory.getFont(FontFactory.HELVETICA, 6)));
         dateCell.setBorder(Rectangle.NO_BORDER);
-        dateCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        dateCell.setHorizontalAlignment(Element.ALIGN_LEFT); // Changed from RIGHT to LEFT
         dateCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         headerTable.addCell(dateCell);
 
@@ -686,7 +681,6 @@ public class PrintController {
 
         // Overall grand totals (across all groups) for PAYMENT SUMMARY
         long grandTotal = 0, grandPaid = 0, grandRemaining = 0, grandDiscount = 0;
-        StringBuilder allNotes = new StringBuilder();
 
         // Render one "ORDER DETAILS" block per returnDate group
         boolean firstGroup = true;
@@ -745,22 +739,20 @@ public class PrintController {
                 if (p.getWithJali()  != null && p.getJaliAmount()  != null) { grpJaliQty  += p.getWithJali();  grpJali  += (long) p.getWithJali()  * p.getJaliAmount();  }
                 if (p.getWithKrhai() != null && p.getKrhaiAmount() != null) { grpKrhaiQty += p.getWithKrhai(); grpKrhai += (long) p.getWithKrhai() * p.getKrhaiAmount(); }
 
-                long pTotal   = p.getTotalAmount()  != null ? p.getTotalAmount()  : 0;
-                long pDisc    = p.getDiscount()     != null ? p.getDiscount()     : 0;
-                long pPaid    = p.getPaidAmount()   != null ? p.getPaidAmount()   : 0;
-                // Recompute remaining live (stored value may be stale if discount was added later)
-                long pRemain  = Math.max(pTotal - pPaid, 0);
+                long pNetTotal = p.getTotalAmount()  != null ? p.getTotalAmount()  : 0;
+                long pDisc     = p.getDiscount()     != null ? p.getDiscount()     : 0;
+                long pPaid     = p.getPaidAmount()   != null ? p.getPaidAmount()   : 0;
+                // Calculate gross total (totalAmount already has discount subtracted, so add it back)
+                long pGrossTotal = pNetTotal + pDisc;
+                // Calculate remaining: GrossTotal - Discount - Paid
+                long pRemain  = Math.max(pGrossTotal - pDisc - pPaid, 0);
 
-                grandTotal     += pTotal;
+                grandTotal     += pGrossTotal;  // Use gross total
                 grandPaid      += pPaid;
                 grandRemaining += pRemain;
                 grandDiscount  += pDisc;
 
                 if (p.getReadyStatus() != null && !p.getReadyStatus().isEmpty()) grpReadyStatuses.add(p.getReadyStatus());
-                if (p.getNotes() != null && !p.getNotes().trim().isEmpty()) {
-                    if (allNotes.length() > 0) allNotes.append("; ");
-                    allNotes.append(p.getNotes());
-                }
             }
 
             long avgDressRate     = grpDressRateCount     > 0 ? grpDressRateSum     / grpDressRateCount     : 0;
@@ -815,26 +807,15 @@ public class PrintController {
         if (grandDiscount > 0) {
             addSummaryRowStyled(summaryTable, "Discount:", "-" + grandDiscount, smallFont, itemFont);
         }
+        if (grandPaid > 0) {
+            addSummaryRowStyled(summaryTable, "Paid Amount:", String.valueOf(grandPaid), smallFont, itemFont);
+        }
+        if (grandRemaining > 0) {
+            addSummaryRowStyled(summaryTable, "Remaining Amount:", String.valueOf(grandRemaining), smallFont,
+                FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, new Color(204, 0, 0))); // Bold red for remaining
+        }
 
         document.add(summaryTable);
-
-        // === NOTES (if any) ===
-        if (allNotes.length() > 0) {
-            PdfPTable notesHeaderTable = new PdfPTable(1);
-            notesHeaderTable.setWidthPercentage(100);
-            notesHeaderTable.setSpacingBefore(5f);
-
-            PdfPCell notesHeaderCell = new PdfPCell(new Phrase("NOTES", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
-            notesHeaderCell.setBackgroundColor(new Color(0, 102, 204));
-            notesHeaderCell.setPadding(4f);
-            notesHeaderCell.setHorizontalAlignment(Element.ALIGN_LEFT);
-            notesHeaderTable.addCell(notesHeaderCell);
-            document.add(notesHeaderTable);
-
-            Paragraph notesContent = new Paragraph(allNotes.toString(), smallFont);
-            notesContent.setSpacingBefore(2f);
-            document.add(notesContent);
-        }
 
         // === FOOTER ===
         Font footerFont = FontFactory.getFont(FontFactory.HELVETICA, 6, Color.GRAY);

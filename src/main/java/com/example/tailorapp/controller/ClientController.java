@@ -372,7 +372,9 @@ public class ClientController {
             return "redirect:/clients";
         }
         ShirtMeasurement db = existing.get();
+        shirtMeasurement.setId(db.getId());
         shirtMeasurement.setClient(db.getClient());
+        shirtMeasurement.setDate(db.getDate());
         shirtService.save(shirtMeasurement);
         ra.addFlashAttribute("message", "Shirt Measurement updated successfully");
         return "redirect:/clients/view/" + db.getClient().getId();

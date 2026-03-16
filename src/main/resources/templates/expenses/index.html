@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Expense Settings - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 600px;">
+
+    <h1>Expense Settings</h1>
+    <p style="color: #666; margin-bottom: 20px;">
+        Set the cost/expense for making each garment and embellishment. These values will be used to calculate profit automatically.
+    </p>
+
+    <!-- Success message -->
+    <div th:if="${successMessage}" style="background:#d4edda; color:#155724; border:1px solid #c3e6cb; padding:10px 16px; border-radius:4px; margin-bottom:16px;">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <form th:action="@{/expenses/save}" th:object="${expense}" method="post">
+
+        <table style="width:100%; border-collapse: collapse;">
+            <thead>
+            <tr>
+                <th style="text-align:left; padding:8px 12px; background:#343a40; color:white; border-radius:4px 4px 0 0;">
+                    Garment / Item
+                </th>
+                <th style="text-align:left; padding:8px 12px; background:#343a40; color:white;">
+                    Cost/Expense (per piece)
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Dress</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{dressExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Waistcoat</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{waistcoatExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Shirt</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{shirtExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding:8px 12px; background:#f8f9fa; font-size:12px; color:#666; font-style:italic;">
+                    Embellishments (per piece cost)
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Matel</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{matelExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Tich</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{tichExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Kanta</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{kantaExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Jali</td>
+                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
+                    <input type="number" th:field="*{jaliExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:10px 12px; font-weight:600;">Krhai</td>
+                <td style="padding:10px 12px;">
+                    <input type="number" th:field="*{krhaiExpense}" min="0" style="width:180px;"/>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:20px;">
+            <button type="submit" class="add-btn">Save Expenses</button>
+            <a href="/" style="margin-left:12px; color:#666;">Cancel</a>
+        </div>
+
+    </form>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

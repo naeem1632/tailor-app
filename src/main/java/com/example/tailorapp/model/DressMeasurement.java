@@ -81,6 +81,29 @@ public class DressMeasurement {
     public DressMeasurement() {
     }
 
+    @PostLoad
+    private void initializeNullBooleanFields() {
+        // Initialize null boolean fields to false to prevent NullPointerException
+        if (this.frontPocket == null) {
+            this.frontPocket = false;
+        }
+        if (this.kanta == null) {
+            this.kanta = false;
+        }
+        if (this.shalwarPocket == null) {
+            this.shalwarPocket = false;
+        }
+        if (this.designStitch == null) {
+            this.designStitch = false;
+        }
+        if (this.hasBain == null) {
+            this.hasBain = false;
+        }
+        if (this.hasCuffDesign == null) {
+            this.hasCuffDesign = false;
+        }
+    }
+
     public String getJali() {
         if (jali != null && (jali.endsWith(".0"))) {
             return jali.substring(0, jali.length() - 2);

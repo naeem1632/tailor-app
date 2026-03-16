@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reports Dashboard - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 900px;
+            margin: 50px auto;
+        }
+
+        .page-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .report-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .report-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .report-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .report-description {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .report-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .report-button:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .logout-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .logout-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .logout-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1><i class="fas fa-chart-bar"></i> Reports Dashboard</h1>
+            <p>Select a report to view detailed analytics</p>
+        </div>
+
+        <div class="reports-grid">
+            <!-- Client Payment Report Card -->
+            <a th:href="@{/reports/payment-report}" class="report-card">
+                <div class="report-icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="report-title">Client Payment Report</div>
+                <div class="report-description">
+                    View detailed payment history, dress/waistcoat orders, embellishments, and outstanding balances for all clients.
+                </div>
+                <span class="report-button">
+                    <i class="fas fa-arrow-right"></i> Generate Report
+                </span>
+            </a>
+
+            <!-- Profit Analysis Report Card -->
+            <a th:href="@{/reports/profit-analysis}" class="report-card">
+                <div class="report-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="report-title">Profit Analysis Report</div>
+                <div class="report-description">
+                    Analyze revenue, expenses, and profit margins across all products and services with detailed breakdowns.
+                </div>
+                <span class="report-button">
+                    <i class="fas fa-arrow-right"></i> Generate Report
+                </span>
+            </a>
+        </div>
+
+        <div class="logout-section">
+            <a th:href="@{/}" class="logout-link">
+                <i class="fas fa-home"></i> Back to Dashboard
+            </a>
+            &nbsp;|&nbsp;
+            <a th:href="@{/reports/logout}" class="logout-link">
+                <i class="fas fa-sign-out-alt"></i> Logout from Reports
+            </a>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

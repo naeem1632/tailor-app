@@ -55,4 +55,18 @@ public class ShirtMeasurement {
 
     public ShirtMeasurement() {
     }
+
+    @PostLoad
+    private void initializeNullBooleanFields() {
+        // Initialize null boolean fields to false to prevent NullPointerException
+        if (this.frontPocket == null) {
+            this.frontPocket = false;
+        }
+        if (this.hasBain == null) {
+            this.hasBain = false;
+        }
+        if (this.hasCuffDesign == null) {
+            this.hasCuffDesign = false;
+        }
+    }
 }

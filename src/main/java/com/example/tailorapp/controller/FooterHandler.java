@@ -24,7 +24,7 @@ class FooterHandler extends PdfPageEventHelper {
     public void onEndPage(PdfWriter writer, Document document) {
         PdfPTable footer = new PdfPTable(2);
         try {
-            footer.setWidths(new float[]{60f, 40f});
+            footer.setWidths(new float[]{50f, 50f});
             footer.setTotalWidth(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
             footer.getDefaultCell().setBorder(Rectangle.NO_BORDER);
 
@@ -42,20 +42,21 @@ class FooterHandler extends PdfPageEventHelper {
             leftCell.setVerticalAlignment(Element.ALIGN_TOP);
             footer.addCell(leftCell);
 
-            // Right: Return date line (show actual date if available, otherwise blank line)
+            // Right: Return date line (moved to left alignment)
             String returnDateText = returnDate != null
                     ? "Return Date: " + returnDate.format(DATE_FORMATTER)
                     : "Return Date: __________";
             PdfPCell rightCell = new PdfPCell(new Phrase(returnDateText,
                     FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7)));
             rightCell.setBorder(Rectangle.NO_BORDER);
-            rightCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            rightCell.setHorizontalAlignment(Element.ALIGN_LEFT); // Changed from RIGHT to LEFT
             footer.addCell(rightCell);
 
-            // Write at fixed position (positioned to avoid printer cutoff while fitting on single page)
+            // Write at fixed position - moved higher up on page
+            // Increased offset from 35 to 55 to move footer higher
             footer.writeSelectedRows(0, -1,
                     document.leftMargin(),
-                    document.bottomMargin() + 5, // balanced position for single page printing
+                    document.bottomMargin() + 55, // increased from 35 to 55 to move footer higher on page
                     writer.getDirectContent());
         } catch (DocumentException de) {
             throw new ExceptionConverter(de);

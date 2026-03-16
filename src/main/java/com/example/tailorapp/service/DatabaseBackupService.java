@@ -1,5 +1,6 @@
 package com.example.tailorapp.service;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -21,20 +23,39 @@ import java.util.stream.Collectors;
 
 /**
  * Service for automatic database backup
- * - Runs every 8 days
- * - Keeps only the last 4 backups
- * - Stores backups in D:/tailor-app/backups/
+ * - Runs on application startup
+ * - Runs every 8 days (scheduled)
+ * - Removes backups older than 5 days
+ * - Stores backups in D:/tailor-app/db-backup/
+ * - Filename format: YYYY-MM-DD_HHMMSS.db (e.g., 2026-03-08_125731.db)
  */
 @Service
 public class DatabaseBackupService {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseBackupService.class);
 
-    private static final String BACKUP_DIR = "D:/tailor-app/backups";
-    private static final int MAX_BACKUPS = 4;
+    private static final int MAX_BACKUP_AGE_DAYS = 5;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
+
+
+
+
+
+    /**
+     * Run backup on application startup
+     */
+    @PostConstruct
+    public void performStartupBackup() {
+        logger.info("Starting database backup on application startup...");
+        try {
+            createBackup();
+            logger.info("Startup backup completed successfully");
+        } catch (Exception e) {
+            logger.error("Startup backup failed", e);
+        }
+    }
 
     @Scheduled(cron = "0 0 2 */8 * ?")
     public void performScheduledBackup() {
@@ -66,71 +87,104 @@ public class DatabaseBackupService {
             throw new IOException("Database file not found: " + dbPath);
         }
 
-        // Create backup directory if it doesn't exist
-        File backupDir = new File(BACKUP_DIR);
+        // Use static path on D drive: D:/tailor-app/db-backup/
+        String backupDirPath = "D:/tailor-app/db-backup";
+        File backupDir = new File(backupDirPath);
+
         if (!backupDir.exists()) {
             boolean created = backupDir.mkdirs();
             if (!created) {
-                throw new IOException("Failed to create backup directory: " + BACKUP_DIR);
+                throw new IOException("Failed to create backup directory: " + backupDirPath);
             }
-            logger.info("Created backup directory: {}", BACKUP_DIR);
+            logger.info("Created backup directory: {}", backupDirPath);
         }
 
-        // Create backup filename with timestamp
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+        // Create backup filename with date and time format: YYYY-MM-DD_HHMMSS.db
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
         String timestamp = LocalDateTime.now().format(formatter);
-        String backupFileName = "tailor_backup_" + timestamp + ".db";
-        Path backupPath = Paths.get(BACKUP_DIR, backupFileName);
+        String backupFileName = timestamp + ".db";
+        Path backupPath = Paths.get(backupDirPath, backupFileName);
 
         // Copy database file to backup location
         Files.copy(dbFile.toPath(), backupPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Set the file's last modified time to current time to ensure accurate timestamp
+        File backupFile = backupPath.toFile();
+        backupFile.setLastModified(System.currentTimeMillis());
+
         logger.info("Database backup created: {}", backupPath);
 
-        // Clean up old backups
-        cleanupOldBackups();
+        // Clean up old backups (older than 5 days)
+        cleanupOldBackups(backupDir);
     }
 
     /**
-     * Delete old backups, keeping only the last MAX_BACKUPS files
+     * Delete backups older than MAX_BACKUP_AGE_DAYS (5 days)
      */
-    private void cleanupOldBackups() {
-        File backupDir = new File(BACKUP_DIR);
-        File[] backupFiles = backupDir.listFiles((dir, name) -> name.startsWith("tailor_backup_") && name.endsWith(".db"));
+    private void cleanupOldBackups(File backupDir) {
+        File[] backupFiles = backupDir.listFiles((dir, name) -> name.endsWith(".db"));
 
-        if (backupFiles == null || backupFiles.length <= MAX_BACKUPS) {
-            logger.info("No old backups to clean up. Current count: {}", backupFiles != null ? backupFiles.length : 0);
+        if (backupFiles == null || backupFiles.length == 0) {
+            logger.info("No backups found for cleanup");
             return;
         }
 
-        // Sort by last modified date (oldest first)
-        List<File> sortedBackups = Arrays.stream(backupFiles)
-                .sorted(Comparator.comparingLong(File::lastModified))
-                .collect(Collectors.toList());
+        // Calculate cutoff time: current time minus 5 days
+        long currentTimeMillis = System.currentTimeMillis();
+        long cutoffTimeMillis = currentTimeMillis - (MAX_BACKUP_AGE_DAYS * 24L * 60L * 60L * 1000L);
+        int deletedCount = 0;
 
-        // Delete oldest backups, keeping only MAX_BACKUPS
-        int toDelete = sortedBackups.size() - MAX_BACKUPS;
-        for (int i = 0; i < toDelete; i++) {
-            File oldBackup = sortedBackups.get(i);
-            if (oldBackup.delete()) {
-                logger.info("Deleted old backup: {}", oldBackup.getName());
-            } else {
-                logger.warn("Failed to delete old backup: {}", oldBackup.getName());
+        logger.info("Cleanup check: Current time={}, Cutoff time={}, Max age={} days",
+                    currentTimeMillis, cutoffTimeMillis, MAX_BACKUP_AGE_DAYS);
+
+        for (File backupFile : backupFiles) {
+            try {
+                // Get file's last modified time in milliseconds
+                long lastModifiedMillis = backupFile.lastModified();
+                long ageInMillis = currentTimeMillis - lastModifiedMillis;
+                long ageInDays = ageInMillis / (24L * 60L * 60L * 1000L);
+
+                logger.info("Checking backup: {} | LastModified={} | Age={} days",
+                           backupFile.getName(), lastModifiedMillis, ageInDays);
+
+                // Delete if older than 5 days
+                if (lastModifiedMillis < cutoffTimeMillis && lastModifiedMillis > 0) {
+                    if (backupFile.delete()) {
+                        logger.info("Deleted old backup (older than {} days): {}", MAX_BACKUP_AGE_DAYS, backupFile.getName());
+                        deletedCount++;
+                    } else {
+                        logger.warn("Failed to delete old backup: {}", backupFile.getName());
+                    }
+                } else if (lastModifiedMillis == 0) {
+                    logger.warn("Backup file has invalid timestamp (0): {}", backupFile.getName());
+                } else {
+                    logger.info("Keeping backup (age: {} days): {}", ageInDays, backupFile.getName());
+                }
+            } catch (Exception e) {
+                logger.error("Error processing backup file: {}", backupFile.getName(), e);
             }
         }
 
-        logger.info("Backup cleanup completed. Remaining backups: {}", MAX_BACKUPS);
+        if (deletedCount > 0) {
+            logger.info("Backup cleanup completed. Deleted {} old backups. Remaining: {}",
+                        deletedCount, backupFiles.length - deletedCount);
+        } else {
+            logger.info("Backup cleanup completed. No old backups to delete. Total backups: {}", backupFiles.length);
+        }
     }
 
     /**
      * Get list of existing backups
      */
     public List<String> listBackups() {
-        File backupDir = new File(BACKUP_DIR);
+        String backupDirPath = "D:/tailor-app/db-backup";
+        File backupDir = new File(backupDirPath);
+
         if (!backupDir.exists()) {
             return List.of();
         }
 
-        File[] backupFiles = backupDir.listFiles((dir, name) -> name.startsWith("tailor_backup_") && name.endsWith(".db"));
+        File[] backupFiles = backupDir.listFiles((dir, name) -> name.endsWith(".db"));
         if (backupFiles == null) {
             return List.of();
         }

@@ -2,9 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <!-- Navbar Fragment (includes nav, modal, and script) -->
-<div th:fragment="navbar">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary" style="position: sticky !important; top: 0 !important; z-index: 1050 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div class="container-fluid">
             <a class="navbar-brand" href="/"><i class="fas fa-cut"></i> Stitch & Style</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -27,7 +25,12 @@
                             <i class="fas fa-chart-bar"></i> Reports
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="openReportModalGlobal(); return false;">Client Payment Report</a></li>
+                            <li><a class="dropdown-item" href="/reports/payment-report">
+                                <i class="fas fa-file-invoice"></i> Client Payment Report
+                            </a></li>
+                            <li><a class="dropdown-item" href="/reports/profit-analysis">
+                                <i class="fas fa-chart-line"></i> Profit Analysis Report
+                            </a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -35,12 +38,17 @@
                             <i class="fas fa-cog"></i> Settings
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/expenses">
+                            <i class="fas fa-money-bill-wave"></i> Expenses
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
-    </nav>
+</nav>
 
-    <!-- Global Report Modal (Available on all pages with navbar) -->
+<!-- Global Report Modal (Available on all pages with navbar) -->
     <div id="globalReportModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
         <div style="background-color:#fff; margin:10% auto; padding:30px; width:400px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
             <span onclick="closeReportModalGlobal()" style="float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
@@ -58,6 +66,30 @@
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-chart-line"></i> View Report
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profit Analysis Modal -->
+    <div id="profitAnalysisModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
+        <div style="background-color:#fff; margin:10% auto; padding:30px; width:400px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+            <span onclick="closeProfitAnalysisModal()" style="float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+            <h3 style="text-align:center; margin-bottom:20px;"><i class="fas fa-chart-line"></i> Profit Analysis Report</h3>
+
+            <form th:action="@{/profit-analysis/report}" method="get">
+                <div class="mb-3">
+                    <label class="form-label">Start Date:</label>
+                    <input type="date" name="startDate" id="profitAnalysisStartDate" class="form-control" required/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">End Date:</label>
+                    <input type="date" name="endDate" id="profitAnalysisEndDate" class="form-control" required/>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-chart-pie"></i> View Profit Analysis
                     </button>
                 </div>
             </form>
@@ -87,14 +119,39 @@
             document.getElementById('globalReportModal').style.display = 'none';
         }
 
+        function openProfitAnalysisModal() {
+            // Set default dates: 1st of current month and today
+            const today = new Date();
+            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            document.getElementById('profitAnalysisStartDate').value = formatDate(firstOfMonth);
+            document.getElementById('profitAnalysisEndDate').value = formatDate(today);
+            document.getElementById('profitAnalysisModal').style.display = 'block';
+        }
+
+        function closeProfitAnalysisModal() {
+            document.getElementById('profitAnalysisModal').style.display = 'none';
+        }
+
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('globalReportModal');
-            if (event.target === modal) {
+            const reportModal = document.getElementById('globalReportModal');
+            const profitModal = document.getElementById('profitAnalysisModal');
+
+            if (event.target === reportModal) {
                 closeReportModalGlobal();
+            }
+            if (event.target === profitModal) {
+                closeProfitAnalysisModal();
             }
         }
     </script>
-</div>
 </body>
 </html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Profit Analysis Report</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        /* CRITICAL: Remove any overflow on html/body that breaks sticky */
+        html, body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding-top: 0 !important;
+            margin: 0;
+            overflow: visible !important;
+            height: auto !important;
+        }
+
+        .report-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            background: #fff;
+            overflow: visible !important;
+        }
+
+        /* Force navbar to be sticky - override Bootstrap */
+        nav.navbar {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1050 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .report-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .report-header h1 { margin: 0 0 5px 0; font-size: 22px; font-weight: 600; }
+        .report-header .period { font-size: 13px; opacity: 0.95; }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .summary-card {
+            padding: 12px 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .summary-card.revenue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .summary-card.expense { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .summary-card.profit { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+
+        .summary-card h3 { font-size: 12px; margin: 0 0 6px 0; opacity: 0.9; font-weight: 500; }
+        .summary-card .value { font-size: 22px; font-weight: 700; margin: 0; }
+        .summary-card .percentage { font-size: 14px; margin-top: 3px; opacity: 0.9; }
+
+        /* Table wrapper - CRITICAL: NO overflow properties at all */
+        .table-wrapper {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            /* NO overflow properties - breaks sticky positioning */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        /* Sticky header - fixed to viewport on page scroll, below navbar */
+        thead th {
+            background: #343a40 !important;
+            color: white;
+            padding: 10px 6px;
+            text-align: center;
+            font-weight: 600;
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            z-index: 100 !important;
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4);
+        }
+
+        /* First row of headers - stick below navbar (Bootstrap navbar is ~56px) */
+        thead tr:first-child th {
+            top: 56px !important;
+        }
+
+        /* Second row of headers - stick below first row (first row + padding ~43px) */
+        thead tr:nth-child(2) th {
+            top: 99px !important;
+        }
+
+        td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #e9ecef; background: white; }
+        tbody tr:hover td { background: #f8f9fa; }
+
+        .client-name { font-weight: 600; color: #495057; text-align: left !important; }
+        .revenue-cell { color: #6c757d; font-weight: 500; }
+        .expense-cell { color: #dc3545; font-weight: 500; }
+        .profit-cell { color: #28a745; font-weight: 600; }
+        .profit-negative { color: #dc3545; }
+
+        .total-row { background: #343a40 !important; color: white !important; font-weight: 700; }
+        .total-row td { border: none; padding: 15px 8px; }
+
+        .action-buttons { margin-bottom: 15px; display: flex; gap: 8px; }
+        .btn-custom { padding: 8px 16px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 13px; }
+        .btn-primary-custom { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary-custom:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        @media print {
+            .action-buttons, .report-header .btn { display: none; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="report-container">
+
+    <div class="report-header">
+        <h1><i class="fas fa-chart-line"></i> Profit Analysis Report</h1>
+        <div class="period">
+            Period: <strong th:text="${startDate}"></strong> to <strong th:text="${endDate}"></strong>
+        </div>
+    </div>
+
+    <!-- Detailed Table with Scroll - MOVED TO TOP -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Date</th>
+                    <th rowspan="2">Client</th>
+                    <th colspan="4">Dress</th>
+                    <th colspan="4">Waistcoat</th>
+                    <th colspan="4">Shirt</th>
+                    <th colspan="3">Matel</th>
+                    <th colspan="3">Tich</th>
+                    <th colspan="3">Kanta</th>
+                    <th colspan="3">Jali</th>
+                    <th colspan="3">Krhai</th>
+                    <th colspan="4">Total</th>
+                </tr>
+                <tr>
+                    <!-- Dress -->
+                    <th style="background:#495057;">Qty</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <!-- Waistcoat -->
+                    <th style="background:#495057;">Qty</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <!-- Shirt -->
+                    <th style="background:#495057;">Qty</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <!-- Embellishments -->
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <th style="background:#6c757d;">Rev</th>
+                    <th style="background:#dc3545;">Exp</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <!-- Total -->
+                    <th style="background:#6c757d;">Revenue</th>
+                    <th style="background:#dc3545;">Expense</th>
+                    <th style="background:#28a745;">Profit</th>
+                    <th style="background:#17a2b8;">%</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="row : ${reportData}">
+                    <td th:text="${row.date}"></td>
+                    <td class="client-name">
+                        <span th:text="${row.clientId}"></span> - <span th:text="${row.clientName}"></span>
+                    </td>
+
+                    <!-- Dress -->
+                    <td th:text="${row.dressCount}"></td>
+                    <td class="revenue-cell" th:text="${row.dressRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.dressExpense}"></td>
+                    <td class="profit-cell" th:text="${row.dressProfit}"
+                        th:classappend="${row.dressProfit < 0} ? 'profit-negative' : ''"></td>
+
+                    <!-- Waistcoat -->
+                    <td th:text="${row.waistcoatCount}"></td>
+                    <td class="revenue-cell" th:text="${row.waistcoatRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.waistcoatExpense}"></td>
+                    <td class="profit-cell" th:text="${row.waistcoatProfit}"
+                        th:classappend="${row.waistcoatProfit < 0} ? 'profit-negative' : ''"></td>
+
+                    <!-- Shirt -->
+                    <td th:text="${row.shirtCount}"></td>
+                    <td class="revenue-cell" th:text="${row.shirtRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.shirtExpense}"></td>
+                    <td class="profit-cell" th:text="${row.shirtProfit}"
+                        th:classappend="${row.shirtProfit < 0} ? 'profit-negative' : ''"></td>
+
+                    <!-- Embellishments -->
+                    <td class="revenue-cell" th:text="${row.matelRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.matelExpense}"></td>
+                    <td class="profit-cell" th:text="${row.matelProfit}"></td>
+
+                    <td class="revenue-cell" th:text="${row.tichRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.tichExpense}"></td>
+                    <td class="profit-cell" th:text="${row.tichProfit}"></td>
+
+                    <td class="revenue-cell" th:text="${row.kantaRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.kantaExpense}"></td>
+                    <td class="profit-cell" th:text="${row.kantaProfit}"></td>
+
+                    <td class="revenue-cell" th:text="${row.jaliRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.jaliExpense}"></td>
+                    <td class="profit-cell" th:text="${row.jaliProfit}"></td>
+
+                    <td class="revenue-cell" th:text="${row.krhaiRevenue}"></td>
+                    <td class="expense-cell" th:text="${row.krhaiExpense}"></td>
+                    <td class="profit-cell" th:text="${row.krhaiProfit}"></td>
+
+                    <!-- Total -->
+                    <td class="revenue-cell" style="font-weight: 700;" th:text="${row.totalRevenue}"></td>
+                    <td class="expense-cell" style="font-weight: 700;" th:text="${row.totalExpense}"></td>
+                    <td class="profit-cell" style="font-weight: 700;" th:text="${row.totalProfit}"
+                        th:classappend="${row.totalProfit < 0} ? 'profit-negative' : ''"></td>
+                    <td style="font-weight: 600; color: #17a2b8;">
+                        <span th:text="${row.profitPercentage}"></span>%
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2">GRAND TOTAL</td>
+                    <!-- Dress totals -->
+                    <td>-</td>
+                    <td th:text="${grandDressRevenue}"></td>
+                    <td th:text="${grandDressExpense}"></td>
+                    <td th:text="${grandDressProfit}"></td>
+                    <!-- Waistcoat totals -->
+                    <td>-</td>
+                    <td th:text="${grandWaistcoatRevenue}"></td>
+                    <td th:text="${grandWaistcoatExpense}"></td>
+                    <td th:text="${grandWaistcoatProfit}"></td>
+                    <!-- Shirt totals -->
+                    <td>-</td>
+                    <td th:text="${grandShirtRevenue}"></td>
+                    <td th:text="${grandShirtExpense}"></td>
+                    <td th:text="${grandShirtProfit}"></td>
+                    <!-- Embellishments -->
+                    <td th:text="${grandMatelRevenue}"></td>
+                    <td th:text="${grandMatelExpense}"></td>
+                    <td th:text="${grandMatelProfit}"></td>
+                    <td th:text="${grandTichRevenue}"></td>
+                    <td th:text="${grandTichExpense}"></td>
+                    <td th:text="${grandTichProfit}"></td>
+                    <td th:text="${grandKantaRevenue}"></td>
+                    <td th:text="${grandKantaExpense}"></td>
+                    <td th:text="${grandKantaProfit}"></td>
+                    <td th:text="${grandJaliRevenue}"></td>
+                    <td th:text="${grandJaliExpense}"></td>
+                    <td th:text="${grandJaliProfit}"></td>
+                    <td th:text="${grandKrhaiRevenue}"></td>
+                    <td th:text="${grandKrhaiExpense}"></td>
+                    <td th:text="${grandKrhaiProfit}"></td>
+                    <!-- Grand totals -->
+                    <td th:text="${grandTotalRevenue}"></td>
+                    <td th:text="${grandTotalExpense}"></td>
+                    <td th:text="${grandTotalProfit}"></td>
+                    <td><span th:text="${grandProfitPercentage}"></span>%</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Summary Cards - MOVED TO BOTTOM -->
+    <div class="summary-cards" style="margin-top: 20px;">
+        <div class="summary-card revenue">
+            <h3><i class="fas fa-money-bill-wave"></i> Total Revenue</h3>
+            <p class="value">₹<span th:text="${grandTotalRevenue}"></span></p>
+        </div>
+        <div class="summary-card expense">
+            <h3><i class="fas fa-receipt"></i> Total Expense</h3>
+            <p class="value">₹<span th:text="${grandTotalExpense}"></span></p>
+        </div>
+        <div class="summary-card profit">
+            <h3><i class="fas fa-chart-pie"></i> Total Profit</h3>
+            <p class="value">₹<span th:text="${grandTotalProfit}"></span></p>
+            <p class="percentage">(<span th:text="${grandProfitPercentage}"></span>%)</p>
+        </div>
+    </div>
+
+    <!-- Action Buttons - MOVED TO BOTTOM -->
+    <div class="action-buttons" style="margin-top: 15px;">
+        <button onclick="window.print()" class="btn-custom btn-primary-custom">
+            <i class="fas fa-print"></i> Print Report
+        </button>
+        <a th:href="@{/profit-analysis/report(startDate=${startDateParam},endDate=${endDateParam})}"
+           class="btn-custom btn-primary-custom" style="text-decoration: none; display: inline-block;">
+            <i class="fas fa-sync"></i> Refresh
+        </a>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Force sticky positioning - FINAL FIX with debugging
+    function setupStickyHeaders() {
+        console.log('=== Starting sticky header setup ===');
+
+        // CRITICAL: Check ALL parent elements for overflow
+        const navbar = document.querySelector('nav.navbar');
+        if (navbar) {
+            let parent = navbar.parentElement;
+            let level = 0;
+            console.log('=== Checking parent elements for overflow ===');
+            while (parent && level < 10) {
+                const computedStyle = window.getComputedStyle(parent);
+                const overflow = computedStyle.overflow;
+                const overflowY = computedStyle.overflowY;
+                const overflowX = computedStyle.overflowX;
+                console.log(`Level ${level} (${parent.tagName}.${parent.className}):`,
+                    `overflow=${overflow}, overflowY=${overflowY}, overflowX=${overflowX}`);
+
+                // Force visible on all parents
+                parent.style.overflow = 'visible';
+                parent.style.overflowY = 'visible';
+                parent.style.overflowX = 'visible';
+
+                parent = parent.parentElement;
+                level++;
+            }
+        }
+
+        // CRITICAL: Remove overflow from all parent elements
+        document.documentElement.style.overflow = 'visible';
+        document.body.style.overflow = 'visible';
+
+        const container = document.querySelector('.report-container');
+        if (container) container.style.overflow = 'visible';
+
+        const tableWrapper = document.querySelector('.table-wrapper');
+        if (tableWrapper) {
+            // FORCE remove all overflow
+            tableWrapper.style.overflow = 'visible !important';
+            tableWrapper.style.overflowY = 'visible !important';
+            tableWrapper.style.overflowX = 'visible !important';
+            tableWrapper.style.cssText += '; overflow: visible !important; overflow-y: visible !important; overflow-x: visible !important;';
+        }
+
+        // Continue with navbar (already declared above)
+        if (navbar) {
+            // Force navbar to be FIXED (not sticky) - last resort
+            navbar.style.cssText = 'position: fixed !important; top: 0px !important; left: 0 !important; right: 0 !important; z-index: 1050 !important;';
+
+            const navbarHeight = navbar.offsetHeight;
+
+            // Add padding to body to account for fixed navbar
+            document.body.style.paddingTop = navbarHeight + 'px';
+
+            // Debug: Check computed styles
+            const navbarComputedStyle = window.getComputedStyle(navbar);
+            console.log('Navbar position:', navbarComputedStyle.position);
+            console.log('Navbar top:', navbarComputedStyle.top);
+            console.log('Navbar z-index:', navbarComputedStyle.zIndex);
+            console.log('Navbar height:', navbarHeight);
+
+            // Force first row of table headers to be FIXED (not sticky)
+            const firstRowHeaders = document.querySelectorAll('thead tr:first-child th');
+            console.log('Found first row headers:', firstRowHeaders.length);
+
+            // Get the table and its width
+            const table = document.querySelector('table');
+            const tableWrapper = document.querySelector('.table-wrapper');
+
+            if (table) {
+                const tableWidth = table.offsetWidth;
+                const tableLeft = tableWrapper.getBoundingClientRect().left;
+
+                // First, get actual column widths from tbody (before making headers fixed)
+                const firstBodyRow = document.querySelector('tbody tr:first-child');
+                const colWidths = [];
+                if (firstBodyRow) {
+                    const bodyCells = firstBodyRow.querySelectorAll('td');
+                    bodyCells.forEach(td => {
+                        colWidths.push(td.offsetWidth);
+                    });
+                }
+
+                // Calculate widths for first row headers based on colspan
+                const firstRow = document.querySelector('thead tr:first-child');
+                const secondRowHeaders = document.querySelectorAll('thead tr:nth-child(2) th');
+
+                // Build width map for first row (accounting for colspan and rowspan)
+                let colIndex = 0;
+                if (firstRow) {
+                    firstRow.style.cssText = 'position: fixed !important; top: ' + navbarHeight + 'px !important; z-index: 100 !important; left: ' + tableLeft + 'px !important; width: ' + tableWidth + 'px !important; display: table !important; table-layout: fixed !important;';
+
+                    firstRowHeaders.forEach((th, index) => {
+                        th.style.backgroundColor = '#343a40';
+
+                        const colspan = parseInt(th.getAttribute('colspan')) || 1;
+                        const rowspan = parseInt(th.getAttribute('rowspan')) || 1;
+
+                        // Calculate total width for this header (sum of spanned columns)
+                        let totalWidth = 0;
+                        if (rowspan === 2) {
+                            // This header spans both rows, use its column width directly
+                            totalWidth = colWidths[colIndex] || 0;
+                            colIndex++;
+                        } else {
+                            // This header spans multiple columns in row 1
+                            for (let i = 0; i < colspan; i++) {
+                                totalWidth += (colWidths[colIndex] || 0);
+                                colIndex++;
+                            }
+                        }
+
+                        if (totalWidth > 0) {
+                            th.style.width = totalWidth + 'px';
+                            th.style.minWidth = totalWidth + 'px';
+                            th.style.maxWidth = totalWidth + 'px';
+                        }
+                    });
+                }
+
+                // Force second row of table headers to be FIXED
+                console.log('Found second row headers:', secondRowHeaders.length);
+                const firstRowHeight = firstRowHeaders[0] ? firstRowHeaders[0].offsetHeight : 43;
+
+                const secondRow = document.querySelector('thead tr:nth-child(2)');
+                if (secondRow) {
+                    // Calculate left offset for second row (width of Date + Client columns)
+                    const dateClientWidth = (colWidths[0] || 0) + (colWidths[1] || 0);
+
+                    secondRow.style.cssText = 'position: fixed !important; top: ' + (navbarHeight + firstRowHeight) + 'px !important; z-index: 100 !important; left: ' + (tableLeft + dateClientWidth) + 'px !important; width: ' + (tableWidth - dateClientWidth) + 'px !important; display: table !important; table-layout: fixed !important;';
+
+                    // Match second row header widths to actual columns
+                    // Second row headers correspond to columns 2 onwards (after Date and Client)
+                    secondRowHeaders.forEach((th, index) => {
+                        const bodyColIndex = index + 2;
+                        if (colWidths[bodyColIndex]) {
+                            th.style.width = colWidths[bodyColIndex] + 'px';
+                            th.style.minWidth = colWidths[bodyColIndex] + 'px';
+                            th.style.maxWidth = colWidths[bodyColIndex] + 'px';
+                        }
+                    });
+                }
+
+                // Add padding to tbody to account for fixed headers
+                const tbody = document.querySelector('tbody');
+                if (tbody && firstRow && secondRow) {
+                    const totalHeaderHeight = firstRow.offsetHeight + secondRow.offsetHeight;
+                    const firstTbodyRow = tbody.querySelector('tr:first-child');
+                    if (firstTbodyRow) {
+                        const firstCell = firstTbodyRow.querySelector('td:first-child');
+                        if (firstCell) {
+                            firstCell.style.paddingTop = (totalHeaderHeight + 10) + 'px';
+                        }
+                    }
+                }
+
+                console.log('Column widths:', colWidths);
+                console.log('First row headers top:', navbarHeight + 'px');
+                console.log('Second row headers top:', (navbarHeight + firstRowHeight) + 'px');
+            }
+
+            // Check table header parents for overflow
+            console.log('=== Checking table header parent elements ===');
+            if (firstRowHeaders.length > 0) {
+                let tableParent = firstRowHeaders[0].closest('table').parentElement;
+                let tLevel = 0;
+                while (tableParent && tLevel < 10) {
+                    const tStyle = window.getComputedStyle(tableParent);
+                    console.log(`Table Parent Level ${tLevel} (${tableParent.tagName}.${tableParent.className}):`,
+                        `overflow=${tStyle.overflow}, overflowY=${tStyle.overflowY}, overflowX=${tStyle.overflowX}`);
+
+                    // Force visible on table parents
+                    tableParent.style.overflow = 'visible';
+                    tableParent.style.overflowY = 'visible';
+
+                    tableParent = tableParent.parentElement;
+                    tLevel++;
+                }
+            }
+
+            console.log('First row headers top:', navbarHeight + 'px');
+            console.log('Second row headers top:', (navbarHeight + firstRowHeight) + 'px');
+            console.log('=== Sticky headers configured! ===');
+        } else {
+            console.error('Navbar not found!');
+        }
+    }
+
+    // Run multiple times to ensure it works
+    document.addEventListener('DOMContentLoaded', setupStickyHeaders);
+    window.addEventListener('load', function() {
+        setTimeout(setupStickyHeaders, 100);
+        setTimeout(setupStickyHeaders, 500);
+    });
+</script>
+</body>
+</html>

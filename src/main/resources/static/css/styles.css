@@ -9,6 +9,16 @@ body {
   color: #333;
 }
 
+/* ==========================================================
+   STICKY NAVBAR (Always visible at top when scrolling)
+========================================================== */
+.navbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1050 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 h1, h2, h3 {
   text-align: center;
   color: #14889e;

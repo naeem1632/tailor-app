@@ -11,48 +11,60 @@
     <style>
         body {
             background-color: #f8f9fa;
+            padding-top: 0 !important;
+        }
+
+        /* Force navbar to be sticky - override Bootstrap */
+        nav.navbar {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1050 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .report-header {
             text-align: center;
-            padding: 30px 0;
+            padding: 15px 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             border-radius: 8px;
         }
         .report-title {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .report-period {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             opacity: 0.9;
         }
         .report-table {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
             overflow-x: auto;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
-            table-layout: fixed;
+            margin: 0;
         }
         th {
-            background-color: #343a40;
+            background-color: #343a40 !important;
             color: white;
             padding: 10px 6px;
             text-align: center;
             font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 56px !important;
+            z-index: 100 !important;
             white-space: nowrap;
             font-size: 0.8rem;
             border-right: 1px solid #495057;
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.4);
         }
         th:last-child {
             border-right: none;
@@ -92,8 +104,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -128,7 +140,7 @@
 <!-- Include Navbar -->
 <div th:replace="~{fragments/navbar :: navbar}" class="no-print"></div>
 
-<div class="container-fluid" style="padding: 20px;">
+<div class="container-fluid" style="padding: 10px;">
 
     <!-- Report Header -->
     <div class="report-header">
@@ -220,5 +232,86 @@
 </div><!-- Close container-fluid -->
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Force FIXED positioning for headers
+    function setupStickyHeaders() {
+        console.log('=== Starting payment report header setup ===');
+
+        const navbar = document.querySelector('nav.navbar');
+        if (navbar) {
+            // Force navbar to be FIXED
+            navbar.style.cssText = 'position: fixed !important; top: 0px !important; left: 0 !important; right: 0 !important; z-index: 1050 !important;';
+
+            const navbarHeight = navbar.offsetHeight;
+
+            // Add padding to body to account for fixed navbar
+            document.body.style.paddingTop = navbarHeight + 'px';
+
+            console.log('Navbar height:', navbarHeight);
+
+            // Get the table and make header row fixed
+            const table = document.querySelector('table');
+            const tableWrapper = document.querySelector('.report-table');
+
+            if (table && tableWrapper) {
+                const tableWidth = table.offsetWidth;
+                const tableLeft = tableWrapper.getBoundingClientRect().left;
+
+                // First, get actual column widths from tbody (before making headers fixed)
+                const firstBodyRow = document.querySelector('tbody tr:first-child');
+                const colWidths = [];
+                if (firstBodyRow) {
+                    const bodyCells = firstBodyRow.querySelectorAll('td');
+                    bodyCells.forEach(td => {
+                        colWidths.push(td.offsetWidth);
+                    });
+                }
+
+                // Make header row fixed
+                const headerRow = document.querySelector('thead tr');
+                if (headerRow) {
+                    headerRow.style.cssText = 'position: fixed !important; top: ' + navbarHeight + 'px !important; z-index: 100 !important; left: ' + tableLeft + 'px !important; width: ' + tableWidth + 'px !important; display: table !important; table-layout: fixed !important;';
+
+                    // Set background and widths for all headers
+                    const tableHeaders = document.querySelectorAll('thead th');
+                    tableHeaders.forEach((th, index) => {
+                        th.style.backgroundColor = '#343a40';
+                        if (colWidths[index]) {
+                            th.style.width = colWidths[index] + 'px';
+                            th.style.minWidth = colWidths[index] + 'px';
+                            th.style.maxWidth = colWidths[index] + 'px';
+                        }
+                    });
+                }
+
+                // Add padding to tbody to account for fixed header
+                const tbody = document.querySelector('tbody');
+                if (tbody && headerRow) {
+                    const headerHeight = headerRow.offsetHeight;
+                    const firstTbodyRow = tbody.querySelector('tr:first-child');
+                    if (firstTbodyRow) {
+                        const firstCell = firstTbodyRow.querySelector('td:first-child');
+                        if (firstCell) {
+                            firstCell.style.paddingTop = (headerHeight + 8) + 'px';
+                        }
+                    }
+                }
+
+                console.log('Column widths:', colWidths);
+            }
+
+            console.log('=== Payment report headers configured! ===');
+        }
+    }
+
+    // Run on DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', setupStickyHeaders);
+
+    // Also run after a short delay to ensure everything is loaded
+    window.addEventListener('load', function() {
+        setTimeout(setupStickyHeaders, 100);
+        setTimeout(setupStickyHeaders, 500);
+    });
+</script>
 </body>
 </html>
