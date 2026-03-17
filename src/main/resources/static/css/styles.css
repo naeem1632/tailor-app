@@ -1278,6 +1278,64 @@ input.invalid {
   to { transform: scale(1); opacity: 1; }
 }
 
+/* === Loading Overlay === */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+}
+
+.loading-overlay.show {
+  display: flex;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-overlay p {
+  color: white;
+  font-size: 18px;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === Accessibility - Focus States === */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.btn-action:focus {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.5);
+}
+
+.close-btn:focus {
+  outline: 2px solid #dc3545;
+  outline-offset: 2px;
+}
+
 /* ===  FIX: Keep column alignment ONLY on the Measurement Page  === */
 
 /* Identify measurement tables by their section titles */

@@ -91,29 +91,49 @@
 </table>
 
 <!-- ✅ MODAL (Styled Same as Payments) -->
-<div id="clientModal" class="modal">
+<div id="clientModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
     <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <span class="close-btn" onclick="closeModal()" aria-label="Close modal">&times;</span>
         <h3 id="modalTitle">Add Client</h3>
 
-        <form class="client-form" th:action="@{/clients/save}" method="post" enctype="multipart/form-data">
+        <form class="client-form" th:action="@{/clients/save}" method="post" enctype="multipart/form-data" onsubmit="showLoading('Saving client...')">
             <input type="hidden" name="id" id="clientId"/>
             <input type="hidden" name="imageData" id="imageData"/>
 
             <table>
                 <tr>
-                    <th>Name</th><td><input type="text" name="name" id="name" required></td>
-                    <th>Mobile #</th><td><input type="text" name="mobile" id="mobile" required></td>
+                    <th>Name</th>
+                    <td><input type="text" name="name" id="name"
+                               required
+                               minlength="2"
+                               maxlength="100"
+                               pattern="^(?!\s*$).+"
+                               title="Name must be 2-100 characters and cannot be only whitespace"></td>
+                    <th>Mobile #</th>
+                    <td><input type="tel" name="mobile" id="mobile"
+                               required
+                               pattern="[0-9+\-\s()]+"
+                               minlength="10"
+                               maxlength="20"
+                               title="Mobile number must be 10-20 characters and contain only numbers, +, -, spaces, or parentheses"></td>
                 </tr>
                 <tr>
                     <th>WhatsApp #</th>
                     <td>
-                        <input type="text" name="whatsAppNo" id="whatsAppNo">
+                        <input type="tel" name="whatsAppNo" id="whatsAppNo"
+                               pattern="[0-9+\-\s()]*"
+                               maxlength="20"
+                               title="WhatsApp number must contain only numbers, +, -, spaces, or parentheses">
                         <button type="button" id="sameAsMobileBtn" style="margin-left: 8px; padding: 4px 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
                             Same as Mobile
                         </button>
                     </td>
-                    <th>Address</th><td><input type="text" name="address" id="address" required></td>
+                    <th>Address</th>
+                    <td><input type="text" name="address" id="address"
+                               required
+                               minlength="5"
+                               maxlength="200"
+                               title="Address must be 5-200 characters"></td>
                 </tr>
                 <tr>
                     <th>Picture</th>
@@ -138,12 +158,23 @@
 </div>
 
 <!-- ✅ Warning Modal for Same as Mobile -->
-<div id="warningModal" class="modal-overlay">
+<div id="warningModal" class="modal-overlay" role="alertdialog" aria-labelledby="warningTitle" aria-modal="true">
     <div class="modal-box">
-        <h3>⚠ Warning</h3>
+        <h3 id="warningTitle">⚠ Warning</h3>
         <p>Please enter a mobile number first</p>
         <div class="modal-actions">
-            <button id="closeWarningBtn" class="btn-secondary">OK</button>
+            <button id="closeWarningBtn" class="btn-secondary" aria-label="Close warning">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ Camera Error Modal -->
+<div id="cameraErrorModal" class="modal-overlay" role="alertdialog" aria-labelledby="cameraErrorTitle" aria-modal="true">
+    <div class="modal-box">
+        <h3 id="cameraErrorTitle">⚠ Camera Error</h3>
+        <p id="cameraErrorMessage">Unable to access camera</p>
+        <div class="modal-actions">
+            <button id="closeCameraErrorBtn" class="btn-secondary" aria-label="Close error">OK</button>
         </div>
     </div>
 </div>
@@ -200,7 +231,9 @@
           });
           video.srcObject = stream;
         } catch (err) {
-          alert('Error accessing camera: ' + err.message);
+          // Show custom camera error modal instead of alert
+          document.getElementById('cameraErrorMessage').textContent = 'Error accessing camera: ' + err.message;
+          document.getElementById('cameraErrorModal').style.display = 'flex';
         }
       }
     });
@@ -291,6 +324,38 @@
     warningModal.addEventListener('click', function(e) {
         if (e.target === warningModal) {
             warningModal.style.display = 'none';
+        }
+    });
+
+    // === Camera Error Modal Logic ===
+    const cameraErrorModal = document.getElementById('cameraErrorModal');
+    const closeCameraErrorBtn = document.getElementById('closeCameraErrorBtn');
+
+    // Close camera error modal when OK is clicked
+    closeCameraErrorBtn.addEventListener('click', function() {
+        cameraErrorModal.style.display = 'none';
+    });
+
+    // Close camera error modal when clicking outside the box
+    cameraErrorModal.addEventListener('click', function(e) {
+        if (e.target === cameraErrorModal) {
+            cameraErrorModal.style.display = 'none';
+        }
+    });
+
+    // === Keyboard Navigation (ESC to close modals) ===
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            // Close any open modals
+            if (modal.classList.contains('show')) {
+                closeModal();
+            }
+            if (warningModal.style.display === 'flex') {
+                warningModal.style.display = 'none';
+            }
+            if (cameraErrorModal.style.display === 'flex') {
+                cameraErrorModal.style.display = 'none';
+            }
         }
     });
 </script>

@@ -1,6 +1,9 @@
 package com.example.tailorapp.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,6 +17,9 @@ public class DressMeasurement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
+    @NotNull(message = "Measurement date is required")
+    @PastOrPresent(message = "Measurement date cannot be in the future")
     LocalDate date;
     Double kameezLength;
     Double arm;

@@ -94,7 +94,7 @@
                 <button class="expand-btn" type="button"
                         th:attr="onclick='toggleInstallments(' + ${p.id} + ')'">▼</button>
             </td>
-            <td th:text="${#temporals.format(p.date, 'dd-MMM-yyyy')}"></td>
+            <td th:text="${@dateFormatter.format(p.date)}"></td>
             <td th:text="${(p.dressCount != null and p.dressCount > 0)
                 ? p.dressCount + ' @ ' + p.dressRate
                 : ''}"></td>
@@ -130,7 +130,7 @@
                           (p.paymentStatus == 'Partial' ? 'color: #ffc107; font-weight: bold;' :
                           (p.paymentStatus == 'Unpaid' ? 'color: #dc3545; font-weight: bold;' : ''))}"></td>
 
-            <td th:text="${p.returnDate != null ? #temporals.format(p.returnDate, 'dd-MMM-yyyy') : '-'}"></td>
+            <td th:text="${p.returnDate != null ? @dateFormatter.format(p.returnDate) : '-'}"></td>
 
             <!-- Ready Status Column -->
             <td>
@@ -222,7 +222,7 @@
                     </thead>
                     <tbody>
                     <tr th:each="i : ${p.installments}">
-                        <td th:text="${#temporals.format(i.paymentDate, 'dd-MMM-yyyy')}"></td>
+                        <td th:text="${@dateFormatter.format(i.paymentDate)}"></td>
                         <td th:text="${i.paidAmount}"></td>
                         <td th:text="${i.note}"></td>
                         <td>
