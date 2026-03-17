@@ -41,7 +41,8 @@ public class ClientReportController {
     @GetMapping("/report")
     public String viewReport(@RequestParam("startDate") LocalDate startDate,
                              @RequestParam("endDate") LocalDate endDate,
-                             Model model) {
+                             Model model,
+                             jakarta.servlet.http.HttpSession session) {
 
         List<Client> clients = clientService.findAll();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
@@ -149,6 +150,9 @@ public class ClientReportController {
         model.addAttribute("grandPaid", grandPaid);
         model.addAttribute("grandRemain", grandRemain);
 
+        // Clear authentication to require password on next report access
+        session.removeAttribute("reportAuthenticated");
+
         return "report/client-payment-report";
     }
 
@@ -156,7 +160,8 @@ public class ClientReportController {
     @GetMapping("/report/pdf")
     public void generateReportPdf(@RequestParam("startDate") LocalDate startDate,
                                   @RequestParam("endDate") LocalDate endDate,
-                                  HttpServletResponse response) throws Exception {
+                                  HttpServletResponse response,
+                                  jakarta.servlet.http.HttpSession session) throws Exception {
 
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "inline; filename=client_report.pdf");
@@ -310,6 +315,9 @@ public class ClientReportController {
 
         document.add(table);
         document.close();
+
+        // Clear authentication to require password on next report access
+        session.removeAttribute("reportAuthenticated");
     }
 
     private void addHeaderSection(Document document, Font subTitleFont,

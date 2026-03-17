@@ -35,7 +35,8 @@ public class ProfitAnalysisController {
     @GetMapping("/report")
     public String viewProfitAnalysis(@RequestParam("startDate") LocalDate startDate,
                                     @RequestParam("endDate") LocalDate endDate,
-                                    Model model) {
+                                    Model model,
+                                    jakarta.servlet.http.HttpSession session) {
 
         List<Client> clients = clientService.findAll();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
@@ -247,6 +248,9 @@ public class ProfitAnalysisController {
         model.addAttribute("grandKrhaiRevenue", grandKrhaiRevenue);
         model.addAttribute("grandKrhaiExpense", grandKrhaiExpense);
         model.addAttribute("grandKrhaiProfit", grandKrhaiProfit);
+
+        // Clear authentication to require password on next report access
+        session.removeAttribute("reportAuthenticated");
 
         return "profit-analysis/report";
     }

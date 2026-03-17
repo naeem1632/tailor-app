@@ -46,7 +46,7 @@
 
     <div class="toolbar-center">
         <form th:action="@{/clients}" method="get" class="search-form">
-            <input type="text" name="q" th:value="${q}" placeholder="Search by name or mobile...">
+            <input type="text" name="q" th:value="${q}" placeholder="Search by ID, name or mobile...">
             <button type="submit">🔍 Search</button>
             <a th:href="@{/clients}">Reset</a>
         </form>
@@ -83,8 +83,8 @@
                   data-address=${c.address}"
                onclick="openModalFromRow(this)">Edit</a>
             <a th:href="@{'/clients/details/' + ${c.id}}" class="btn-action btn-view-client">View Client</a>
-            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-payment">Payments</a>
-            <a th:href="@{'/clients/view/' + ${c.id}}" class="btn-action btn-measure">Measurements</a>
+            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-payment" target="_blank">Payments</a>
+            <a th:href="@{'/clients/view/' + ${c.id}}" class="btn-action btn-measure" target="_blank">Measurements</a>
         </td>
     </tr>
     </tbody>
@@ -106,7 +106,13 @@
                     <th>Mobile #</th><td><input type="text" name="mobile" id="mobile" required></td>
                 </tr>
                 <tr>
-                    <th>WhatsApp #</th><td><input type="text" name="whatsAppNo" id="whatsAppNo"></td>
+                    <th>WhatsApp #</th>
+                    <td>
+                        <input type="text" name="whatsAppNo" id="whatsAppNo">
+                        <button type="button" id="sameAsMobileBtn" style="margin-left: 8px; padding: 4px 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            Same as Mobile
+                        </button>
+                    </td>
                     <th>Address</th><td><input type="text" name="address" id="address" required></td>
                 </tr>
                 <tr>
@@ -128,6 +134,17 @@
                 <a href="javascript:void(0)" onclick="closeModal()">Cancel</a>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ✅ Warning Modal for Same as Mobile -->
+<div id="warningModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>⚠ Warning</h3>
+        <p>Please enter a mobile number first</p>
+        <div class="modal-actions">
+            <button id="closeWarningBtn" class="btn-secondary">OK</button>
+        </div>
     </div>
 </div>
 
@@ -240,6 +257,40 @@
             const url = new URL(window.location);
             url.searchParams.delete('add');
             window.history.replaceState({}, '', url);
+        }
+    });
+
+    // === Same as Mobile Button Logic ===
+    const sameAsMobileBtn = document.getElementById('sameAsMobileBtn');
+    const mobileInput = document.getElementById('mobile');
+    const whatsAppInput = document.getElementById('whatsAppNo');
+    const warningModal = document.getElementById('warningModal');
+    const closeWarningBtn = document.getElementById('closeWarningBtn');
+
+    sameAsMobileBtn.addEventListener('click', function() {
+        const mobileValue = mobileInput.value.trim();
+        if (mobileValue) {
+            whatsAppInput.value = mobileValue;
+            // Optional: Add visual feedback
+            sameAsMobileBtn.textContent = '✓ Copied';
+            setTimeout(() => {
+                sameAsMobileBtn.textContent = 'Same as Mobile';
+            }, 1500);
+        } else {
+            // Show custom warning modal instead of alert
+            warningModal.style.display = 'flex';
+        }
+    });
+
+    // Close warning modal when OK is clicked
+    closeWarningBtn.addEventListener('click', function() {
+        warningModal.style.display = 'none';
+    });
+
+    // Close warning modal when clicking outside the box
+    warningModal.addEventListener('click', function(e) {
+        if (e.target === warningModal) {
+            warningModal.style.display = 'none';
         }
     });
 </script>
