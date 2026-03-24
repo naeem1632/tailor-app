@@ -20,7 +20,16 @@ public class PaymentInstallment {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate paymentDate;
     private Long paidAmount;
+    private String paymentType; // Cash, Bank Transfer, JazzCash, EasyPaisa
     private String note;
     @ManyToOne(fetch = FetchType.LAZY)
     private Payments payment;
+
+    @PrePersist
+    private void setDefaultPaymentType() {
+        // Only set default if paymentType is truly null (not explicitly set by user)
+        if (this.paymentType == null) {
+            this.paymentType = "Cash";
+        }
+    }
 }

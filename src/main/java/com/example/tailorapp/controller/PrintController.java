@@ -165,14 +165,16 @@ public class PrintController {
     private void addKameezSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Kameez Measurements");
 
+        // First column: Length, Terra, Terra Down, Chest, Chest Fitting, Waist, Hip, Bain Size
+        // Second column: Arm, Shoulder-arm, Upper arm, Center arm, Lower arm, Cuff length, Cuff width, Collar size
         addRow4IfNotNull(table, "Length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
-        addRow4IfNotNull(table, "Shoulder-aram", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
-        addRow4IfNotNull(table, "Center aram", nvl(m.getCenterArm()),  "Lower arm", nvl(m.getLowerArm()));
-        addRow4IfNotNull(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
-        addRow4IfNotNull(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
-        addRow4IfNotNull(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));
-        addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Chest fitting", nvl(m.getChestFitting()));
-        addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Hip", nvl(m.getHip()));
+        addRow4IfNotNull(table, "Terra", nvl(m.getTerra()), "Shoulder-arm", nvl(m.getShoulderArm()));
+        addRow4IfNotNull(table, "Terra down", nvl(m.getTerraDown()), "Upper arm", nvl(m.getUpperArm()));
+        addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Center arm", nvl(m.getCenterArm()));
+        addRow4IfNotNull(table, "Chest fitting", nvl(m.getChestFitting()), "Lower arm", nvl(m.getLowerArm()));
+        addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Cuff length", nvl(m.getCuffLength()));
+        addRow4IfNotNull(table, "Hip", nvl(m.getHip()), "Cuff width", nvl(m.getCuffWidth()));
+        addRow4IfNotNull(table, "Bain size", nvl(m.getBainSize()), "Collar size", nvl(m.getCollarSize()));
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
     }
@@ -182,7 +184,7 @@ public class PrintController {
         PdfPTable table = createSectionTable("Shalwar Measurements");
 
         addRow4IfNotNull(table, "Length", nvl(m.getShalwarLength()),  "Fitting", nvl(m.getShalwarFitting()));
-        addRow4IfNotNull(table,"Asan", nvl(m.getAsan()), "Payncha", nvl(m.getPayncha()));
+        addRow4IfNotNull(table,"Payncha", nvl(m.getPayncha()), "Asan", nvl(m.getAsan()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
@@ -192,10 +194,12 @@ public class PrintController {
     private void addPajamaSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Pajama Measurements");
 
-        addRow4IfNotNull(table, "Pajama Length", nvl(m.getPajamaLength()), "Pajama Asan", nvl(m.getPajamaAsan()));
-        addRow4IfNotNull(table, "Pajama Payncha", nvl(m.getPajamaPayncha()), "Upper Fitting", nvl(m.getUpperFitting()));
-        addRow4IfNotNull(table, "Middle Fitting", nvl(m.getMiddleFitting()), "Lower Fitting", nvl(m.getLowerFitting()));
-        addRow4IfNotNull(table, "Pajama Pocket", nvl(m.getPajamaPocket()), "", null);
+        // First column: Length, Asan, Payncha
+        // Second column: Upper Fitting, Middle Fitting, Lower Fitting
+        addRow4IfNotNull(table, "Pajama Length", nvl(m.getPajamaLength()), "Upper Fitting", nvl(m.getUpperFitting()));
+        addRow4IfNotNull(table, "Pajama Asan", nvl(m.getPajamaAsan()), "Middle Fitting", nvl(m.getMiddleFitting()));
+        addRow4IfNotNull(table, "Pajama Payncha", nvl(m.getPajamaPayncha()), "Lower Fitting", nvl(m.getLowerFitting()));
+        addRow4IfNotNull(table, "Pajama Pocket", nvl(m.getPajamaPocket()), "Elastic", (m.getPajamaElastic() != null && m.getPajamaElastic()) ? "Yes" : "No");
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2))); // reduced from 3
@@ -205,23 +209,53 @@ public class PrintController {
     private void addDesignSection(Document doc, DressMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Design & Finishing");
 
-        addRow4IfNotNull(table,"Collar design", nvl(m.getCollarType()), "", null);
+        // First column: Collar design, Cuff type, Cuff design, Front pocket, Front pocket design, Side pocket, Shalwar pocket, Front patti design, Front patti kaj
+        // Second column: Bain, Button, Daman type, Daman stitching, Stitching, Design stitch, Jali, Kanta
 
-        // Only show bain and cuff designs if selected (checkbox checked)
+        // Row 1: Collar design | Bain design
+        String bainValue = null;
         if (m.getHasBain() != null && m.getHasBain() && m.getBainType() != null) {
-            addImageRow4(table, "Bain design", m.getBainType(), "", null);
+            bainValue = m.getBainType();
         }
-        if (m.getHasCuffDesign() != null && m.getHasCuffDesign() && m.getCuffDesign() != null) {
-            addImageRow4(table, "Cuff design", m.getCuffDesign(), "", null);
+        // Always show both columns with headings
+        if (bainValue != null) {
+            addImageRow4(table, "Collar design", nvl(m.getCollarType()), "Bain design", bainValue);
+        } else {
+            addRow4IfNotNull(table, "Collar design", nvl(m.getCollarType()), "Bain design", "");
         }
 
-        addImageRow4(table, "Front pocket", m.getFrontPocket() ? "Yes" : "No", "Front pocket design", m.getFrontPocketType());
-        addRow4IfNotNull(table, "Side pocket", nvl(m.getSidePocket()), "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No");
-        addRow4IfNotNull(table, "Daman type", m.getDamanType(), "Daman stitching", nvl(m.getDamanStitching()));
-        addRow4IfNotNull(table,  "Cuff type", m.getCuffType(), "Stitching", nvl(m.getStitchType()));
-        addRow4IfNotNull(table, "Button", nvl(m.getButtonType()), "Design stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
-        addRow4IfNotNull(table, "Front patti design", nvl(m.getFrontPattiType()), "Front patti kaj", nvl(m.getFrontPattiKaj()));
-        addRow4IfNotNull(table, "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No", "Jali", nvl(m.getJali()));
+        // Row 2: Cuff type | Button
+        addRow4IfNotNull(table, "Cuff type", nvl(m.getCuffType()), "Button", nvl(m.getButtonType()));
+
+        // Row 3: Cuff design | Daman type
+        String cuffDesignValue = null;
+        if (m.getHasCuffDesign() != null && m.getHasCuffDesign() && m.getCuffDesign() != null) {
+            cuffDesignValue = m.getCuffDesign();
+        }
+        // Always show both columns with headings
+        if (cuffDesignValue != null) {
+            addImageRow4(table, "Cuff design", cuffDesignValue, "Daman type", nvl(m.getDamanType()));
+        } else {
+            addRow4IfNotNull(table, "Cuff design", "", "Daman type", nvl(m.getDamanType()));
+        }
+
+        // Row 4: Front pocket | Daman stitching
+        addImageRow4(table, "Front pocket", m.getFrontPocket() ? "Yes" : "No", "Daman stitching", nvl(m.getDamanStitching()));
+
+        // Row 5: Front pocket design | Stitching
+        addImageRow4(table, "Front pocket design", m.getFrontPocketType(), "Stitching", nvl(m.getStitchType()));
+
+        // Row 6: Side pocket | Design stitch
+        addRow4IfNotNull(table, "Side pocket", nvl(m.getSidePocket()), "Design stitch", (m.getDesignStitch() != null && m.getDesignStitch()) ? "Yes" : "No");
+
+        // Row 7: Shalwar pocket | Jali
+        addRow4IfNotNull(table, "Shalwar pocket", m.getShalwarPocket() ? "Yes" : "No", "Jali", nvl(m.getJali()));
+
+        // Row 8: Front patti design | Kanta
+        addRow4IfNotNull(table, "Front patti design", nvl(m.getFrontPattiType()), "Kanta", (m.getKanta() != null && m.getKanta()) ? "Yes" : "No");
+
+        // Row 9: Front patti kaj (left column only)
+        addRow4IfNotNull(table, "Front patti kaj", nvl(m.getFrontPattiKaj()), "", "");
 
         doc.add(table);
         // No spacing after Design section since notes follow immediately
@@ -253,25 +287,11 @@ public class PrintController {
     }
 
     private void addRow4IfNotNull(PdfPTable table, String l1, String v1, String l2, String v2) {
-        boolean hasFirst = v1 != null && !v1.isEmpty();
-        boolean hasSecond = v2 != null && !v2.isEmpty();
+        // Always add rows with fixed column positions, showing headings even if values are empty
+        // Skip the row only if both labels are empty or null
+        if ((l1 == null || l1.isEmpty()) && (l2 == null || l2.isEmpty())) return;
 
-        if (!hasFirst && !hasSecond) return; // skip entire row if both are null/empty
-
-        if (!hasFirst && hasSecond) {
-            // shift second column left (no heading gap)
-            table.addCell(makeLabelCell(l2));
-            table.addCell(makeValueCell(v2));
-            table.addCell(new PdfPCell()); // fill remaining empty cells
-            table.addCell(new PdfPCell());
-        } else if (hasFirst && !hasSecond) {
-            table.addCell(makeLabelCell(l1));
-            table.addCell(makeValueCell(v1));
-            table.addCell(new PdfPCell());
-            table.addCell(new PdfPCell());
-        } else {
-            addRow4(table, l1, v1, l2, v2);
-        }
+        addRow4(table, l1, v1, l2, v2);
     }
 
     private void addImageRow4(PdfPTable table, String l1, String t1, String l2, String t2) {
@@ -442,7 +462,8 @@ public class PrintController {
     }
 
     private void addRow2IfNotNull(PdfPTable table, String label, String value) {
-        if (value == null || value.isEmpty()) return;
+        // Always show label even if value is empty - fixed column positions
+        if (label == null || label.isEmpty()) return;
         table.addCell(makeLabelCell(label));
         table.addCell(makeValueCell(value));
     }
@@ -548,15 +569,23 @@ public class PrintController {
     private void addShirtDesignSection(Document doc, ShirtMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Design & Finishing");
 
-        addRow4IfNotNull(table, "Collar design", nvl(m.getCollarType()), "", null);
-        // Only show bain and cuff designs if selected (checkbox checked)
+        // Row 1: Collar design (left column only)
+        addRow4IfNotNull(table, "Collar design", nvl(m.getCollarType()), "", "");
+
+        // Row 2: Bain design (if selected, left column only)
         if (m.getHasBain() != null && m.getHasBain()) {
-            addImageRow4(table, "Bain design", m.getBainType(), "", null);
+            addImageRow4(table, "Bain design", m.getBainType(), "", "");
         }
+
+        // Row 3: Cuff design (if selected, left column only)
         if (m.getHasCuffDesign() != null && m.getHasCuffDesign()) {
-            addImageRow4(table, "Cuff design", m.getCuffDesign(), "", null);
+            addImageRow4(table, "Cuff design", m.getCuffDesign(), "", "");
         }
+
+        // Row 4: Front pocket | Front pocket design
         addImageRow4(table, "Front pocket", m.getFrontPocket() != null && m.getFrontPocket() ? "Yes" : "No", "Front pocket design", m.getFrontPocketType());
+
+        // Row 5: Cuff type | Stitching
         addRow4IfNotNull(table, "Cuff type", nvl(m.getCuffType()), "Stitching", nvl(m.getStitchType()));
 
         doc.add(table);

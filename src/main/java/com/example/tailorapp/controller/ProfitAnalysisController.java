@@ -206,11 +206,68 @@ public class ProfitAnalysisController {
 
         double grandProfitPercentage = grandTotalRevenue > 0 ? (grandTotalProfit * 100.0 / grandTotalRevenue) : 0;
 
+        // Calculate payment type breakdown and totals (only for selected date range)
+        long cashReceived = 0, bankTransferReceived = 0, jazzCashReceived = 0, easyPaisaReceived = 0;
+        long totalReceived = 0, totalRemaining = 0;
+
+        for (Client client : clients) {
+            // Filter payments by date range
+            List<Payments> clientPayments = paymentsService.findByClient(client.getId()).stream()
+                    .filter(p -> p.getDate() != null &&
+                            !p.getDate().isBefore(startDate) &&
+                            !p.getDate().isAfter(endDate))
+                    .toList();
+
+            for (Payments p : clientPayments) {
+                // Calculate received amounts by payment type (from installments within date range)
+                if (p.getInstallments() != null) {
+                    for (var installment : p.getInstallments()) {
+                        if (installment.getPaymentDate() != null &&
+                            !installment.getPaymentDate().isBefore(startDate) &&
+                            !installment.getPaymentDate().isAfter(endDate)) {
+
+                            long amount = installment.getPaidAmount() != null ? installment.getPaidAmount() : 0;
+                            totalReceived += amount;
+
+                            String paymentType = installment.getPaymentType();
+                            // Default to Cash for null or empty payment types (existing records)
+                            if (paymentType == null || paymentType.isEmpty()) {
+                                paymentType = "Cash";
+                            }
+
+                            if ("Cash".equals(paymentType)) {
+                                cashReceived += amount;
+                            } else if ("Bank Transfer".equals(paymentType)) {
+                                bankTransferReceived += amount;
+                            } else if ("JazzCash".equals(paymentType)) {
+                                jazzCashReceived += amount;
+                            } else if ("EasyPaisa".equals(paymentType)) {
+                                easyPaisaReceived += amount;
+                            }
+                        }
+                    }
+                }
+
+                // Calculate total remaining for orders within the selected date range
+                if (p.getRemainingAmount() != null) {
+                    totalRemaining += p.getRemainingAmount();
+                }
+            }
+        }
+
         model.addAttribute("reportData", reportData);
         model.addAttribute("startDate", startDate.format(formatter));
         model.addAttribute("endDate", endDate.format(formatter));
         model.addAttribute("startDateParam", startDate.toString());
         model.addAttribute("endDateParam", endDate.toString());
+
+        // Payment type breakdown
+        model.addAttribute("cashReceived", cashReceived);
+        model.addAttribute("bankTransferReceived", bankTransferReceived);
+        model.addAttribute("jazzCashReceived", jazzCashReceived);
+        model.addAttribute("easyPaisaReceived", easyPaisaReceived);
+        model.addAttribute("totalReceived", totalReceived);
+        model.addAttribute("totalRemaining", totalRemaining);
 
         model.addAttribute("grandTotalRevenue", grandTotalRevenue);
         model.addAttribute("grandTotalExpense", grandTotalExpense);

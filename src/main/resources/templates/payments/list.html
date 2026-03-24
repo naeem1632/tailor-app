@@ -218,18 +218,20 @@
             <td colspan="19">
                 <table class="installments-table">
                     <thead>
-                    <tr><th>Date</th><th>Paid Amount</th><th>Note</th><th>Actions</th></tr>
+                    <tr><th>Date</th><th>Paid Amount</th><th>Payment Type</th><th>Note</th><th>Actions</th></tr>
                     </thead>
                     <tbody>
                     <tr th:each="i : ${p.installments}">
                         <td th:text="${@dateFormatter.format(i.paymentDate)}"></td>
                         <td th:text="${i.paidAmount}"></td>
+                        <td th:text="${i.paymentType != null ? i.paymentType : '-'}"></td>
                         <td th:text="${i.note}"></td>
                         <td>
                             <a href="javascript:void(0)" class="btn-action btn-edit"
                                th:attr="data-id=${i.id},
                                         data-date=${i.paymentDate},
                                         data-amount=${i.paidAmount},
+                                        data-type=${i.paymentType},
                                         data-note=${i.note}"
                                onclick="openEditInstallmentModal(this)">Edit</a>
                             <a th:href="@{'/payments/installment/delete/' + ${i.id}}"
@@ -344,6 +346,18 @@
             <table>
                 <tr><th>Date</th><td><input type="date" name="paymentDate" id="installmentDate" required/></td></tr>
                 <tr><th>Paid Amount</th><td><input type="number" name="paidAmount" id="installmentPaidAmount" required/></td></tr>
+                <tr>
+                    <th>Payment Type</th>
+                    <td>
+                        <select name="paymentType" id="installmentPaymentType" required>
+                            <option value="">Select Payment Type</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="JazzCash">JazzCash</option>
+                            <option value="EasyPaisa">EasyPaisa</option>
+                        </select>
+                    </td>
+                </tr>
                 <tr><th>Note</th><td><input type="text" name="note" id="installmentNote"/></td></tr>
             </table>
             <div class="actions">
@@ -365,6 +379,18 @@
             <table>
                 <tr><th>Date</th><td><input type="date" name="paymentDate" id="editInstallmentDate" required/></td></tr>
                 <tr><th>Paid Amount</th><td><input type="number" name="paidAmount" id="editInstallmentPaidAmount" required/></td></tr>
+                <tr>
+                    <th>Payment Type</th>
+                    <td>
+                        <select name="paymentType" id="editInstallmentPaymentType" required>
+                            <option value="">Select Payment Type</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="JazzCash">JazzCash</option>
+                            <option value="EasyPaisa">EasyPaisa</option>
+                        </select>
+                    </td>
+                </tr>
                 <tr><th>Note</th><td><input type="text" name="note" id="editInstallmentNote"/></td></tr>
             </table>
             <div class="actions">
@@ -490,6 +516,7 @@
             document.getElementById("editInstallmentId").value = el.dataset.id;
             document.getElementById("editInstallmentDate").value = el.dataset.date;
             document.getElementById("editInstallmentPaidAmount").value = el.dataset.amount;
+            document.getElementById("editInstallmentPaymentType").value = el.dataset.type || "";
             document.getElementById("editInstallmentNote").value = el.dataset.note || "";
         }
 

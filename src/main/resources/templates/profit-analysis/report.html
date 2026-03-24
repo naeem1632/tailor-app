@@ -62,6 +62,12 @@
         .summary-card.revenue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .summary-card.expense { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
         .summary-card.profit { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .summary-card.cash { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+        .summary-card.bank { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; }
+        .summary-card.jazzcash { background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%); color: white; }
+        .summary-card.easypaisa { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); color: white; }
+        .summary-card.received { background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white; }
+        .summary-card.remaining { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); color: white; }
 
         .summary-card h3 { font-size: 13px; margin: 0 0 6px 0; font-weight: 600; color: #ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .summary-card .value { font-size: 22px; font-weight: 700; margin: 0; }
@@ -300,20 +306,67 @@
         </table>
     </div>
 
-    <!-- Summary Cards - MOVED TO BOTTOM -->
-    <div class="summary-cards" style="margin-top: 20px;">
-        <div class="summary-card revenue">
-            <h3><i class="fas fa-money-bill-wave"></i> Total Revenue</h3>
-            <p class="value">PKR <span th:text="${grandTotalRevenue}"></span></p>
+    <!-- Payment Method Breakdown -->
+    <div style="margin-top: 20px; margin-bottom: 10px;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #343a40; margin-bottom: 10px;">
+            <i class="fas fa-wallet"></i> Payment Method Breakdown (Within Period)
+        </h2>
+        <div class="summary-cards">
+            <div class="summary-card cash">
+                <h3><i class="fas fa-money-bill-wave"></i> Cash</h3>
+                <p class="value">PKR <span th:text="${cashReceived}"></span></p>
+            </div>
+            <div class="summary-card bank">
+                <h3><i class="fas fa-university"></i> Bank Transfer</h3>
+                <p class="value">PKR <span th:text="${bankTransferReceived}"></span></p>
+            </div>
+            <div class="summary-card jazzcash">
+                <h3><i class="fas fa-mobile-alt"></i> JazzCash</h3>
+                <p class="value">PKR <span th:text="${jazzCashReceived}"></span></p>
+            </div>
+            <div class="summary-card easypaisa">
+                <h3><i class="fas fa-mobile-alt"></i> EasyPaisa</h3>
+                <p class="value">PKR <span th:text="${easyPaisaReceived}"></span></p>
+            </div>
         </div>
-        <div class="summary-card expense">
-            <h3><i class="fas fa-receipt"></i> Total Expense</h3>
-            <p class="value">PKR <span th:text="${grandTotalExpense}"></span></p>
+    </div>
+
+    <!-- Payment Summary -->
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #343a40; margin-bottom: 10px;">
+            <i class="fas fa-chart-bar"></i> Payment Summary
+        </h2>
+        <div class="summary-cards">
+            <div class="summary-card received">
+                <h3><i class="fas fa-check-circle"></i> Total Received (Period)</h3>
+                <p class="value">PKR <span th:text="${totalReceived}"></span></p>
+            </div>
+            <div class="summary-card remaining">
+                <h3><i class="fas fa-clock"></i> Total Remaining (All Orders)</h3>
+                <p class="value">PKR <span th:text="${totalRemaining}"></span></p>
+            </div>
         </div>
-        <div class="summary-card profit">
-            <h3><i class="fas fa-chart-pie"></i> Total Profit</h3>
-            <p class="value">PKR <span th:text="${grandTotalProfit}"></span></p>
-            <p class="percentage">(<span th:text="${grandProfitPercentage}"></span>%)</p>
+    </div>
+
+    <!-- Profit Summary -->
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #343a40; margin-bottom: 10px;">
+            <i class="fas fa-chart-line"></i> Profit Summary (Within Period)
+        </h2>
+        <div class="summary-cards">
+            <div class="summary-card revenue">
+                <h3><i class="fas fa-money-bill-wave"></i> Total Revenue</h3>
+                <p class="value">PKR <span th:text="${grandTotalRevenue}"></span></p>
+            </div>
+            <div class="summary-card expense">
+                <h3><i class="fas fa-receipt"></i> Total Expense</h3>
+                <p class="value">PKR <span th:text="${grandTotalExpense}"></span></p>
+            </div>
+            <div class="summary-card profit">
+                <h3><i class="fas fa-chart-pie"></i> Total Profit</h3>
+                <p class="value">PKR <span th:text="${grandTotalProfit}"></span></p>
+                <p class="percentage">(<span th:text="${grandProfitPercentage}"></span>%)</p>
+            </div>
         </div>
     </div>
 

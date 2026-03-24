@@ -133,12 +133,13 @@ public class PaymentsService {
     }
 
     // ✅ Edit installment and sync parent totals
-    public Optional<Payments> updateInstallmentAndSync(Long installmentId, Long paidAmount, String note, LocalDate paymentDate) {
+    public Optional<Payments> updateInstallmentAndSync(Long installmentId, Long paidAmount, String paymentType, String note, LocalDate paymentDate) {
         Optional<PaymentInstallment> instOpt = installmentRepository.findById(installmentId);
         if (instOpt.isEmpty()) return Optional.empty();
 
         PaymentInstallment inst = instOpt.get();
         inst.setPaidAmount(paidAmount);
+        inst.setPaymentType(paymentType);
         inst.setNote(note);
         if (paymentDate != null) inst.setPaymentDate(paymentDate);
 

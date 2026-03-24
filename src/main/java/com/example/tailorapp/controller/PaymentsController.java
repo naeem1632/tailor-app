@@ -99,6 +99,7 @@ public class PaymentsController {
     @PostMapping("/installment/add")
     public String addInstallment(@RequestParam("paymentId") Long paymentId,
                                  @RequestParam("paidAmount") Long paidAmount,
+                                 @RequestParam(value = "paymentType", required = false) String paymentType,
                                  @RequestParam(value = "note", required = false) String note,
                                  @RequestParam(value = "paymentDate", required = false) LocalDate paymentDate,
                                  RedirectAttributes ra) {
@@ -114,6 +115,7 @@ public class PaymentsController {
         PaymentInstallment installment = new PaymentInstallment();
         installment.setPayment(payment);
         installment.setPaidAmount(paidAmount);
+        installment.setPaymentType(paymentType);
         installment.setNote(note);
         installment.setPaymentDate(paymentDate);
 
@@ -143,11 +145,12 @@ public class PaymentsController {
     @PostMapping("/installment/edit")
     public String editInstallment(@RequestParam("installmentId") Long installmentId,
                                   @RequestParam("paidAmount") Long paidAmount,
+                                  @RequestParam(value = "paymentType", required = false) String paymentType,
                                   @RequestParam(value = "note", required = false) String note,
                                   @RequestParam(value = "paymentDate", required = false) LocalDate paymentDate,
                                   RedirectAttributes ra) {
 
-        Optional<Payments> paymentOpt = paymentsService.updateInstallmentAndSync(installmentId, paidAmount, note, paymentDate);
+        Optional<Payments> paymentOpt = paymentsService.updateInstallmentAndSync(installmentId, paidAmount, paymentType, note, paymentDate);
         if (paymentOpt.isEmpty()) {
             ra.addFlashAttribute("error", "Installment not found");
             return "redirect:/clients";

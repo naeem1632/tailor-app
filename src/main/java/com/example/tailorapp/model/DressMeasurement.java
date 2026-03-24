@@ -67,6 +67,7 @@ public class DressMeasurement {
     Double middleFitting;
     Double lowerFitting;
     String pajamaPocket; // No, 1, 2
+    Boolean pajamaElastic; // Yes, No
 
     String stitchType; // single, double, simple
     Boolean designStitch;

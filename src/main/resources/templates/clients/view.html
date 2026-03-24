@@ -167,6 +167,7 @@
               <tr><th>Middle Fitting</th><td th:text="${m.middleFitting}"></td></tr>
               <tr><th>Lower Fitting</th><td th:text="${m.lowerFitting}"></td></tr>
               <tr><th>Pajama Pocket</th><td th:text="${m.pajamaPocket}"></td></tr>
+              <tr><th>Elastic</th><td th:text="${m.pajamaElastic} ? 'Yes' : 'No'"></td></tr>
             </table>
           </div>
 
@@ -293,6 +294,10 @@
         <option value="1">1</option>
         <option value="2">2</option>
       </select>
+    </div>
+    <div>
+      <label>Elastic:</label>
+      <input type="checkbox" th:field="*{pajamaElastic}" style="width: auto;"/>
     </div>
 
     <!-- Section: Design & Finishing -->
