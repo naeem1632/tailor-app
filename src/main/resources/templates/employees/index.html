@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Employees - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">Employees</h1>
+        <a th:href="@{/employees/add}" class="add-btn">
+            <i class="fas fa-plus"></i> Add Employee
+        </a>
+    </div>
+
+    <!-- Filter Section -->
+    <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+        <form method="get" th:action="@{/employees}" style="display: flex; gap: 12px; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">Status</label>
+                <select name="status" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">All</option>
+                    <option value="ACTIVE" th:selected="${selectedStatus == 'ACTIVE'}">Active</option>
+                    <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">Inactive</option>
+                    <option value="ON_LEAVE" th:selected="${selectedStatus == 'ON_LEAVE'}">On Leave</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 4px; font-weight: 600;">Skill</label>
+                <select name="skill" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">All</option>
+                    <option value="CUTTING" th:selected="${selectedSkill == 'CUTTING'}">Cutting</option>
+                    <option value="STITCHING" th:selected="${selectedSkill == 'STITCHING'}">Stitching (Plain)</option>
+                    <option value="STITCHING_DESIGN" th:selected="${selectedSkill == 'STITCHING_DESIGN'}">Stitching (Design)</option>
+                    <option value="FINISHING" th:selected="${selectedSkill == 'FINISHING'}">Finishing</option>
+                    <option value="EMBELLISHMENT" th:selected="${selectedSkill == 'EMBELLISHMENT'}">Embellishment</option>
+                </select>
+            </div>
+            <button type="submit" class="add-btn" style="margin: 0;">Filter</button>
+            <a th:href="@{/employees}" class="btn btn-secondary">Clear</a>
+        </form>
+    </div>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Employees Table -->
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Skills</th>
+            <th>Joining Date</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(employees)}">
+            <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
+                No employees found.
+            </td>
+        </tr>
+        <tr th:each="employee : ${employees}">
+            <td style="font-weight: 600; color: #666;" th:text="${employee.id}"></td>
+            <td>
+                <a th:href="@{/employees/view/{id}(id=${employee.id})}" style="font-weight: 600; text-decoration: none; color: #007bff !important;" th:text="${employee.name}">
+                </a>
+            </td>
+            <td th:text="${employee.mobile ?: '-'}"></td>
+            <td>
+                <span th:if="${employee.employeeStatus == 'ACTIVE'}"
+                      style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                    ACTIVE
+                </span>
+                <span th:if="${employee.employeeStatus == 'INACTIVE'}"
+                      style="background: #f8d7da; color: #721c24; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                    INACTIVE
+                </span>
+                <span th:if="${employee.employeeStatus == 'ON_LEAVE'}"
+                      style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 12px;">
+                    ON LEAVE
+                </span>
+            </td>
+            <td>
+                <span th:if="${employee.canCut}" style="background: #e7f3ff; color: #004085; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-right: 4px;">Cut</span>
+                <span th:if="${employee.canStitchPlain}" style="background: #e7f3ff; color: #004085; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-right: 4px;">Plain</span>
+                <span th:if="${employee.canStitchDesign}" style="background: #e7f3ff; color: #004085; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-right: 4px;">Design</span>
+                <span th:if="${employee.canDoFinishing}" style="background: #e7f3ff; color: #004085; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-right: 4px;">Finish</span>
+                <span th:if="${employee.canDoEmbellishment}" style="background: #e7f3ff; color: #004085; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-right: 4px;">Embel.</span>
+            </td>
+            <td th:text="${employee.joiningDate != null ? #temporals.format(employee.joiningDate, 'dd MMM yyyy') : '-'}"></td>
+            <td>
+                <a th:href="@{/employees/view/{id}(id=${employee.id})}" class="btn btn-sm btn-info" title="View">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a th:href="@{/employees/edit/{id}(id=${employee.id})}" class="btn btn-sm btn-warning" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

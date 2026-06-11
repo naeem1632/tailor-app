@@ -63,6 +63,8 @@ public class Payments {
 
     String readyStatus; // NOT_READY, READY, NOTIFIED, PICKED_UP
 
+    String orderStatus; // ACTIVE, CANCELLED, REFUNDED, COMPLETED (default: ACTIVE)
+
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     LocalDateTime notifiedAt;
 

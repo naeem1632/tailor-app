@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Expense Settings - Stitch &amp; Style</title>
+    <title>Expenditures - Stitch &amp; Style</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
@@ -15,14 +15,25 @@
 
 <div class="container-fluid" style="padding-top: 24px; max-width: 600px;">
 
-    <h1>Expense Settings</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h1 style="margin: 0;">Expenditures</h1>
+        <a href="/expenses/history" class="btn btn-secondary">
+            <i class="fas fa-history"></i> View History
+        </a>
+    </div>
     <p style="color: #666; margin-bottom: 20px;">
         Set the cost/expense for making each garment and embellishment. These values will be used to calculate profit automatically.
+        <br><strong>Note:</strong> Changes are automatically saved to expense history for accurate profit calculations.
     </p>
 
     <!-- Success message -->
     <div th:if="${successMessage}" style="background:#d4edda; color:#155724; border:1px solid #c3e6cb; padding:10px 16px; border-radius:4px; margin-bottom:16px;">
         <span th:text="${successMessage}"></span>
+    </div>
+
+    <!-- Error message -->
+    <div th:if="${errorMessage}" style="background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; padding:10px 16px; border-radius:4px; margin-bottom:16px;">
+        <span th:text="${errorMessage}"></span>
     </div>
 
     <form th:action="@{/expenses/save}" th:object="${expense}" method="post">

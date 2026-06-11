@@ -40,11 +40,11 @@ public class ProfitAnalysisController {
 
         List<Client> clients = clientService.findAll();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
-        Expense expense = expenseService.getExpense();
 
         List<Map<String, Object>> reportData = new ArrayList<>();
 
         // Grand totals
+        long grandSubtotalRevenue = 0, grandTotalDiscount = 0;
         long grandTotalRevenue = 0, grandTotalExpense = 0, grandTotalProfit = 0;
         long grandDressRevenue = 0, grandDressExpense = 0, grandDressProfit = 0;
         long grandWaistcoatRevenue = 0, grandWaistcoatExpense = 0, grandWaistcoatProfit = 0;
@@ -60,10 +60,18 @@ public class ProfitAnalysisController {
                     .filter(p -> p.getDate() != null &&
                             !p.getDate().isBefore(startDate) &&
                             !p.getDate().isAfter(endDate))
+                    .filter(p -> {
+                        // Filter out cancelled and refunded orders - only count real revenue
+                        String status = p.getOrderStatus();
+                        return status == null || status.isEmpty() ||
+                               !"CANCELLED".equals(status) && !"REFUNDED".equals(status);
+                    })
                     .sorted(Comparator.comparing(Payments::getDate))
                     .toList();
 
             for (Payments p : clientPayments) {
+                // Get expense rates that were active on the order date (historical accuracy)
+                var expense = expenseService.getExpenseForDate(p.getDate());
                 long dressCount = p.getDressCount() != null ? p.getDressCount() : 0;
                 long waistcoatCount = p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0;
                 long shirtCount = p.getShirtCount() != null ? p.getShirtCount() : 0;
@@ -108,9 +116,12 @@ public class ProfitAnalysisController {
                 long jaliProfit = jaliRevenue - jaliExpenseTotal;
                 long krhaiProfit = krhaiRevenue - krhaiExpenseTotal;
 
-                // Row totals
-                long totalRevenue = dressRevenue + waistcoatRevenue + shirtRevenue + matelRevenue +
-                                   tichRevenue + kantaRevenue + jaliRevenue + krhaiRevenue;
+                // Row totals - FIXED: Apply discount to get actual revenue
+                long subtotalRevenue = dressRevenue + waistcoatRevenue + shirtRevenue + matelRevenue +
+                                      tichRevenue + kantaRevenue + jaliRevenue + krhaiRevenue;
+                long discount = (p.getDiscount() != null ? p.getDiscount() : 0);
+                long totalRevenue = subtotalRevenue - discount; // Actual revenue after discount
+
                 long totalExpense = dressExpenseTotal + waistcoatExpenseTotal + shirtExpenseTotal +
                                    matelExpenseTotal + tichExpenseTotal + kantaExpenseTotal +
                                    jaliExpenseTotal + krhaiExpenseTotal;
@@ -122,6 +133,7 @@ public class ProfitAnalysisController {
                 row.put("clientId", client.getId());
                 row.put("clientName", client.getName());
                 row.put("mobile", client.getMobile() != null ? client.getMobile() : "-");
+                row.put("orderStatus", p.getOrderStatus() != null ? p.getOrderStatus() : "ACTIVE");
 
                 row.put("dressCount", dressCount);
                 row.put("dressRevenue", dressRevenue);
@@ -158,6 +170,8 @@ public class ProfitAnalysisController {
                 row.put("krhaiExpense", krhaiExpenseTotal);
                 row.put("krhaiProfit", krhaiProfit);
 
+                row.put("subtotalRevenue", subtotalRevenue);
+                row.put("discount", discount);
                 row.put("totalRevenue", totalRevenue);
                 row.put("totalExpense", totalExpense);
                 row.put("totalProfit", totalProfit);
@@ -166,6 +180,8 @@ public class ProfitAnalysisController {
                 reportData.add(row);
 
                 // Accumulate grand totals
+                grandSubtotalRevenue += subtotalRevenue;
+                grandTotalDiscount += discount;
                 grandTotalRevenue += totalRevenue;
                 grandTotalExpense += totalExpense;
                 grandTotalProfit += totalProfit;
@@ -211,11 +227,17 @@ public class ProfitAnalysisController {
         long totalReceived = 0, totalRemaining = 0;
 
         for (Client client : clients) {
-            // Filter payments by date range
+            // Filter payments by date range - exclude cancelled and refunded orders
             List<Payments> clientPayments = paymentsService.findByClient(client.getId()).stream()
                     .filter(p -> p.getDate() != null &&
                             !p.getDate().isBefore(startDate) &&
                             !p.getDate().isAfter(endDate))
+                    .filter(p -> {
+                        // Exclude cancelled and refunded orders from payment summary too
+                        String status = p.getOrderStatus();
+                        return status == null || status.isEmpty() ||
+                               !"CANCELLED".equals(status) && !"REFUNDED".equals(status);
+                    })
                     .toList();
 
             for (Payments p : clientPayments) {
@@ -249,7 +271,8 @@ public class ProfitAnalysisController {
                 }
 
                 // Calculate total remaining for orders within the selected date range
-                if (p.getRemainingAmount() != null) {
+                // Only count remaining amount if the order is still active (not fully paid, cancelled, or refunded)
+                if (p.getRemainingAmount() != null && p.getRemainingAmount() > 0) {
                     totalRemaining += p.getRemainingAmount();
                 }
             }
@@ -269,6 +292,8 @@ public class ProfitAnalysisController {
         model.addAttribute("totalReceived", totalReceived);
         model.addAttribute("totalRemaining", totalRemaining);
 
+        model.addAttribute("grandSubtotalRevenue", grandSubtotalRevenue);
+        model.addAttribute("grandTotalDiscount", grandTotalDiscount);
         model.addAttribute("grandTotalRevenue", grandTotalRevenue);
         model.addAttribute("grandTotalExpense", grandTotalExpense);
         model.addAttribute("grandTotalProfit", grandTotalProfit);

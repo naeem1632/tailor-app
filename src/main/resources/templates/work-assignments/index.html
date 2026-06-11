@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Work Assignments - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">Work Assignments</h1>
+        <a th:href="@{/work-assignments/wip-summary}" class="btn btn-info">
+            <i class="fas fa-chart-bar"></i> WIP Summary
+        </a>
+    </div>
+
+    <!-- Filter Section -->
+    <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+        <form method="get" th:action="@{/work-assignments}">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 600;">Employee</label>
+                    <select name="employeeId" class="form-control">
+                        <option value="">All Employees</option>
+                        <option th:each="emp : ${employees}" th:value="${emp.id}"
+                                th:text="${emp.name}"
+                                th:selected="${selectedEmployee != null && emp.id == selectedEmployee.id}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 600;">Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option value="ASSIGNED" th:selected="${selectedStatus == 'ASSIGNED'}">Assigned</option>
+                        <option value="IN_PROGRESS" th:selected="${selectedStatus == 'IN_PROGRESS'}">In Progress</option>
+                        <option value="COMPLETED" th:selected="${selectedStatus == 'COMPLETED'}">Completed</option>
+                        <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 600;">Order Date From</label>
+                    <input type="date" name="startDate" class="form-control" th:value="${startDate}"/>
+                </div>
+                <div class="col-md-2">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 600;">Order Date To</label>
+                    <input type="date" name="endDate" class="form-control" th:value="${endDate}"/>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a th:href="@{/work-assignments}" class="btn btn-secondary" style="margin-left: 8px;">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Assignments Grouped by Order -->
+    <div th:if="${#lists.isEmpty(assignments)}" style="text-align: center; padding: 60px; background: #f8f9fa; border-radius: 4px; color: #999;">
+        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+        <div style="font-size: 18px;">No work assignments found.</div>
+    </div>
+
+    <!-- Group assignments by payment/order -->
+    <div th:unless="${#lists.isEmpty(assignments)}">
+        <!-- We'll use JavaScript to group the assignments -->
+        <div id="assignments-container"></div>
+
+        <!-- Hidden data for JavaScript processing -->
+        <div id="assignments-data" style="display: none;">
+            <div th:each="assignment : ${assignments}" class="assignment-item"
+                 th:attr="data-payment-id=${assignment.payment.id},
+                          data-payment-date=${#temporals.format(assignment.payment.date, 'yyyy-MM-dd')},
+                          data-payment-date-formatted=${#temporals.format(assignment.payment.date, 'dd MMM yyyy')},
+                          data-client-name=${assignment.payment.client.name},
+                          data-client-id=${assignment.payment.client.id},
+                          data-assigned-date=${assignment.assignedDate != null ? #temporals.format(assignment.assignedDate, 'dd MMM yyyy') : '-'},
+                          data-assigned-time=${assignment.assignedTime != null ? #temporals.format(assignment.assignedTime, 'hh:mm a') : ''},
+                          data-started-date=${assignment.startedDate != null ? #temporals.format(assignment.startedDate, 'dd MMM yyyy') : ''},
+                          data-started-time=${assignment.startedTime != null ? #temporals.format(assignment.startedTime, 'hh:mm a') : ''},
+                          data-completed-date=${assignment.completedDate != null ? #temporals.format(assignment.completedDate, 'dd MMM yyyy') : ''},
+                          data-completed-time=${assignment.completedTime != null ? #temporals.format(assignment.completedTime, 'hh:mm a') : ''},
+                          data-employee-name=${assignment.employee.name},
+                          data-work-type=${assignment.workType},
+                          data-item-type=${assignment.itemType},
+                          data-is-design=${assignment.isDesignWork},
+                          data-quantity=${assignment.assignedCount},
+                          data-rate=${assignment.ratePerPiece},
+                          data-amount=${assignment.totalAmount},
+                          data-status=${assignment.status},
+                          data-assignment-id=${assignment.id}">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const assignmentsData = document.getElementById('assignments-data');
+        if (!assignmentsData) return;
+
+        const assignmentItems = assignmentsData.querySelectorAll('.assignment-item');
+        if (assignmentItems.length === 0) return;
+
+        // Group assignments by payment ID
+        const groupedByPayment = {};
+
+        assignmentItems.forEach(item => {
+            const paymentId = item.dataset.paymentId;
+
+            if (!groupedByPayment[paymentId]) {
+                groupedByPayment[paymentId] = {
+                    paymentId: paymentId,
+                    paymentDate: item.dataset.paymentDate,
+                    paymentDateFormatted: item.dataset.paymentDateFormatted,
+                    clientName: item.dataset.clientName,
+                    clientId: item.dataset.clientId,
+                    assignments: []
+                };
+            }
+
+            groupedByPayment[paymentId].assignments.push({
+                assignedDate: item.dataset.assignedDate,
+                assignedTime: item.dataset.assignedTime,
+                startedDate: item.dataset.startedDate,
+                startedTime: item.dataset.startedTime,
+                completedDate: item.dataset.completedDate,
+                completedTime: item.dataset.completedTime,
+                employeeName: item.dataset.employeeName,
+                workType: item.dataset.workType,
+                itemType: item.dataset.itemType,
+                isDesign: item.dataset.isDesign === 'true',
+                quantity: item.dataset.quantity,
+                rate: item.dataset.rate,
+                amount: item.dataset.amount,
+                status: item.dataset.status,
+                assignmentId: item.dataset.assignmentId
+            });
+        });
+
+        // Convert to array and sort by payment date (newest first)
+        const ordersArray = Object.values(groupedByPayment);
+        ordersArray.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+
+        // Build the HTML
+        const container = document.getElementById('assignments-container');
+        let html = '';
+
+        ordersArray.forEach(order => {
+            const totalItems = order.assignments.length;
+
+            html += `
+                <div style="background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden;">
+                    <!-- Order Header -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; cursor: pointer;"
+                         onclick="toggleOrder('order-${order.paymentId}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; gap: 20px; align-items: center; flex: 1;">
+                                <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 4px; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3);">
+                                    <div style="color: rgba(255,255,255,0.9); font-size: 11px; margin-bottom: 2px;">Order</div>
+                                    <div style="color: white; font-size: 20px; font-weight: 700;">#${order.paymentId}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 2px;">Client</div>
+                                    <div style="color: white; font-size: 16px; font-weight: 600;">
+                                        ${order.clientName} <span style="opacity: 0.7; font-size: 13px; font-weight: 400;">(${order.clientId})</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 2px;">Order Date</div>
+                                    <div style="color: white; font-size: 14px; font-weight: 600;">${order.paymentDateFormatted}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.8); font-size: 12px; margin-bottom: 2px;">Work Items</div>
+                                    <div style="color: white; font-size: 14px; font-weight: 600;">${totalItems} assignment${totalItems !== 1 ? 's' : ''}</div>
+                                </div>
+                            </div>
+                            <div style="color: white; font-size: 20px;">
+                                <i class="fas fa-chevron-down" id="icon-order-${order.paymentId}"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Content (Assignments Table) -->
+                    <div id="order-${order.paymentId}" style="display: none; padding: 20px;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th>Assigned Date & Time</th>
+                                    <th>Employee</th>
+                                    <th>Work Type</th>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            order.assignments.forEach(assignment => {
+                const statusBadge = getStatusBadge(assignment.status);
+                const actionButtons = getActionButtons(assignment.status, assignment.assignmentId);
+
+                // Determine which date/time to show based on status
+                let displayDate = assignment.assignedDate;
+                let displayTime = assignment.assignedTime;
+                let dateLabel = 'Assigned';
+
+                if (assignment.status === 'COMPLETED' && assignment.completedDate) {
+                    displayDate = assignment.completedDate;
+                    displayTime = assignment.completedTime;
+                    dateLabel = 'Completed';
+                } else if (assignment.status === 'IN_PROGRESS' && assignment.startedDate) {
+                    displayDate = assignment.startedDate;
+                    displayTime = assignment.startedTime;
+                    dateLabel = 'Started';
+                }
+
+                html += `
+                    <tr>
+                        <td>
+                            <div style="font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 2px;">${dateLabel}</div>
+                            <div style="font-size: 13px;">${displayDate}</div>
+                            ${displayTime ? `<div style="font-size: 11px; color: #666;">${displayTime}</div>` : ''}
+                        </td>
+                        <td>${assignment.employeeName}</td>
+                        <td>${assignment.workType}</td>
+                        <td>
+                            ${assignment.itemType}
+                            ${assignment.isDesign ? '<span style="color: #dc3545; font-size: 11px;"> (Design)</span>' : ''}
+                        </td>
+                        <td>${assignment.quantity}</td>
+                        <td>Rs. ${formatNumber(assignment.rate)}</td>
+                        <td style="font-weight: 700;">Rs. ${formatNumber(assignment.amount)}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionButtons}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    });
+
+    function toggleOrder(orderId) {
+        const content = document.getElementById(orderId);
+        const icon = document.getElementById('icon-' + orderId);
+
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        } else {
+            content.style.display = 'none';
+            icon.className = 'fas fa-chevron-down';
+        }
+    }
+
+    function getStatusBadge(status) {
+        const badges = {
+            'ASSIGNED': '<span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 8px; font-size: 11px;">ASSIGNED</span>',
+            'IN_PROGRESS': '<span style="background: #cfe2ff; color: #084298; padding: 2px 8px; border-radius: 8px; font-size: 11px;">IN PROGRESS</span>',
+            'COMPLETED': '<span style="background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 8px; font-size: 11px;">COMPLETED</span>',
+            'CANCELLED': '<span style="background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 8px; font-size: 11px;">CANCELLED</span>'
+        };
+        return badges[status] || status;
+    }
+
+    function getActionButtons(status, assignmentId) {
+        if (status === 'ASSIGNED') {
+            return `
+                <form action="/work-assignments/start/${assignmentId}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-primary" title="Start Work">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </form>
+            `;
+        } else if (status === 'IN_PROGRESS') {
+            return `
+                <form action="/work-assignments/complete/${assignmentId}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-success" title="Complete">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </form>
+            `;
+        }
+        return '';
+    }
+
+    function formatNumber(num) {
+        return parseInt(num).toLocaleString('en-US');
+    }
+</script>
+</body>
+</html>

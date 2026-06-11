@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Piece Rate Settings - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
+
+    <h1 style="margin-bottom: 20px;">Add New Piece Rate Settings</h1>
+
+    <p style="color: #666; margin-bottom: 20px;">
+        Define piece rates for employee work. These rates will be used to calculate payment for work assignments.
+        <br><strong>Note:</strong> The form is pre-filled with current rates for your convenience.
+    </p>
+
+    <form th:action="@{/piece-rate-settings/add}" th:object="${settings}" method="post">
+
+        <!-- Effective Date -->
+        <div style="background: #fff3cd; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="effectiveDate" style="font-weight: 700;">Effective Date <span style="color: red;">*</span></label>
+                <input type="date" id="effectiveDate" th:field="*{effectiveDate}" class="form-control" required style="max-width: 250px;"/>
+                <small style="color: #666;">These rates will apply to all work assignments from this date forward</small>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <!-- Cutting Rates -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">Cutting Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Kameez</label>
+                        <input type="number" th:field="*{kameezCuttingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Shalwar</label>
+                        <input type="number" th:field="*{shalwarCuttingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Pajama</label>
+                        <input type="number" th:field="*{pajamaCuttingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Shirt</label>
+                        <input type="number" th:field="*{shirtCuttingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Waistcoat</label>
+                        <input type="number" th:field="*{waistcoatCuttingRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+
+                <!-- Plain Stitching Rates -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">Plain Stitching Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Kameez (Plain)</label>
+                        <input type="number" th:field="*{kameezPlainStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Shalwar (Plain)</label>
+                        <input type="number" th:field="*{shalwarPlainStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Pajama</label>
+                        <input type="number" th:field="*{pajamaStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Shirt</label>
+                        <input type="number" th:field="*{shirtStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Waistcoat</label>
+                        <input type="number" th:field="*{waistcoatStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+
+                <!-- Design Stitching Rates -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">Design Stitching Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Kameez (Design)</label>
+                        <input type="number" th:field="*{kameezDesignStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Shalwar (Design)</label>
+                        <input type="number" th:field="*{shalwarDesignStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+                <!-- Embellishment Rates -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">Embellishment Work Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Matel Work</label>
+                        <input type="number" th:field="*{matelWorkRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Tich Work</label>
+                        <input type="number" th:field="*{tichWorkRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Kanta Work</label>
+                        <input type="number" th:field="*{kantaWorkRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Jali Work</label>
+                        <input type="number" th:field="*{jaliWorkRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Krhai Work</label>
+                        <input type="number" th:field="*{krhaiWorkRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+
+                <!-- Finishing & Other Rates -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">Finishing & Other Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Button Work</label>
+                        <input type="number" th:field="*{buttonWorkRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Embroidery</label>
+                        <input type="number" th:field="*{embroideryRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Finishing</label>
+                        <input type="number" th:field="*{finishingRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                    <h4 style="margin-top: 0;">Notes</h4>
+
+                    <div class="form-group">
+                        <textarea th:field="*{notes}" class="form-control" rows="4"
+                                  placeholder="E.g., Increased rates due to minimum wage change"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
+            <button type="submit" class="add-btn">
+                <i class="fas fa-save"></i> Save Piece Rate Settings
+            </button>
+            <a th:href="@{/piece-rate-settings}" class="btn btn-secondary" style="margin-left: 12px;">Cancel</a>
+        </div>
+
+    </form>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

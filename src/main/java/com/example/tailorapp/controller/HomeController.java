@@ -17,7 +17,7 @@ public class HomeController {
         this.paymentsService = paymentsService;
     }
 
-    @GetMapping("/")
+    @GetMapping({"/", "/index"})
     public String home(Model model) {
         // Dashboard metrics
         model.addAttribute("totalClients", clientService.count());

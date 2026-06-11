@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>View Piece Rate Settings - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">Piece Rate Settings Details</h1>
+        <div>
+            <a th:href="@{/piece-rate-settings/edit/{id}(id=${settings.id})}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a th:href="@{/piece-rate-settings}" class="btn btn-secondary" style="margin-left: 8px;">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Effective Date -->
+    <div style="background: #e7f3ff; border: 1px solid #007bff; border-radius: 4px; padding: 16px; margin-bottom: 20px;">
+        <h4 style="margin: 0; color: #007bff;">
+            <i class="fas fa-calendar"></i> Effective Date:
+            <span th:text="${#temporals.format(settings.effectiveDate, 'dd MMMM yyyy')}"></span>
+        </h4>
+        <p th:if="${settings.notes}" style="margin: 8px 0 0 0; color: #666;">
+            <strong>Notes:</strong> <span th:text="${settings.notes}"></span>
+        </p>
+    </div>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-6">
+            <!-- Cutting Rates -->
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">Cutting Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Kameez</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.kameezCuttingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Shalwar</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.shalwarCuttingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Pajama</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.pajamaCuttingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Shirt</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.shirtCuttingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Waistcoat</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.waistcoatCuttingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Plain Stitching Rates -->
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 8px;">Plain Stitching Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Kameez (Plain)</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.kameezPlainStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Shalwar (Plain)</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.shalwarPlainStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Pajama</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.pajamaStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Shirt</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.shirtStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Waistcoat</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.waistcoatStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Design Stitching Rates -->
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #dc3545; padding-bottom: 8px;">Design Stitching Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Kameez (Design)</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.kameezDesignStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Shalwar (Design)</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.shalwarDesignStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-6">
+            <!-- Embellishment Rates -->
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #6f42c1; padding-bottom: 8px;">Embellishment Work Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Matel Work</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.matelWorkRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Tich Work</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.tichWorkRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Kanta Work</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.kantaWorkRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Jali Work</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.jaliWorkRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Krhai Work</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.krhaiWorkRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Finishing & Other Rates -->
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #ffc107; padding-bottom: 8px;">Finishing & Other Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Button Work</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.buttonWorkRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Embroidery</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.embroideryRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Finishing</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.finishingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Metadata -->
+            <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 16px;">
+                <h5 style="margin-top: 0;">Record Information</h5>
+                <p style="margin-bottom: 8px;">
+                    <strong>Created:</strong>
+                    <span th:if="${settings.createdAt}" th:text="${#temporals.format(settings.createdAt, 'dd MMM yyyy HH:mm')}"></span>
+                    <span th:unless="${settings.createdAt}">-</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
+        <form th:action="@{/piece-rate-settings/delete/{id}(id=${settings.id})}" method="post" style="display: inline;" id="deleteSettingsForm">
+            <button type="button" class="btn btn-danger" id="deleteSettingsBtn">
+                <i class="fas fa-trash"></i> Delete Settings
+            </button>
+        </form>
+        <a th:href="@{/piece-rate-settings/add}" class="btn btn-primary" style="margin-left: 8px;">
+            <i class="fas fa-plus"></i> Create New Rate Settings
+        </a>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirmDeleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>⚠ Confirm Deletion</h3>
+            <p>Are you sure you want to delete these rate settings? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
+                <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Delete confirmation modal handling
+    document.getElementById('deleteSettingsBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('confirmDeleteModal').style.display = 'flex';
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        document.getElementById('deleteSettingsForm').submit();
+    });
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+        document.getElementById('confirmDeleteModal').style.display = 'none';
+    });
+
+    // Close modal on overlay click
+    document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

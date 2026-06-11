@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment Record Details - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 1200px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">Payment Record #<span th:text="${payment.id}"></span></h1>
+        <a th:href="@{/employee-payments}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Payment Record Summary -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; padding: 24px; margin-bottom: 24px; color: white;">
+        <div class="row">
+            <div class="col-md-3">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Employee</div>
+                <div style="font-size: 20px; font-weight: 700;" th:text="${payment.employee.name}"></div>
+            </div>
+            <div class="col-md-3">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Work Period</div>
+                <div style="font-size: 16px; font-weight: 600;">
+                    <span th:text="${#temporals.format(payment.workPeriodStart, 'dd MMM')}"></span> -
+                    <span th:text="${#temporals.format(payment.workPeriodEnd, 'dd MMM yyyy')}"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Total Amount</div>
+                <div style="font-size: 24px; font-weight: 700;">
+                    Rs. <span th:text="${#numbers.formatInteger(payment.totalAmount, 0, 'COMMA')}"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Status</div>
+                <div style="font-size: 18px; font-weight: 700;">
+                    <span th:if="${payment.paymentStatus == 'PENDING'}">
+                        <i class="fas fa-clock"></i> PENDING
+                    </span>
+                    <span th:if="${payment.paymentStatus == 'PARTIALLY_PAID'}">
+                        <i class="fas fa-hourglass-half"></i> PARTIALLY PAID
+                    </span>
+                    <span th:if="${payment.paymentStatus == 'PAID'}">
+                        <i class="fas fa-check-circle"></i> PAID
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-4">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Amount Paid</div>
+                <div style="font-size: 20px; font-weight: 700; color: #a8ff78;">
+                    Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid, 0, 'COMMA')}"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Amount Remaining</div>
+                <div style="font-size: 20px; font-weight: 700; color: #ff6b6b;">
+                    Rs. <span th:text="${#numbers.formatInteger(payment.amountRemaining, 0, 'COMMA')}"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Work Items</div>
+                <div style="font-size: 20px; font-weight: 700;">
+                    <span th:text="${#lists.size(payment.workAssignments)}"></span> items
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${payment.notes}" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.3);">
+            <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Notes</div>
+            <div style="font-size: 14px;" th:text="${payment.notes}"></div>
+        </div>
+    </div>
+
+    <!-- Work Assignments -->
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">
+            Work Assignments (<span th:text="${#lists.size(payment.workAssignments)}"></span> items)
+        </h4>
+
+        <!-- Work Summary -->
+        <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 4px;">
+            <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">Work Summary:</div>
+            <div style="font-size: 11px; color: #666; line-height: 1.8;">
+                <span th:each="assignment : ${payment.workAssignments}" style="display: inline-block; margin-right: 12px;">
+                    <span th:if="${assignment.workType == 'CUTTING'}">
+                        <span style="color: #007bff; font-weight: 600;">Cut</span>
+                    </span>
+                    <span th:if="${assignment.workType == 'STITCHING' && !assignment.isDesignWork}">
+                        <span style="color: #28a745; font-weight: 600;">Stitch</span>
+                    </span>
+                    <span th:if="${assignment.workType == 'STITCHING' && assignment.isDesignWork}">
+                        <span style="color: #dc3545; font-weight: 600;">Design</span>
+                    </span>
+                    <span th:if="${assignment.workType == 'FINISHING'}">
+                        <span style="color: #6f42c1; font-weight: 600;">Finish</span>
+                    </span>
+                    <span th:if="${assignment.workType == 'EMBELLISHMENT'}">
+                        <span style="color: #fd7e14; font-weight: 600;">Embel</span>
+                    </span>
+                    <span th:text="${assignment.itemType}"></span>
+                    (<span th:text="${assignment.assignedCount}"></span>)
+                </span>
+            </div>
+        </div>
+
+        <table class="table" th:if="${!#lists.isEmpty(payment.workAssignments)}">
+            <thead>
+            <tr>
+                <th>Order #</th>
+                <th>Completed Date</th>
+                <th>Client</th>
+                <th>Work Type</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Rate/Piece</th>
+                <th>Total Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="assignment : ${payment.workAssignments}">
+                <td>
+                    <span style="font-weight: 600; color: #007bff;">#<span th:text="${assignment.payment.id}"></span></span>
+                </td>
+                <td th:text="${assignment.completedDate != null ? #temporals.format(assignment.completedDate, 'dd MMM yyyy') : '-'}"></td>
+                <td>
+                    <span th:text="${assignment.payment.client.name}"></span>
+                    <span style="color: #666; font-size: 12px;">(<span th:text="${assignment.payment.client.id}"></span>)</span>
+                </td>
+                <td th:text="${assignment.workType}"></td>
+                <td>
+                    <span th:text="${assignment.itemType}"></span>
+                    <span th:if="${assignment.isDesignWork}" style="color: #dc3545; font-size: 11px;"> (Design)</span>
+                </td>
+                <td th:text="${assignment.assignedCount}"></td>
+                <td>Rs. <span th:text="${#numbers.formatInteger(assignment.ratePerPiece, 0, 'COMMA')}"></span></td>
+                <td style="font-weight: 700;">Rs. <span th:text="${#numbers.formatInteger(assignment.totalAmount, 0, 'COMMA')}"></span></td>
+            </tr>
+            <tr style="background: #f0f4f8; font-weight: 700;">
+                <td colspan="7" style="text-align: right; padding: 12px;">Total:</td>
+                <td style="padding: 12px;">Rs. <span th:text="${#numbers.formatInteger(payment.totalAmount, 0, 'COMMA')}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Payment Transactions -->
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+        <h4 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 8px;">
+            Payment Transactions
+            <span th:if="${!#lists.isEmpty(payment.paymentTransactions)}" style="font-size: 14px; font-weight: normal;">
+                (<span th:text="${#lists.size(payment.paymentTransactions)}"></span> payments)
+            </span>
+        </h4>
+
+        <table class="table" th:if="${!#lists.isEmpty(payment.paymentTransactions)}">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Payment Date</th>
+                <th>Payment Time</th>
+                <th>Amount Paid</th>
+                <th>Payment Method</th>
+                <th>Notes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="transaction, iterStat : ${payment.paymentTransactions}">
+                <td th:text="${iterStat.count}"></td>
+                <td th:text="${#temporals.format(transaction.paymentDate, 'dd MMM yyyy')}"></td>
+                <td th:text="${transaction.paymentTime != null ? #temporals.format(transaction.paymentTime, 'hh:mm a') : '-'}"></td>
+                <td style="font-weight: 700; color: #28a745;">
+                    Rs. <span th:text="${#numbers.formatInteger(transaction.amountPaid, 0, 'COMMA')}"></span>
+                </td>
+                <td>
+                    <span th:if="${transaction.paymentMethod == 'CASH'}" style="background: #d4edda; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                        <i class="fas fa-money-bill"></i> CASH
+                    </span>
+                    <span th:if="${transaction.paymentMethod == 'BANK_TRANSFER'}" style="background: #cfe2ff; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                        <i class="fas fa-university"></i> BANK
+                    </span>
+                    <span th:if="${transaction.paymentMethod == 'JAZZCASH'}" style="background: #fff3cd; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                        <i class="fas fa-mobile-alt"></i> JAZZ
+                    </span>
+                    <span th:if="${transaction.paymentMethod == 'EASYPAISA'}" style="background: #e7f3ff; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                        <i class="fas fa-mobile-alt"></i> EASY
+                    </span>
+                </td>
+                <td th:text="${transaction.notes ?: '-'}"></td>
+            </tr>
+            <tr style="background: #d4edda; font-weight: 700;">
+                <td colspan="3" style="text-align: right; padding: 12px;">Total Paid:</td>
+                <td style="padding: 12px;">Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid, 0, 'COMMA')}"></span></td>
+                <td colspan="2"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${#lists.isEmpty(payment.paymentTransactions)}" style="text-align: center; padding: 40px; color: #999;">
+            <i class="fas fa-money-bill-wave" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+            <div>No payments made yet.</div>
+        </div>
+    </div>
+
+    <!-- Add Payment Form (only show if not fully paid) -->
+    <div th:if="${payment.paymentStatus != 'PAID'}" id="payment-form"
+         style="background: #fff; border: 2px solid #28a745; border-radius: 4px; padding: 24px; margin-bottom: 20px;">
+        <h4 style="color: #28a745; margin-top: 0;">
+            <i class="fas fa-money-bill-wave"></i> Make Payment
+        </h4>
+        <p style="color: #666; margin-bottom: 20px;">
+            Record a full or partial payment for this record. Remaining amount:
+            <strong style="color: #dc3545;">Rs. <span th:text="${#numbers.formatInteger(payment.amountRemaining, 0, 'COMMA')}"></span></strong>
+        </p>
+
+        <form th:action="@{/employee-payments/add-transaction/{id}(id=${payment.id})}" method="post">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Payment Date <span style="color: red;">*</span></label>
+                        <input type="date" name="paymentDate" class="form-control" required
+                               th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Payment Time <span style="color: red;">*</span></label>
+                        <input type="time" name="paymentTime" class="form-control" required
+                               th:value="${#temporals.format(#temporals.createNow(), 'HH:mm')}"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Amount to Pay <span style="color: red;">*</span></label>
+                        <input type="number" name="amountPaid" class="form-control" required min="1"
+                               th:max="${payment.amountRemaining}"
+                               th:value="${payment.amountRemaining}"
+                               th:placeholder="'Max: ' + ${payment.amountRemaining}"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Payment Method <span style="color: red;">*</span></label>
+                        <select name="paymentMethod" class="form-control" required>
+                            <option value="CASH">Cash</option>
+                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                            <option value="JAZZCASH">JazzCash</option>
+                            <option value="EASYPAISA">Easypaisa</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: 600;">Notes (Optional)</label>
+                <textarea name="notes" class="form-control" rows="2" placeholder="e.g., Partial payment - remaining next week"></textarea>
+            </div>
+
+            <div style="text-align: right; margin-top: 16px;">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle"></i> Record Payment
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 12px; justify-content: space-between;">
+        <div>
+            <form th:action="@{/employee-payments/delete/{id}(id=${payment.id})}" method="post" id="deletePaymentForm">
+                <button type="button" class="btn btn-danger" id="deletePaymentBtn">
+                    <i class="fas fa-trash"></i> Delete Payment Record
+                </button>
+            </form>
+        </div>
+        <div>
+            <a th:href="@{/employee-payments/payroll(employeeId=${payment.employee.id})}" class="btn btn-primary">
+                <i class="fas fa-calculator"></i> View Employee Payroll
+            </a>
+            <a th:href="@{/employees/view/{id}(id=${payment.employee.id})}" class="btn btn-info">
+                <i class="fas fa-user"></i> View Employee
+            </a>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirmDeleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>⚠ Confirm Deletion</h3>
+            <p>Are you sure you want to delete this payment record? This will unmark the associated work assignments.</p>
+            <div class="modal-actions">
+                <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
+                <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Delete confirmation modal handling
+    document.getElementById('deletePaymentBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('confirmDeleteModal').style.display = 'flex';
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        document.getElementById('deletePaymentForm').submit();
+    });
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+        document.getElementById('confirmDeleteModal').style.display = 'none';
+    });
+
+    // Close modal on overlay click
+    document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

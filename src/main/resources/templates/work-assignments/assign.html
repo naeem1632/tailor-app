@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Assign Work - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px;">
+
+    <h1 style="margin-bottom: 20px;">Assign Work to Employees</h1>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Validation Error Container (for JavaScript validation errors) -->
+    <div id="validationErrorContainer" class="alert alert-danger" role="alert" style="display: none;">
+        <h5 style="margin-top: 0; font-weight: 700; font-size: 16px;">
+            <i class="fas fa-exclamation-triangle"></i> Validation Error
+        </h5>
+        <div id="validationErrorMessages" style="margin-top: 10px; font-size: 14px; line-height: 1.6;"></div>
+    </div>
+
+    <!-- Order Details Card -->
+    <div style="background: #f0f4f8; border-left: 4px solid #007bff; border-radius: 4px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="background: #007bff; color: white; border-radius: 4px; padding: 8px 16px;">
+                <div style="font-size: 11px; opacity: 0.9;">Order</div>
+                <div style="font-size: 20px; font-weight: 700;">#<span th:text="${payment.id}"></span></div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 2px;">Client</div>
+                <div style="font-size: 16px; font-weight: 600; color: #333;">
+                    <span th:text="${payment.client.name}"></span> <span style="color: #999; font-size: 13px; font-weight: 400;">(<span th:text="${payment.client.id}"></span>)</span>
+                </div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 2px;">Order Date</div>
+                <div style="font-size: 14px; font-weight: 600; color: #333;" th:text="${#temporals.format(payment.date, 'dd MMM yyyy')}"></div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 2px;">Order Items</div>
+                <div style="font-size: 14px; font-weight: 600; color: #333;">
+                    <span th:if="${payment.dressCount != null && payment.dressCount > 0}">
+                        Dress: <span th:text="${payment.dressCount}"></span>
+                    </span>
+                    <span th:if="${payment.shirtCount != null && payment.shirtCount > 0}" style="margin-left: 12px;">
+                        Shirt: <span th:text="${payment.shirtCount}"></span>
+                    </span>
+                    <span th:if="${payment.waistcoatCount != null && payment.waistcoatCount > 0}" style="margin-left: 12px;">
+                        Waistcoat: <span th:text="${payment.waistcoatCount}"></span>
+                    </span>
+                </div>
+                <div th:if="${(payment.withMatel != null && payment.withMatel > 0) ||
+                             (payment.withTich != null && payment.withTich > 0) ||
+                             (payment.withKanta != null && payment.withKanta > 0) ||
+                             (payment.withJali != null && payment.withJali > 0) ||
+                             (payment.withKrhai != null && payment.withKrhai > 0)}"
+                     style="font-size: 12px; color: #666; margin-top: 4px;">
+                    <span th:if="${payment.withMatel != null && payment.withMatel > 0}">
+                        with Matel (<span th:text="${payment.withMatel}"></span>)
+                    </span>
+                    <span th:if="${payment.withTich != null && payment.withTich > 0}">
+                        <span th:if="${payment.withMatel != null && payment.withMatel > 0}">, </span>with Tich (<span th:text="${payment.withTich}"></span>)
+                    </span>
+                    <span th:if="${payment.withKanta != null && payment.withKanta > 0}">
+                        <span th:if="${(payment.withMatel != null && payment.withMatel > 0) || (payment.withTich != null && payment.withTich > 0)}">, </span>with Kanta (<span th:text="${payment.withKanta}"></span>)
+                    </span>
+                    <span th:if="${payment.withJali != null && payment.withJali > 0}">
+                        <span th:if="${(payment.withMatel != null && payment.withMatel > 0) || (payment.withTich != null && payment.withTich > 0) || (payment.withKanta != null && payment.withKanta > 0)}">, </span>with Jali (<span th:text="${payment.withJali}"></span>)
+                    </span>
+                    <span th:if="${payment.withKrhai != null && payment.withKrhai > 0}">
+                        <span th:if="${(payment.withMatel != null && payment.withMatel > 0) || (payment.withTich != null && payment.withTich > 0) || (payment.withKanta != null && payment.withKanta > 0) || (payment.withJali != null && payment.withJali > 0)}">, </span>with Krhai (<span th:text="${payment.withKrhai}"></span>)
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Assign New Work Form -->
+        <div class="col-md-4">
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 8px;">
+                    <span th:if="${editMode == null || !editMode}">Assign Work to Employee</span>
+                    <span th:if="${editMode != null && editMode}">Edit Work Assignment</span>
+                </h4>
+
+                <!-- EDIT MODE: Keep old single assignment form for editing -->
+                <div th:if="${editMode != null && editMode}">
+                <form th:action="@{/work-assignments/update/{id}(id=${assignment.id})}" method="post">
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="employeeId" style="font-weight: 600;">Employee <span style="color: red;">*</span></label>
+                        <select id="employeeId" name="employeeId" class="form-control select2-employee" required onchange="filterEmployeeSkills(this.value)">
+                            <option value="">-- Select Employee --</option>
+                            <option th:each="emp : ${employees}" th:value="${emp.id}"
+                                    th:selected="${editMode != null && editMode && assignment.employee.id == emp.id}">
+                                <span th:text="${emp.name}"></span>
+                                <span th:if="${emp.canCut || emp.canStitchPlain || emp.canStitchDesign || emp.canDoFinishing || emp.canDoEmbellishment}">
+                                    - [<span th:if="${emp.canCut}">Cut</span><span th:if="${emp.canCut && (emp.canStitchPlain || emp.canStitchDesign || emp.canDoFinishing || emp.canDoEmbellishment)}">, </span><span th:if="${emp.canStitchPlain}">Stitch</span><span th:if="${emp.canStitchPlain && (emp.canStitchDesign || emp.canDoFinishing || emp.canDoEmbellishment)}">, </span><span th:if="${emp.canStitchDesign}">Design</span><span th:if="${emp.canStitchDesign && (emp.canDoFinishing || emp.canDoEmbellishment)}">, </span><span th:if="${emp.canDoFinishing}">Finish</span><span th:if="${emp.canDoFinishing && emp.canDoEmbellishment}">, </span><span th:if="${emp.canDoEmbellishment}">Embellish</span>]
+                                </span>
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="workType" style="font-weight: 600;">Work Type <span style="color: red;">*</span></label>
+                        <select id="workType" name="workType" class="form-control" required onchange="toggleDesignField()">
+                            <option value="">-- Select Work Type --</option>
+                            <option value="CUTTING" th:selected="${editMode != null && editMode && assignment.workType == 'CUTTING'}">Cutting</option>
+                            <option value="STITCHING" th:selected="${editMode != null && editMode && assignment.workType == 'STITCHING'}">Stitching</option>
+                            <option value="FINISHING" th:selected="${editMode != null && editMode && assignment.workType == 'FINISHING'}">Finishing</option>
+                            <option value="EMBELLISHMENT" th:selected="${editMode != null && editMode && assignment.workType == 'EMBELLISHMENT'}">Embellishment</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="itemTypeSingle" style="margin-bottom: 16px;" th:style="${editMode != null && editMode && assignment.workType == 'STITCHING'} ? 'display: none;' : ''">
+                        <label for="itemType" style="font-weight: 600;">Item Type <span style="color: red;">*</span></label>
+                        <select id="itemType" name="itemType" class="form-control" th:required="${editMode == null || !editMode}">
+                            <option value="">-- Select Item --</option>
+                            <option value="DRESS" th:selected="${editMode != null && editMode && assignment.itemType == 'DRESS'}">Dress (Kameez + Shalwar/Pajama)</option>
+                            <option value="KAMEEZ" th:selected="${editMode != null && editMode && assignment.itemType == 'KAMEEZ'}">Kameez Only</option>
+                            <option value="SHALWAR" th:selected="${editMode != null && editMode && assignment.itemType == 'SHALWAR'}">Shalwar Only</option>
+                            <option value="PAJAMA" th:selected="${editMode != null && editMode && assignment.itemType == 'PAJAMA'}">Pajama Only</option>
+                            <option value="SHIRT" th:selected="${editMode != null && editMode && assignment.itemType == 'SHIRT'}">Shirt</option>
+                            <option value="WAISTCOAT" th:selected="${editMode != null && editMode && assignment.itemType == 'WAISTCOAT'}">Waistcoat</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="itemTypeMulti" style="margin-bottom: 16px; display: none;" th:style="${editMode != null && editMode} ? 'display: none !important;' : 'display: none;'">
+                        <label style="font-weight: 600;">Item Types (Select Multiple) <span style="color: red;">*</span></label>
+                        <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 12px; background: #fff;">
+                            <div class="form-check" style="margin-bottom: 8px;">
+                                <input type="checkbox" name="itemTypes" value="DRESS" class="form-check-input" id="itemDress"/>
+                                <label for="itemDress" class="form-check-label">Dress (Kameez + Shalwar/Pajama)</label>
+                            </div>
+                            <div class="form-check" style="margin-bottom: 8px;">
+                                <input type="checkbox" name="itemTypes" value="KAMEEZ" class="form-check-input" id="itemKameez"/>
+                                <label for="itemKameez" class="form-check-label">Kameez Only</label>
+                            </div>
+                            <div class="form-check" style="margin-bottom: 8px;">
+                                <input type="checkbox" name="itemTypes" value="SHALWAR" class="form-check-input" id="itemShalwar"/>
+                                <label for="itemShalwar" class="form-check-label">Shalwar Only</label>
+                            </div>
+                            <div class="form-check" style="margin-bottom: 16px;">
+                                <input type="checkbox" name="itemTypes" value="PAJAMA" class="form-check-input" id="itemPajama"/>
+                                <label for="itemPajama" class="form-check-label">Pajama Only</label>
+                            </div>
+                            <div class="form-check" style="margin-bottom: 8px;">
+                                <input type="checkbox" name="itemTypes" value="SHIRT" class="form-check-input" id="itemShirt"/>
+                                <label for="itemShirt" class="form-check-label">Shirt</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="itemTypes" value="WAISTCOAT" class="form-check-input" id="itemWaistcoat"/>
+                                <label for="itemWaistcoat" class="form-check-label">Waistcoat</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="designField" class="form-group" style="margin-bottom: 16px; display: none;" th:style="${editMode != null && editMode && assignment.workType == 'STITCHING'} ? 'display: block;' : 'display: none;'">
+                        <label style="font-weight: 600;">Is Design Work?</label>
+                        <div class="form-check">
+                            <input type="checkbox" id="isDesignWork" name="isDesignWork" value="true" class="form-check-input"
+                                   th:checked="${editMode != null && editMode && assignment.isDesignWork}"/>
+                            <label for="isDesignWork" class="form-check-label">Yes, this is design work (higher rate)</label>
+                        </div>
+                    </div>
+
+                    <div id="embellishmentField" class="form-group" style="margin-bottom: 16px; display: none;" th:style="${editMode != null && editMode && assignment.workType == 'EMBELLISHMENT'} ? 'display: block;' : 'display: none;'">
+                        <label for="embellishmentType" style="font-weight: 600;">Embellishment Type</label>
+                        <select id="embellishmentType" name="embellishmentType" class="form-control">
+                            <option value="">-- Select Type --</option>
+                            <option value="MATEL" th:selected="${editMode != null && editMode && assignment.embellishmentType == 'MATEL'}">Matel</option>
+                            <option value="TICH" th:selected="${editMode != null && editMode && assignment.embellishmentType == 'TICH'}">Tich</option>
+                            <option value="KANTA" th:selected="${editMode != null && editMode && assignment.embellishmentType == 'KANTA'}">Kanta</option>
+                            <option value="JALI" th:selected="${editMode != null && editMode && assignment.embellishmentType == 'JALI'}">Jali</option>
+                            <option value="KRHAI" th:selected="${editMode != null && editMode && assignment.embellishmentType == 'KRHAI'}">Krhai</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="assignedCount" style="font-weight: 600;">Quantity <span style="color: red;">*</span></label>
+                        <input type="number" id="assignedCount" name="assignedCount" class="form-control" min="1" required
+                               th:value="${editMode != null && editMode} ? ${assignment.assignedCount} : ''"/>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="assignedDate" style="font-weight: 600;">Assignment Date <span style="color: red;">*</span></label>
+                                <input type="date" id="assignedDate" name="assignedDate" class="form-control" required
+                                       th:value="${editMode != null && editMode} ? ${#temporals.format(assignment.assignedDate, 'yyyy-MM-dd')} : ${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"/>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="assignedTime" style="font-weight: 600;">Assignment Time</label>
+                                <input type="time" id="assignedTime" name="assignedTime" class="form-control"
+                                       th:value="${editMode != null && editMode && assignment.assignedTime != null} ? ${#temporals.format(assignment.assignedTime, 'HH:mm')} : ${#temporals.format(#temporals.createNow(), 'HH:mm')}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="add-btn">
+                        <i th:class="${editMode != null && editMode} ? 'fas fa-save' : 'fas fa-user-plus'"></i>
+                        <span th:if="${editMode == null || !editMode}">Assign Work</span>
+                        <span th:if="${editMode != null && editMode}">Update Assignment</span>
+                    </button>
+                    <a th:if="${editMode != null && editMode}" th:href="@{/work-assignments/assign/{id}(id=${payment.id})}"
+                       class="btn btn-secondary" style="margin-left: 8px;">
+                        Cancel
+                    </a>
+
+                </form>
+                </div>
+                <!-- END EDIT MODE FORM -->
+
+                <!-- NEW ASSIGNMENT MODE: Show batch form only -->
+                <div th:if="${editMode == null || !editMode}">
+                        <form th:action="@{/work-assignments/assign-batch/{id}(id=${payment.id})}" method="post" id="batchAssignmentForm">
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="batchEmployeeId" style="font-weight: 600;">Employee <span style="color: red;">*</span></label>
+                                <select id="batchEmployeeId" name="employeeId" class="form-control select2-batch-employee" required>
+                                    <option value="">-- Select Employee --</option>
+                                    <option th:each="emp : ${employees}" th:value="${emp.id}">
+                                        <span th:text="${emp.name}"></span>
+                                    </option>
+                                </select>
+                                <small style="color: #666; display: block; margin-top: 4px;">Select one employee to assign multiple work types</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group" style="margin-bottom: 20px;">
+                                        <label for="batchAssignedDate" style="font-weight: 600;">Assignment Date <span style="color: red;">*</span></label>
+                                        <input type="date" id="batchAssignedDate" name="assignedDate" class="form-control" required
+                                               th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group" style="margin-bottom: 20px;">
+                                        <label for="batchAssignedTime" style="font-weight: 600;">Assignment Time</label>
+                                        <input type="time" id="batchAssignedTime" name="assignedTime" class="form-control"
+                                               th:value="${#temporals.format(#temporals.createNow(), 'HH:mm')}"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 style="margin: 20px 0 12px 0; font-size: 15px; font-weight: 700; color: #333;">Work Assignments (Select Multiple)</h5>
+                            <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Check the work types you want to assign and configure each one:</p>
+
+                            <div id="batchWorkAssignments">
+                                <!-- Cutting -->
+                                <div class="batch-work-item" style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #f8f9fa;">
+                                    <div class="form-check" style="margin-bottom: 8px;">
+                                        <input type="checkbox" class="form-check-input work-type-checkbox" id="batch_cutting" value="CUTTING" onchange="toggleBatchWorkItem(this)"/>
+                                        <label for="batch_cutting" class="form-check-label" style="font-weight: 600; font-size: 14px;">
+                                            <i class="fas fa-cut"></i> Cutting
+                                        </label>
+                                    </div>
+                                    <div id="cutting_details" class="work-details" style="display: none; padding-left: 24px; margin-top: 8px;">
+                                        <label style="font-size: 12px; font-weight: 600; margin-bottom: 8px; display: block;">Items with Quantity:</label>
+                                        <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 10px; background: #fff;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="DRESS" id="cutting_dress" style="margin: 0;"/>
+                                                <label for="cutting_dress" style="font-size: 13px; margin: 0; flex: 1;">Dress (Kameez + Shalwar)</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="DRESS" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="KAMEEZ" id="cutting_kameez" style="margin: 0;"/>
+                                                <label for="cutting_kameez" style="font-size: 13px; margin: 0; flex: 1;">Kameez Only</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="KAMEEZ" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="SHALWAR" id="cutting_shalwar" style="margin: 0;"/>
+                                                <label for="cutting_shalwar" style="font-size: 13px; margin: 0; flex: 1;">Shalwar Only</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHALWAR" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="PAJAMA" id="cutting_pajama" style="margin: 0;"/>
+                                                <label for="cutting_pajama" style="font-size: 13px; margin: 0; flex: 1;">Pajama Only</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="PAJAMA" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="SHIRT" id="cutting_shirt" style="margin: 0;"/>
+                                                <label for="cutting_shirt" style="font-size: 13px; margin: 0; flex: 1;">Shirt</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHIRT" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="WAISTCOAT" id="cutting_waistcoat" style="margin: 0;"/>
+                                                <label for="cutting_waistcoat" style="font-size: 13px; margin: 0; flex: 1;">Waistcoat</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="WAISTCOAT" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stitching - Plain -->
+                                <div class="batch-work-item" style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #f8f9fa;">
+                                    <div class="form-check" style="margin-bottom: 8px;">
+                                        <input type="checkbox" class="form-check-input work-type-checkbox" id="batch_stitching_plain" value="STITCHING_PLAIN" onchange="toggleBatchWorkItem(this)"/>
+                                        <label for="batch_stitching_plain" class="form-check-label" style="font-weight: 600; font-size: 14px;">
+                                            <i class="fas fa-sewing-machine"></i> Stitching - Plain
+                                        </label>
+                                    </div>
+                                    <div id="stitching_plain_details" class="work-details" style="display: none; padding-left: 24px; margin-top: 8px;">
+                                        <label style="font-size: 12px; font-weight: 600; margin-bottom: 8px; display: block;">Items with Quantity:</label>
+                                        <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 10px; background: #fff;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="KAMEEZ" id="stitching_plain_kameez" style="margin: 0;"/>
+                                                <label for="stitching_plain_kameez" style="font-size: 13px; margin: 0; flex: 1;">Kameez</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="KAMEEZ" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="SHALWAR" id="stitching_plain_shalwar" style="margin: 0;"/>
+                                                <label for="stitching_plain_shalwar" style="font-size: 13px; margin: 0; flex: 1;">Shalwar</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHALWAR" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="PAJAMA" id="stitching_plain_pajama" style="margin: 0;"/>
+                                                <label for="stitching_plain_pajama" style="font-size: 13px; margin: 0; flex: 1;">Pajama</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="PAJAMA" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="SHIRT" id="stitching_plain_shirt" style="margin: 0;"/>
+                                                <label for="stitching_plain_shirt" style="font-size: 13px; margin: 0; flex: 1;">Shirt</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHIRT" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="WAISTCOAT" id="stitching_plain_waistcoat" style="margin: 0;"/>
+                                                <label for="stitching_plain_waistcoat" style="font-size: 13px; margin: 0; flex: 1;">Waistcoat</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="WAISTCOAT" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stitching - Design -->
+                                <div class="batch-work-item" style="border: 1px solid #e74c3c; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #feefef;">
+                                    <div class="form-check" style="margin-bottom: 8px;">
+                                        <input type="checkbox" class="form-check-input work-type-checkbox" id="batch_stitching_design" value="STITCHING_DESIGN" onchange="toggleBatchWorkItem(this)"/>
+                                        <label for="batch_stitching_design" class="form-check-label" style="font-weight: 600; font-size: 14px; color: #e74c3c;">
+                                            <i class="fas fa-paint-brush"></i> Stitching - Design (Higher Rate)
+                                        </label>
+                                    </div>
+                                    <div id="stitching_design_details" class="work-details" style="display: none; padding-left: 24px; margin-top: 8px;">
+                                        <label style="font-size: 12px; font-weight: 600; margin-bottom: 8px; display: block;">Items with Quantity:</label>
+                                        <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 10px; background: #fff;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="KAMEEZ" id="stitching_design_kameez" style="margin: 0;"/>
+                                                <label for="stitching_design_kameez" style="font-size: 13px; margin: 0; flex: 1;">Kameez</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="KAMEEZ" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="SHALWAR" id="stitching_design_shalwar" style="margin: 0;"/>
+                                                <label for="stitching_design_shalwar" style="font-size: 13px; margin: 0; flex: 1;">Shalwar</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHALWAR" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="PAJAMA" id="stitching_design_pajama" style="margin: 0;"/>
+                                                <label for="stitching_design_pajama" style="font-size: 13px; margin: 0; flex: 1;">Pajama</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="PAJAMA" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Finishing -->
+                                <div class="batch-work-item" style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #f8f9fa;">
+                                    <div class="form-check" style="margin-bottom: 8px;">
+                                        <input type="checkbox" class="form-check-input work-type-checkbox" id="batch_finishing" value="FINISHING" onchange="toggleBatchWorkItem(this)"/>
+                                        <label for="batch_finishing" class="form-check-label" style="font-weight: 600; font-size: 14px;">
+                                            <i class="fas fa-check-circle"></i> Finishing
+                                        </label>
+                                    </div>
+                                    <div id="finishing_details" class="work-details" style="display: none; padding-left: 24px; margin-top: 8px;">
+                                        <label style="font-size: 12px; font-weight: 600; margin-bottom: 8px; display: block;">Items with Quantity:</label>
+                                        <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 10px; background: #fff;">
+                                            <!-- Kameez -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="FINISHING" value="KAMEEZ" id="finishing_kameez" style="margin: 0;"/>
+                                                <label for="finishing_kameez" style="font-size: 13px; margin: 0; flex: 1;">Kameez</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="KAMEEZ" data-work-type="FINISHING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Shalwar -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="FINISHING" value="SHALWAR" id="finishing_shalwar" style="margin: 0;"/>
+                                                <label for="finishing_shalwar" style="font-size: 13px; margin: 0; flex: 1;">Shalwar</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHALWAR" data-work-type="FINISHING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Pajama -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="FINISHING" value="PAJAMA" id="finishing_pajama" style="margin: 0;"/>
+                                                <label for="finishing_pajama" style="font-size: 13px; margin: 0; flex: 1;">Pajama</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="PAJAMA" data-work-type="FINISHING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Shirt -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="FINISHING" value="SHIRT" id="finishing_shirt" style="margin: 0;"/>
+                                                <label for="finishing_shirt" style="font-size: 13px; margin: 0; flex: 1;">Shirt</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHIRT" data-work-type="FINISHING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Waistcoat -->
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="FINISHING" value="WAISTCOAT" id="finishing_waistcoat" style="margin: 0;"/>
+                                                <label for="finishing_waistcoat" style="font-size: 13px; margin: 0; flex: 1;">Waistcoat</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="WAISTCOAT" data-work-type="FINISHING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Embellishment -->
+                                <div class="batch-work-item" style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 12px; background: #f8f9fa;">
+                                    <div class="form-check" style="margin-bottom: 8px;">
+                                        <input type="checkbox" class="form-check-input work-type-checkbox" id="batch_embellishment" value="EMBELLISHMENT" onchange="toggleBatchWorkItem(this)"/>
+                                        <label for="batch_embellishment" class="form-check-label" style="font-weight: 600; font-size: 14px;">
+                                            <i class="fas fa-gem"></i> Embellishment
+                                        </label>
+                                    </div>
+                                    <div id="embellishment_details" class="work-details" style="display: none; padding-left: 24px; margin-top: 8px;">
+                                        <label style="font-size: 12px; font-weight: 600; margin-bottom: 8px; display: block;">Select Embellishment Type & Items with Quantity:</label>
+                                        <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 10px; background: #fff;">
+                                            <!-- Matel -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="MATEL" value="KAMEEZ" id="embellishment_matel" style="margin: 0;"/>
+                                                <label for="embellishment_matel" style="font-size: 13px; margin: 0; flex: 1;">Matel (Kameez)</label>
+                                                <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="KAMEEZ" data-embellishment="MATEL" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Tich -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="TICH" value="KAMEEZ" id="embellishment_tich" style="margin: 0;"/>
+                                                <label for="embellishment_tich" style="font-size: 13px; margin: 0; flex: 1;">Tich (Kameez)</label>
+                                                <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="KAMEEZ" data-embellishment="TICH" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Kanta -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="KANTA" value="SHALWAR" id="embellishment_kanta" style="margin: 0;"/>
+                                                <label for="embellishment_kanta" style="font-size: 13px; margin: 0; flex: 1;">Kanta (Shalwar)</label>
+                                                <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="SHALWAR" data-embellishment="KANTA" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Jali -->
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="JALI" value="SHALWAR" id="embellishment_jali" style="margin: 0;"/>
+                                                <label for="embellishment_jali" style="font-size: 13px; margin: 0; flex: 1;">Jali (Shalwar)</label>
+                                                <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="SHALWAR" data-embellishment="JALI" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <!-- Krhai -->
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="KRHAI" value="KAMEEZ" id="embellishment_krhai" style="margin: 0;"/>
+                                                <label for="embellishment_krhai" style="font-size: 13px; margin: 0; flex: 1;">Krhai (Kameez)</label>
+                                                <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="KAMEEZ" data-embellishment="KRHAI" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #dee2e6;">
+                                <button type="submit" class="add-btn">
+                                    <i class="fas fa-users"></i> Assign All Selected Work
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetBatchForm()" style="margin-left: 8px;">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
+
+                        </form>
+                </div>
+                <!-- END NEW ASSIGNMENT MODE -->
+
+            </div>
+        </div>
+
+        <!-- Right: Existing Assignments -->
+        <div class="col-md-8">
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px;">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">Existing Work Assignments</h4>
+
+                <table class="table table-sm" th:if="${!#lists.isEmpty(existingAssignments)}" style="font-size: 13px;">
+                    <thead>
+                    <tr>
+                        <th style="width: 12%;">Date</th>
+                        <th style="width: 15%;">Employee</th>
+                        <th style="width: 13%;">Work Type</th>
+                        <th style="width: 12%;">Item</th>
+                        <th style="width: 7%;">Qty</th>
+                        <th style="width: 10%;">Order Info</th>
+                        <th style="width: 10%;">Amount</th>
+                        <th style="width: 11%;">Status</th>
+                        <th style="width: 10%;">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="assignment : ${existingAssignments}">
+                        <td>
+                            <div th:text="${#temporals.format(assignment.assignedDate, 'dd MMM yyyy')}" style="font-size: 12px;"></div>
+                            <div th:if="${assignment.assignedTime != null}" style="font-size: 10px; color: #666;"
+                                 th:text="${#temporals.format(assignment.assignedTime, 'hh:mm a')}"></div>
+                        </td>
+                        <td th:text="${assignment.employee.name}" style="font-size: 12px;"></td>
+                        <td th:text="${assignment.workType}" style="font-size: 12px;"></td>
+                        <td>
+                            <span th:text="${assignment.itemType}" style="font-size: 12px;"></span>
+                            <span th:if="${assignment.isDesignWork}" style="color: #dc3545; font-size: 10px;"> (Design)</span>
+                            <span th:if="${assignment.embellishmentType != null && !assignment.embellishmentType.isEmpty()}"
+                                  style="color: #6c757d; font-size: 10px;" th:text="' (' + ${assignment.embellishmentType} + ')'"></span>
+                        </td>
+                        <td th:text="${assignment.assignedCount}" style="font-size: 12px;"></td>
+                        <td style="font-size: 11px; color: #666;">
+                            <div>Order #<span th:text="${assignment.payment.id}" style="font-weight: 600;"></span></div>
+                            <div th:text="${assignment.payment.client.name}" style="font-size: 10px;"></div>
+                            <div th:text="${#temporals.format(assignment.payment.date, 'dd MMM')}" style="font-size: 10px;"></div>
+                        </td>
+                        <td style="font-size: 12px;">Rs. <span th:text="${#numbers.formatInteger(assignment.totalAmount, 0, 'COMMA')}"></span></td>
+                        <td>
+                            <span th:if="${assignment.status == 'ASSIGNED'}"
+                                  style="background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
+                                ASSIGNED
+                            </span>
+                            <span th:if="${assignment.status == 'IN_PROGRESS'}"
+                                  style="background: #cfe2ff; color: #084298; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
+                                IN PROGRESS
+                            </span>
+                            <span th:if="${assignment.status == 'COMPLETED'}"
+                                  style="background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 8px; font-size: 10px;">
+                                COMPLETED
+                            </span>
+                        </td>
+                        <td>
+                            <a th:href="@{/work-assignments/edit/{id}(id=${assignment.id})}"
+                               class="btn btn-sm btn-warning" title="Edit" style="margin-right: 4px; padding: 2px 6px;">
+                                <i class="fas fa-edit" style="font-size: 11px;"></i>
+                            </a>
+                            <form th:action="@{/work-assignments/delete/{id}(id=${assignment.id})}"
+                                  method="post" style="display: inline;" class="delete-assignment-form">
+                                <button type="button" class="btn btn-sm btn-danger delete-assignment-btn" title="Delete"
+                                        th:disabled="${assignment.isPaid}" style="padding: 2px 6px;"
+                                        th:data-assignment-id="${assignment.id}">
+                                    <i class="fas fa-trash" style="font-size: 11px;"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${#lists.isEmpty(existingAssignments)}" style="text-align: center; padding: 40px; color: #999;">
+                    No work assignments yet. Use the form to assign work to employees.
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a th:href="@{/payments/client/{clientId}(clientId=${payment.client.id})}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Payments
+        </a>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirmDeleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>⚠ Confirm Deletion</h3>
+            <p>Are you sure you want to delete this work assignment?</p>
+            <div class="modal-actions">
+                <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
+                <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script th:inline="javascript">
+    // Employee data with skills - manually build from Thymeleaf
+    var employees = [];
+    /*[# th:each="emp : ${employees}"]*/
+    employees.push({
+        id: /*[[${emp.id}]]*/ 0,
+        name: /*[[${emp.name}]]*/ '',
+        canCut: /*[[${emp.canCut}]]*/ false,
+        canStitchPlain: /*[[${emp.canStitchPlain}]]*/ false,
+        canStitchDesign: /*[[${emp.canStitchDesign}]]*/ false,
+        canDoFinishing: /*[[${emp.canDoFinishing}]]*/ false,
+        canDoEmbellishment: /*[[${emp.canDoEmbellishment}]]*/ false
+    });
+    /*[/]*/
+
+    // Order quantities for validation
+    var orderQuantities = {
+        dressCount: /*[[${payment.dressCount != null ? payment.dressCount : 0}]]*/ 0,
+        shirtCount: /*[[${payment.shirtCount != null ? payment.shirtCount : 0}]]*/ 0,
+        waistcoatCount: /*[[${payment.waistcoatCount != null ? payment.waistcoatCount : 0}]]*/ 0,
+        withMatel: /*[[${payment.withMatel != null ? payment.withMatel : 0}]]*/ 0,
+        withTich: /*[[${payment.withTich != null ? payment.withTich : 0}]]*/ 0,
+        withKanta: /*[[${payment.withKanta != null ? payment.withKanta : 0}]]*/ 0,
+        withJali: /*[[${payment.withJali != null ? payment.withJali : 0}]]*/ 0,
+        withKrhai: /*[[${payment.withKrhai != null ? payment.withKrhai : 0}]]*/ 0
+    };
+
+    // Existing assignments data
+    var existingAssignments = [];
+    /*[# th:each="assignment : ${existingAssignments}"]*/
+    existingAssignments.push({
+        workType: /*[[${assignment.workType}]]*/ '',
+        itemType: /*[[${assignment.itemType}]]*/ '',
+        assignedCount: /*[[${assignment.assignedCount}]]*/ 0,
+        embellishmentType: /*[[${assignment.embellishmentType}]]*/ ''
+    });
+    /*[/]*/
+
+    $(document).ready(function() {
+        // Initialize Select2 with custom template
+        $('.select2-employee').select2({
+            placeholder: '-- Select Employee --',
+            allowClear: true,
+            width: '100%',
+            templateResult: formatEmployee,
+            templateSelection: formatEmployeeSelection
+        });
+
+        function formatEmployee(emp) {
+            if (!emp.id) return emp.text;
+
+            // Find employee data
+            var empData = employees.find(e => e.id == emp.id);
+            if (!empData) return emp.text;
+
+            var skills = [];
+            if (empData.canCut) skills.push('Cut');
+            if (empData.canStitchPlain) skills.push('Stitch');
+            if (empData.canStitchDesign) skills.push('Design');
+            if (empData.canDoFinishing) skills.push('Finish');
+            if (empData.canDoEmbellishment) skills.push('Embellish');
+
+            var skillText = skills.length > 0 ? ' - [' + skills.join(', ') + ']' : '';
+            var $emp = $('<span><strong>' + empData.name + '</strong><span style="color: #666; font-size: 11px; font-weight: normal;">' + skillText + '</span></span>');
+            return $emp;
+        }
+
+        function formatEmployeeSelection(emp) {
+            if (!emp.id) return emp.text;
+
+            var empData = employees.find(e => e.id == emp.id);
+            if (!empData) return emp.text;
+
+            var skills = [];
+            if (empData.canCut) skills.push('Cut');
+            if (empData.canStitchPlain) skills.push('Stitch');
+            if (empData.canStitchDesign) skills.push('Design');
+            if (empData.canDoFinishing) skills.push('Finish');
+            if (empData.canDoEmbellishment) skills.push('Embellish');
+
+            return empData.name + (skills.length > 0 ? ' - [' + skills.join(', ') + ']' : '');
+        }
+    });
+
+    function toggleDesignField() {
+        const workType = document.getElementById('workType').value;
+        const designField = document.getElementById('designField');
+        const embellishmentField = document.getElementById('embellishmentField');
+        const itemTypeSingle = document.getElementById('itemTypeSingle');
+        const itemTypeMulti = document.getElementById('itemTypeMulti');
+
+        // Toggle item type selection mode based on work type
+        if (workType === 'STITCHING') {
+            designField.style.display = 'block';
+            // Show multi-select for stitching
+            itemTypeSingle.style.display = 'none';
+            itemTypeMulti.style.display = 'block';
+            // Disable single select and enable multi-select
+            document.getElementById('itemType').removeAttribute('required');
+        } else {
+            designField.style.display = 'none';
+            document.getElementById('isDesignWork').checked = false;
+            // Show single select for other work types
+            itemTypeSingle.style.display = 'block';
+            itemTypeMulti.style.display = 'none';
+            // Enable single select and clear multi-select
+            document.getElementById('itemType').setAttribute('required', 'required');
+            document.querySelectorAll('input[name="itemTypes"]').forEach(cb => cb.checked = false);
+        }
+
+        if (workType === 'EMBELLISHMENT') {
+            embellishmentField.style.display = 'block';
+        } else {
+            embellishmentField.style.display = 'none';
+            document.getElementById('embellishmentType').value = '';
+        }
+    }
+
+    // ===== BATCH ASSIGNMENT FUNCTIONS =====
+
+    // Initialize batch employee select2
+    $(document).ready(function() {
+        $('.select2-batch-employee').select2({
+            placeholder: '-- Select Employee --',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+
+    // Event listener: Enable/disable individual quantity inputs when checkboxes are toggled
+    document.addEventListener('DOMContentLoaded', function() {
+        // For regular item checkboxes (Cutting, Stitching, Finishing)
+        document.querySelectorAll('.batch-item-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const workType = this.getAttribute('data-work-type');
+                const itemValue = this.value;
+                const quantityInput = document.querySelector(`.batch-item-quantity[data-item="${itemValue}"][data-work-type="${workType}"]`);
+
+                if (quantityInput) {
+                    quantityInput.disabled = !this.checked;
+                    if (this.checked) {
+                        quantityInput.focus();
+                    }
+                }
+            });
+        });
+
+        // For embellishment checkboxes
+        document.querySelectorAll('.batch-embellishment-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const embellishmentType = this.getAttribute('data-embellishment');
+                const quantityInput = document.querySelector(`.batch-embellishment-quantity[data-embellishment="${embellishmentType}"]`);
+
+                if (quantityInput) {
+                    quantityInput.disabled = !this.checked;
+                    if (this.checked) {
+                        quantityInput.focus();
+                    }
+                }
+            });
+        });
+    });
+
+    // Toggle visibility of work item details
+    function toggleBatchWorkItem(checkbox) {
+        const workType = checkbox.value;
+        const detailsId = workType.toLowerCase().replace('_', '_') + '_details';
+        const detailsDiv = document.getElementById(detailsId);
+
+        if (checkbox.checked) {
+            detailsDiv.style.display = 'block';
+        } else {
+            detailsDiv.style.display = 'none';
+        }
+    }
+
+    // Reset batch form
+    function resetBatchForm() {
+        // Uncheck all work type checkboxes
+        document.querySelectorAll('.work-type-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+
+        // Hide all work details
+        document.querySelectorAll('.work-details').forEach(div => {
+            div.style.display = 'none';
+        });
+
+        // Reset all item checkboxes
+        document.querySelectorAll('.batch-item-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+
+        // Reset all individual quantity inputs and disable them
+        document.querySelectorAll('.batch-item-quantity').forEach(input => {
+            input.value = 1;
+            input.disabled = true;
+        });
+
+        // Reset embellishment checkboxes
+        document.querySelectorAll('.batch-embellishment-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+
+        // Reset embellishment quantity inputs and disable them
+        document.querySelectorAll('.batch-embellishment-quantity').forEach(input => {
+            input.value = 1;
+            input.disabled = true;
+        });
+
+        // Reset all selects and inputs
+        document.querySelectorAll('.batch-item-select').forEach(select => {
+            select.value = '';
+        });
+        document.querySelectorAll('.batch-quantity').forEach(input => {
+            input.value = 1;
+        });
+        document.querySelectorAll('.batch-embellishment-type').forEach(select => {
+            select.value = '';
+        });
+    }
+
+    // Show validation error message
+    function showValidationError(errors) {
+        const container = document.getElementById('validationErrorContainer');
+        const messagesDiv = document.getElementById('validationErrorMessages');
+
+        // Clear previous messages
+        messagesDiv.innerHTML = '';
+
+        // Build error list
+        const errorList = document.createElement('ul');
+        errorList.style.marginBottom = '0';
+        errorList.style.paddingLeft = '20px';
+
+        errors.forEach(error => {
+            const listItem = document.createElement('li');
+            listItem.textContent = error;
+            listItem.style.marginBottom = '8px';
+            errorList.appendChild(listItem);
+        });
+
+        messagesDiv.appendChild(errorList);
+        container.style.display = 'block';
+
+        // Scroll to error message
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Hide validation error message
+    function hideValidationError() {
+        document.getElementById('validationErrorContainer').style.display = 'none';
+    }
+
+    // Validate quantities against order
+    function validateQuantities(workTypes, itemTypes, quantities, embellishmentTypes) {
+        // Calculate already assigned quantities from existing assignments
+        const alreadyAssigned = {
+            dress: 0,
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0,
+            matel: 0,
+            tich: 0,
+            kanta: 0,
+            jali: 0,
+            krhai: 0
+        };
+
+        // Sum up existing assignments
+        existingAssignments.forEach(assignment => {
+            const workType = assignment.workType;
+            const itemType = assignment.itemType.toLowerCase();
+            const count = assignment.assignedCount;
+            const embType = assignment.embellishmentType ? assignment.embellishmentType.toLowerCase() : '';
+
+            if (workType === 'EMBELLISHMENT' && embType) {
+                if (alreadyAssigned[embType] !== undefined) {
+                    alreadyAssigned[embType] += count;
+                }
+            } else {
+                if (alreadyAssigned[itemType] !== undefined) {
+                    alreadyAssigned[itemType] += count;
+                }
+            }
+        });
+
+        // Calculate total quantities being assigned NOW (new assignments)
+        const newAssignments = {
+            dress: 0,
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0,
+            matel: 0,
+            tich: 0,
+            kanta: 0,
+            jali: 0,
+            krhai: 0
+        };
+
+        for (let i = 0; i < workTypes.length; i++) {
+            const workType = workTypes[i];
+            const itemType = itemTypes[i];
+            const quantity = quantities[i];
+            const embellishmentType = embellishmentTypes[i];
+
+            if (workType === 'EMBELLISHMENT') {
+                // Embellishment quantities
+                const embType = embellishmentType.toLowerCase();
+                if (newAssignments[embType] !== undefined) {
+                    newAssignments[embType] += quantity;
+                }
+            } else {
+                // Regular item quantities
+                const item = itemType.toLowerCase();
+                if (newAssignments[item] !== undefined) {
+                    newAssignments[item] += quantity;
+                }
+            }
+        }
+
+        // Calculate combined totals (already assigned + new assignments)
+        const totals = {
+            dress: alreadyAssigned.dress + newAssignments.dress,
+            kameez: alreadyAssigned.kameez + newAssignments.kameez,
+            shalwar: alreadyAssigned.shalwar + newAssignments.shalwar,
+            pajama: alreadyAssigned.pajama + newAssignments.pajama,
+            shirt: alreadyAssigned.shirt + newAssignments.shirt,
+            waistcoat: alreadyAssigned.waistcoat + newAssignments.waistcoat,
+            matel: alreadyAssigned.matel + newAssignments.matel,
+            tich: alreadyAssigned.tich + newAssignments.tich,
+            kanta: alreadyAssigned.kanta + newAssignments.kanta,
+            jali: alreadyAssigned.jali + newAssignments.jali,
+            krhai: alreadyAssigned.krhai + newAssignments.krhai
+        };
+
+        // Validate against order quantities
+        const errors = [];
+
+        // For dress: each dress = 1 kameez + 1 shalwar
+        const maxFromDress = {
+            kameez: orderQuantities.dressCount,
+            shalwar: orderQuantities.dressCount,
+            pajama: orderQuantities.dressCount  // pajama can substitute shalwar
+        };
+
+        // Check DRESS assignments
+        if (totals.dress > orderQuantities.dressCount) {
+            const available = orderQuantities.dressCount - alreadyAssigned.dress;
+            errors.push(`Cannot assign ${newAssignments.dress} dress(es). Only ${available} available (${alreadyAssigned.dress} already assigned, ${orderQuantities.dressCount} in order).`);
+        }
+
+        // Check KAMEEZ assignments (from dress)
+        if (totals.kameez > maxFromDress.kameez) {
+            const available = maxFromDress.kameez - alreadyAssigned.kameez;
+            errors.push(`Cannot assign ${newAssignments.kameez} kameez. Only ${available} available (${alreadyAssigned.kameez} already assigned, ${maxFromDress.kameez} in order).`);
+        }
+
+        // Check SHALWAR assignments (from dress)
+        if (totals.shalwar > maxFromDress.shalwar) {
+            const available = maxFromDress.shalwar - alreadyAssigned.shalwar;
+            errors.push(`Cannot assign ${newAssignments.shalwar} shalwar. Only ${available} available (${alreadyAssigned.shalwar} already assigned, ${maxFromDress.shalwar} in order).`);
+        }
+
+        // Check PAJAMA assignments (from dress)
+        if (totals.pajama > maxFromDress.pajama) {
+            const available = maxFromDress.pajama - alreadyAssigned.pajama;
+            errors.push(`Cannot assign ${newAssignments.pajama} pajama. Only ${available} available (${alreadyAssigned.pajama} already assigned, ${maxFromDress.pajama} in order).`);
+        }
+
+        // Check SHIRT assignments
+        if (totals.shirt > orderQuantities.shirtCount) {
+            const available = orderQuantities.shirtCount - alreadyAssigned.shirt;
+            errors.push(`Cannot assign ${newAssignments.shirt} shirt(s). Only ${available} available (${alreadyAssigned.shirt} already assigned, ${orderQuantities.shirtCount} in order).`);
+        }
+
+        // Check WAISTCOAT assignments
+        if (totals.waistcoat > orderQuantities.waistcoatCount) {
+            const available = orderQuantities.waistcoatCount - alreadyAssigned.waistcoat;
+            errors.push(`Cannot assign ${newAssignments.waistcoat} waistcoat(s). Only ${available} available (${alreadyAssigned.waistcoat} already assigned, ${orderQuantities.waistcoatCount} in order).`);
+        }
+
+        // Check embellishment quantities
+        if (totals.matel > orderQuantities.withMatel) {
+            const available = orderQuantities.withMatel - alreadyAssigned.matel;
+            errors.push(`Cannot assign ${newAssignments.matel} Matel work(s). Only ${available} available (${alreadyAssigned.matel} already assigned, ${orderQuantities.withMatel} in order).`);
+        }
+
+        if (totals.tich > orderQuantities.withTich) {
+            const available = orderQuantities.withTich - alreadyAssigned.tich;
+            errors.push(`Cannot assign ${newAssignments.tich} Tich work(s). Only ${available} available (${alreadyAssigned.tich} already assigned, ${orderQuantities.withTich} in order).`);
+        }
+
+        if (totals.kanta > orderQuantities.withKanta) {
+            const available = orderQuantities.withKanta - alreadyAssigned.kanta;
+            errors.push(`Cannot assign ${newAssignments.kanta} Kanta work(s). Only ${available} available (${alreadyAssigned.kanta} already assigned, ${orderQuantities.withKanta} in order).`);
+        }
+
+        if (totals.jali > orderQuantities.withJali) {
+            const available = orderQuantities.withJali - alreadyAssigned.jali;
+            errors.push(`Cannot assign ${newAssignments.jali} Jali work(s). Only ${available} available (${alreadyAssigned.jali} already assigned, ${orderQuantities.withJali} in order).`);
+        }
+
+        if (totals.krhai > orderQuantities.withKrhai) {
+            const available = orderQuantities.withKrhai - alreadyAssigned.krhai;
+            errors.push(`Cannot assign ${newAssignments.krhai} Krhai work(s). Only ${available} available (${alreadyAssigned.krhai} already assigned, ${orderQuantities.withKrhai} in order).`);
+        }
+
+        return errors;
+    }
+
+    // Handle batch form submission
+    document.getElementById('batchAssignmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const form = this;
+        const checkedWorkTypes = document.querySelectorAll('.work-type-checkbox:checked');
+
+        if (checkedWorkTypes.length === 0) {
+            showValidationError(['Please select at least one work type to assign!']);
+            return false;
+        }
+
+        // Build arrays for form submission
+        const workTypes = [];
+        const itemTypes = [];
+        const quantities = [];
+        const designFlags = [];
+        const embellishmentTypes = [];
+        const formValidationErrors = [];
+
+        checkedWorkTypes.forEach(checkbox => {
+            const workType = checkbox.value;
+            const quantityInput = document.querySelector(`.batch-quantity[data-work-type="${workType}"]`);
+            const embellishmentSelect = document.querySelector(`.batch-embellishment-type[data-work-type="${workType}"]`);
+
+            // For embellishment, use checkboxes (multi-selection)
+            if (workType === 'EMBELLISHMENT') {
+                const checkedEmbellishments = document.querySelectorAll(`.batch-embellishment-checkbox[data-work-type="${workType}"]:checked`);
+
+                if (checkedEmbellishments.length === 0) {
+                    formValidationErrors.push('Please select at least one embellishment type');
+                    return;
+                }
+
+                // Create separate assignment for each checked embellishment
+                checkedEmbellishments.forEach(embCheckbox => {
+                    const embellishmentType = embCheckbox.getAttribute('data-embellishment');
+                    const itemValue = embCheckbox.value; // Always KAMEEZ
+
+                    // Get the INDIVIDUAL quantity input for THIS specific embellishment
+                    const embQuantityInput = document.querySelector(`.batch-embellishment-quantity[data-embellishment="${embellishmentType}"]`);
+                    const embQuantity = embQuantityInput ? parseInt(embQuantityInput.value) : 1;
+
+                    workTypes.push(workType);
+                    itemTypes.push(itemValue);
+                    quantities.push(embQuantity); // Use individual quantity!
+                    designFlags.push('false');
+                    embellishmentTypes.push(embellishmentType);
+                });
+            } else {
+                // For other work types, use checkboxes (multiple items)
+                const checkedItems = document.querySelectorAll(`.batch-item-checkbox[data-work-type="${workType}"]:checked`);
+
+                if (checkedItems.length === 0) {
+                    formValidationErrors.push(`Please select at least one item for ${workType.replace('_', ' ')}`);
+                    return;
+                }
+
+                // Create separate assignment for each checked item
+                checkedItems.forEach(itemCheckbox => {
+                    const itemValue = itemCheckbox.value;
+
+                    // Get the INDIVIDUAL quantity input for THIS specific item
+                    const itemQuantityInput = document.querySelector(`.batch-item-quantity[data-item="${itemValue}"][data-work-type="${workType}"]`);
+                    const itemQuantity = itemQuantityInput ? parseInt(itemQuantityInput.value) : 1;
+
+                    // For stitching types, determine if it's plain or design
+                    if (workType === 'STITCHING_PLAIN') {
+                        workTypes.push('STITCHING');
+                        designFlags.push('false');
+                    } else if (workType === 'STITCHING_DESIGN') {
+                        workTypes.push('STITCHING');
+                        designFlags.push('true');
+                    } else {
+                        workTypes.push(workType);
+                        designFlags.push('false');
+                    }
+
+                    itemTypes.push(itemValue);
+                    quantities.push(itemQuantity); // Use individual quantity!
+                    embellishmentTypes.push('');
+                });
+            }
+        });
+
+        // Check for form validation errors
+        if (formValidationErrors.length > 0) {
+            showValidationError(formValidationErrors);
+            return false;
+        }
+
+        // Validate quantities against order
+        const validationErrors = validateQuantities(workTypes, itemTypes, quantities, embellishmentTypes);
+        if (validationErrors.length > 0) {
+            showValidationError(validationErrors);
+            return false;
+        }
+
+        // Hide validation error if it was shown before
+        hideValidationError();
+
+        // Create hidden inputs for arrays
+        workTypes.forEach(wt => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'workTypes';
+            input.value = wt;
+            form.appendChild(input);
+        });
+
+        itemTypes.forEach(it => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'itemTypes';
+            input.value = it;
+            form.appendChild(input);
+        });
+
+        quantities.forEach(q => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'quantities';
+            input.value = q;
+            form.appendChild(input);
+        });
+
+        designFlags.forEach(df => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'designFlags';
+            input.value = df;
+            form.appendChild(input);
+        });
+
+        embellishmentTypes.forEach(et => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'embellishmentTypes';
+            input.value = et;
+            form.appendChild(input);
+        });
+
+        // Submit the form
+        form.submit();
+    });
+
+    // Delete confirmation modal handling
+    let formToSubmit = null;
+
+    document.querySelectorAll('.delete-assignment-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('form');
+            formToSubmit = form;
+            document.getElementById('confirmDeleteModal').style.display = 'flex';
+        });
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (formToSubmit) {
+            formToSubmit.submit();
+        }
+    });
+
+    document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+        document.getElementById('confirmDeleteModal').style.display = 'none';
+        formToSubmit = null;
+    });
+
+    // Close modal on overlay click
+    document.getElementById('confirmDeleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+            formToSubmit = null;
+        }
+    });
+</script>
+</body>
+</html>

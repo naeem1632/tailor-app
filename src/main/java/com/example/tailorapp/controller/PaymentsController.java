@@ -192,27 +192,152 @@ public class PaymentsController {
         return "payments/pending";
     }
 
-    // ✅ Show orders due for return within 7 days and all overdue orders
+    // ✅ Show orders due for return based on date range filter and view option
     @GetMapping("/due-returns")
-    public String listDueReturns(Model model) {
+    public String listDueReturns(@RequestParam(value = "fromDate", required = false) LocalDate fromDate,
+                                  @RequestParam(value = "toDate", required = false) LocalDate toDate,
+                                  @RequestParam(value = "view", required = false, defaultValue = "upcoming") String view,
+                                  @RequestParam(value = "readyStatusFilter", required = false, defaultValue = "all") String readyStatusFilter,
+                                  Model model) {
         LocalDate today = LocalDate.now();
-        LocalDate sevenDaysLater = today.plusDays(7);
+
+        // Set date range based on view option
+        // View filter takes precedence - if dates are provided, they work within the view's context
+        if ("overdue".equals(view)) {
+            // Overdue only: Apply overdue filter regardless of custom dates
+            if (fromDate == null) {
+                fromDate = LocalDate.of(2020, 1, 1);
+            }
+            // For overdue, toDate must be at most yesterday
+            if (toDate == null || toDate.isAfter(today.minusDays(1))) {
+                toDate = today.minusDays(1);
+            }
+        } else if ("all".equals(view)) {
+            // All orders: Allow full range
+            if (fromDate == null) {
+                fromDate = LocalDate.of(2020, 1, 1);
+            }
+            if (toDate == null) {
+                toDate = today.plusYears(1);
+            }
+        } else {
+            // Default "upcoming": Apply upcoming filter
+            if (fromDate == null || fromDate.isBefore(today)) {
+                fromDate = today;
+            }
+            if (toDate == null) {
+                toDate = today.plusDays(7);
+            }
+        }
 
         List<Payments> allPayments = paymentsService.findAll();
 
-        // Filter overdue orders and orders due within 7 days (not yet picked up)
+        // Filter orders based on date range (not yet picked up)
+        final LocalDate finalFromDate = fromDate;
+        final LocalDate finalToDate = toDate;
+
         List<Payments> dueReturns = allPayments.stream()
                 .filter(p -> p.getReturnDate() != null)
                 .filter(p -> !"PICKED_UP".equals(p.getReadyStatus()))
                 .filter(p -> {
+                    // Filter by ready status
+                    if ("ready".equals(readyStatusFilter)) {
+                        return "READY".equals(p.getReadyStatus()) || "NOTIFIED".equals(p.getReadyStatus());
+                    } else if ("notready".equals(readyStatusFilter)) {
+                        return p.getReadyStatus() == null || p.getReadyStatus().isEmpty() || "NOT_READY".equals(p.getReadyStatus());
+                    }
+                    // "all" - no filtering by ready status
+                    return true;
+                })
+                .filter(p -> {
+                    // Filter by date range
                     LocalDate returnDate = p.getReturnDate();
-                    // Include both overdue (< today) and upcoming 7 days (<= sevenDaysLater)
-                    return !returnDate.isAfter(sevenDaysLater);
+
+                    if (finalFromDate != null && finalToDate != null) {
+                        // Both dates provided: filter between fromDate and toDate (inclusive)
+                        return !returnDate.isBefore(finalFromDate) && !returnDate.isAfter(finalToDate);
+                    } else if (finalFromDate != null) {
+                        // Only fromDate provided: filter from that date onwards
+                        return !returnDate.isBefore(finalFromDate);
+                    } else if (finalToDate != null) {
+                        // Only toDate provided: filter up to that date
+                        return !returnDate.isAfter(finalToDate);
+                    }
+
+                    return true;
                 })
                 .sorted(Comparator.comparing(Payments::getReturnDate))
                 .toList();
 
+        // Calculate total dress count
+        long totalDressCount = dueReturns.stream()
+                .mapToLong(p -> p.getDressCount() != null ? p.getDressCount() : 0)
+                .sum();
+
+        // Calculate total waistcoat count
+        long totalWaistcoatCount = dueReturns.stream()
+                .mapToLong(p -> p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0)
+                .sum();
+
+        // Calculate total shirt count
+        long totalShirtCount = dueReturns.stream()
+                .mapToLong(p -> p.getShirtCount() != null ? p.getShirtCount() : 0)
+                .sum();
+
+        // Calculate overdue vs upcoming breakdown
+        // Note: These counts are already within the filtered date range (dueReturns list)
+        // Overdue: return date is before today
+        long overdueDressCount = dueReturns.stream()
+                .filter(p -> p.getReturnDate().isBefore(today))
+                .mapToLong(p -> p.getDressCount() != null ? p.getDressCount() : 0)
+                .sum();
+
+        long overdueWaistcoatCount = dueReturns.stream()
+                .filter(p -> p.getReturnDate().isBefore(today))
+                .mapToLong(p -> p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0)
+                .sum();
+
+        long overdueShirtCount = dueReturns.stream()
+                .filter(p -> p.getReturnDate().isBefore(today))
+                .mapToLong(p -> p.getShirtCount() != null ? p.getShirtCount() : 0)
+                .sum();
+
+        // Upcoming: return date is today or later
+        long upcomingDressCount = dueReturns.stream()
+                .filter(p -> !p.getReturnDate().isBefore(today)) // >= today
+                .mapToLong(p -> p.getDressCount() != null ? p.getDressCount() : 0)
+                .sum();
+
+        long upcomingWaistcoatCount = dueReturns.stream()
+                .filter(p -> !p.getReturnDate().isBefore(today)) // >= today
+                .mapToLong(p -> p.getWaistcoatCount() != null ? p.getWaistcoatCount() : 0)
+                .sum();
+
+        long upcomingShirtCount = dueReturns.stream()
+                .filter(p -> !p.getReturnDate().isBefore(today)) // >= today
+                .mapToLong(p -> p.getShirtCount() != null ? p.getShirtCount() : 0)
+                .sum();
+
         model.addAttribute("payments", dueReturns);
+        model.addAttribute("totalDressCount", totalDressCount);
+        model.addAttribute("totalWaistcoatCount", totalWaistcoatCount);
+        model.addAttribute("totalShirtCount", totalShirtCount);
+
+        // Add overdue counts
+        model.addAttribute("overdueDressCount", overdueDressCount);
+        model.addAttribute("overdueWaistcoatCount", overdueWaistcoatCount);
+        model.addAttribute("overdueShirtCount", overdueShirtCount);
+
+        // Add upcoming counts
+        model.addAttribute("upcomingDressCount", upcomingDressCount);
+        model.addAttribute("upcomingWaistcoatCount", upcomingWaistcoatCount);
+        model.addAttribute("upcomingShirtCount", upcomingShirtCount);
+
+        // Add date filter values, view option, and ready status filter
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("view", view);
+        model.addAttribute("readyStatusFilter", readyStatusFilter);
         return "payments/due-returns";
     }
 

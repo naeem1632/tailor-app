@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Management - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;"><i class="fas fa-users-cog"></i> User Management</h1>
+        <a th:href="@{/users/add}" class="btn btn-success">
+            <i class="fas fa-user-plus"></i> Add User
+        </a>
+    </div>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Users Table -->
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(users)}">
+            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
+                <i class="fas fa-users" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+                <div>No users found.</div>
+            </td>
+        </tr>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}"></td>
+            <td>
+                <strong th:text="${user.username}"></strong>
+            </td>
+            <td th:text="${user.fullName}"></td>
+            <td>
+                <i class="fas fa-envelope" style="color: #666;"></i>
+                <span th:text="${user.email}"></span>
+            </td>
+            <td>
+                <span th:if="${user.role == 'ADMIN'}"
+                      style="background: #dc3545; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                    <i class="fas fa-crown"></i> ADMIN
+                </span>
+                <span th:if="${user.role == 'USER'}"
+                      style="background: #28a745; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                    <i class="fas fa-user"></i> USER
+                </span>
+            </td>
+            <td>
+                <span th:if="${user.enabled && user.accountNonLocked}"
+                      style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> ACTIVE
+                </span>
+                <span th:if="${!user.enabled}"
+                      style="background: #f8d7da; color: #721c24; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                    <i class="fas fa-ban"></i> DISABLED
+                </span>
+                <span th:if="${user.enabled && !user.accountNonLocked}"
+                      style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                    <i class="fas fa-lock"></i> LOCKED
+                </span>
+            </td>
+            <td th:text="${user.lastLogin != null ? #temporals.format(user.lastLogin, 'dd MMM yyyy HH:mm') : 'Never'}"></td>
+            <td th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd MMM yyyy') : '-'}"></td>
+            <td>
+                <div class="btn-group" role="group">
+                    <a th:href="@{/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-info" title="Edit User">
+                        <i class="fas fa-edit"></i>
+                    </a>
+
+                    <form th:action="@{/users/toggle-status/{id}(id=${user.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-warning"
+                                th:title="${user.enabled ? 'Disable User' : 'Enable User'}">
+                            <i th:class="${user.enabled ? 'fas fa-ban' : 'fas fa-check'}"></i>
+                        </button>
+                    </form>
+
+                    <form th:action="@{/users/toggle-lock/{id}(id=${user.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-secondary"
+                                th:title="${user.accountNonLocked ? 'Lock Account' : 'Unlock Account'}">
+                            <i th:class="${user.accountNonLocked ? 'fas fa-lock' : 'fas fa-unlock'}"></i>
+                        </button>
+                    </form>
+
+                    <form th:action="@{/users/delete/{id}(id=${user.id})}" method="post"
+                          style="display: inline;"
+                          onsubmit="return confirm('Are you sure you want to delete this user?');">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Delete User">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

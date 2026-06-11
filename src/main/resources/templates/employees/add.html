@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Employee - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 800px;">
+
+    <h1 style="margin-bottom: 20px;">Add New Employee</h1>
+
+    <form th:action="@{/employees/add}" th:object="${employee}" method="post">
+
+        <!-- Personal Information -->
+        <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0;">Personal Information</h4>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="name" style="font-weight: 600;">Name <span style="color: red;">*</span></label>
+                <input type="text" id="name" th:field="*{name}" class="form-control" required/>
+                <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="mobile" style="font-weight: 600;">Mobile</label>
+                        <input type="text" id="mobile" th:field="*{mobile}" class="form-control"/>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="cnic" style="font-weight: 600;">CNIC</label>
+                        <input type="text" id="cnic" th:field="*{cnic}" class="form-control" placeholder="12345-1234567-1"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="address" style="font-weight: 600;">Address</label>
+                <textarea id="address" th:field="*{address}" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="joiningDate" style="font-weight: 600;">Joining Date</label>
+                        <input type="date" id="joiningDate" th:field="*{joiningDate}" class="form-control"/>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="employeeStatus" style="font-weight: 600;">Status</label>
+                        <select id="employeeStatus" th:field="*{employeeStatus}" class="form-control">
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                            <option value="ON_LEAVE">On Leave</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills/Capabilities -->
+        <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0;">Skills & Capabilities</h4>
+            <p style="color: #666; font-size: 14px;">Select all that apply:</p>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="canCut" th:field="*{canCut}" class="form-check-input"/>
+                        <label for="canCut" class="form-check-label">Cutting</label>
+                    </div>
+                    <div class="form-check" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="canStitchPlain" th:field="*{canStitchPlain}" class="form-check-input"/>
+                        <label for="canStitchPlain" class="form-check-label">Stitching (Plain)</label>
+                    </div>
+                    <div class="form-check" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="canStitchDesign" th:field="*{canStitchDesign}" class="form-check-input"/>
+                        <label for="canStitchDesign" class="form-check-label">Stitching (Design)</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="canDoFinishing" th:field="*{canDoFinishing}" class="form-check-input"/>
+                        <label for="canDoFinishing" class="form-check-label">Finishing</label>
+                    </div>
+                    <div class="form-check" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="canDoEmbellishment" th:field="*{canDoEmbellishment}" class="form-check-input"/>
+                        <label for="canDoEmbellishment" class="form-check-label">Embellishment Work</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Settings -->
+        <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0;">Payment Settings</h4>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="paymentFrequency" style="font-weight: 600;">Payment Frequency</label>
+                <select id="paymentFrequency" th:field="*{paymentFrequency}" class="form-control">
+                    <option value="">Not Set</option>
+                    <option value="DAILY">Daily</option>
+                    <option value="WEEKLY">Weekly</option>
+                    <option value="MONTHLY">Monthly</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="notes" style="font-weight: 600;">Notes</label>
+            <textarea id="notes" th:field="*{notes}" class="form-control" rows="3" placeholder="Any additional notes..."></textarea>
+        </div>
+
+        <!-- Buttons -->
+        <div style="margin-top: 20px;">
+            <button type="submit" class="add-btn">
+                <i class="fas fa-save"></i> Save Employee
+            </button>
+            <a th:href="@{/employees}" class="btn btn-secondary" style="margin-left: 12px;">Cancel</a>
+        </div>
+
+    </form>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

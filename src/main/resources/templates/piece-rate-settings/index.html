@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Labor Rates - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h1 style="margin: 0;"><i class="fas fa-coins"></i> Labor Rates</h1>
+        <a th:href="@{/piece-rate-settings/add}" class="add-btn">
+            <i class="fas fa-plus"></i> Add New Rates
+        </a>
+    </div>
+
+    <p style="color: #666; margin-bottom: 20px;">
+        Set piece rates for employee work. Changes are tracked with effective dates for accurate historical calculations.
+        <br><strong>Current Active Rates:</strong> <span th:if="${currentSettings}" th:text="'Effective from ' + ${#temporals.format(currentSettings.effectiveDate, 'dd MMM yyyy')}"></span>
+    </p>
+
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+    <!-- Current Active Rates -->
+    <div th:if="${currentSettings}" style="background: #e7f3ff; border: 2px solid #007bff; border-radius: 4px; padding: 20px; margin-bottom: 30px;">
+        <h4 style="margin-top: 0; color: #007bff;">
+            <i class="fas fa-star"></i> Current Active Rates
+            <span style="font-size: 14px; font-weight: 400; color: #666;">
+                (Effective: <span th:text="${#temporals.format(currentSettings.effectiveDate, 'dd MMM yyyy')}"></span>)
+            </span>
+        </h4>
+
+        <div class="row">
+            <div class="col-md-6">
+                <table style="width: 100%; margin-bottom: 16px;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Cutting Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Kameez:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.kameezCuttingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shalwar:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.shalwarCuttingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Pajama:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.pajamaCuttingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shirt:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.shirtCuttingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Waistcoat:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.waistcoatCuttingRate}"></span></td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Plain Stitching Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Kameez (Plain):</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.kameezPlainStitchingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shalwar (Plain):</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.shalwarPlainStitchingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Pajama:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.pajamaStitchingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shirt:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.shirtStitchingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Waistcoat:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.waistcoatStitchingRate}"></span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <table style="width: 100%; margin-bottom: 16px;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Design Stitching Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Kameez (Design):</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.kameezDesignStitchingRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shalwar (Design):</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.shalwarDesignStitchingRate}"></span></td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; margin-bottom: 16px;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Embellishment Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Matel:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.matelWorkRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Tich:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.tichWorkRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Kanta:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.kantaWorkRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Jali:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.jaliWorkRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Krhai:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.krhaiWorkRate}"></span></td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Other Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Finishing:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.finishingRate}"></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <a th:href="@{/piece-rate-settings/view/{id}(id=${currentSettings.id})}" class="btn btn-info">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+            <a th:href="@{/piece-rate-settings/edit/{id}(id=${currentSettings.id})}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        </div>
+    </div>
+
+    <!-- Rate History -->
+    <h4 style="margin-top: 30px; margin-bottom: 16px;">Rate History</h4>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Effective Date</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(settingsList)}">
+            <td colspan="3" style="text-align: center; padding: 40px; color: #999;">
+                No rate settings found. Click "Add New Rates" to get started.
+            </td>
+        </tr>
+        <tr th:each="settings : ${settingsList}">
+            <td>
+                <strong th:text="${#temporals.format(settings.effectiveDate, 'dd MMM yyyy')}"></strong>
+                <span th:if="${currentSettings != null && settings.id == currentSettings.id}"
+                      style="background: #007bff; color: white; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-left: 8px;">
+                    CURRENT
+                </span>
+            </td>
+            <td th:text="${settings.notes ?: '-'}"></td>
+            <td>
+                <a th:href="@{/piece-rate-settings/view/{id}(id=${settings.id})}" class="btn btn-sm btn-info" title="View">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a th:href="@{/piece-rate-settings/edit/{id}(id=${settings.id})}" class="btn btn-sm btn-warning" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

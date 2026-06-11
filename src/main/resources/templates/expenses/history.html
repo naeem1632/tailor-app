@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Expense History - Stitch & Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h1><i class="fas fa-history"></i> Expense History</h1>
+        <a href="/expenses" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Settings
+        </a>
+    </div>
+
+    <p style="color: #666; margin-bottom: 20px;">
+        Track changes in expense rates over time. The profit analysis report uses historical expense data to calculate accurate profits for each order based on the costs that were active at the time.
+    </p>
+
+    <div th:if="${#lists.isEmpty(expenseHistory)}" style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
+        <i class="fas fa-info-circle" style="font-size: 3rem; color: #6c757d;"></i>
+        <p style="margin-top: 20px; color: #6c757d; font-size: 1.1rem;">
+            No expense history yet. Changes to expense settings will be tracked here automatically.
+        </p>
+    </div>
+
+    <table th:if="${!#lists.isEmpty(expenseHistory)}">
+        <thead>
+        <tr>
+            <th>Effective Date</th>
+            <th>Dress</th>
+            <th>Waistcoat</th>
+            <th>Shirt</th>
+            <th>Matel</th>
+            <th>Tich</th>
+            <th>Kanta</th>
+            <th>Jali</th>
+            <th>Krhai</th>
+            <th>Notes</th>
+            <th>Created</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="record, iterStat : ${expenseHistory}">
+            <td>
+                <strong th:text="${#temporals.format(record.effectiveDate, 'dd-MMM-yyyy')}"></strong>
+                <span th:if="${iterStat.index == 0}" class="badge bg-success" style="margin-left: 8px;">Current</span>
+            </td>
+            <td th:text="${record.dressExpense}"></td>
+            <td th:text="${record.waistcoatExpense}"></td>
+            <td th:text="${record.shirtExpense}"></td>
+            <td th:text="${record.matelExpense}"></td>
+            <td th:text="${record.tichExpense}"></td>
+            <td th:text="${record.kantaExpense}"></td>
+            <td th:text="${record.jaliExpense}"></td>
+            <td th:text="${record.krhaiExpense}"></td>
+            <td th:text="${record.notes != null ? record.notes : '-'}" style="color: #666; font-style: italic;"></td>
+            <td th:text="${#temporals.format(record.createdAt, 'dd-MMM-yyyy HH:mm')}" style="color: #999; font-size: 0.9rem;"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${!#lists.isEmpty(expenseHistory)}" style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-left: 4px solid #007bff; border-radius: 4px;">
+        <p style="margin: 0; color: #004085;">
+            <i class="fas fa-info-circle"></i> <strong>How it works:</strong>
+            When calculating profit for historical orders, the system automatically uses the expense rates that were active on the order date, ensuring accurate historical profit analysis.
+        </p>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

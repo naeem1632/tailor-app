@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <!-- Navbar Fragment (includes nav, modal, and script) -->
 <nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary" style="position: sticky !important; top: 0 !important; z-index: 1050 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -20,20 +21,67 @@
                             <i class="fas fa-users"></i> Clients
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/reports/dashboard" target="_blank">
+
+                    <!-- Reports Module (Admin Only) -->
+                    <li class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-chart-bar"></i> Reports
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                            <li><a class="dropdown-item" href="/reports/payment-report"><i class="fas fa-file-invoice-dollar"></i> Payment Report</a></li>
+                            <li><a class="dropdown-item" href="/reports/profit-analysis"><i class="fas fa-chart-line"></i> Profit Analysis</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/settings">
+
+                    <!-- Settings Module (Admin Only) -->
+                    <li class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
+                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog"></i> Settings
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                            <li><a class="dropdown-item" href="/settings"><i class="fas fa-tags"></i> Price List</a></li>
+                            <li><a class="dropdown-item" href="/piece-rate-settings"><i class="fas fa-coins"></i> Labor Rates</a></li>
+                            <li><a class="dropdown-item" href="/expenses"><i class="fas fa-money-bill-wave"></i> Expenditures</a></li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/expenses">
-                            <i class="fas fa-money-bill-wave"></i> Expenses
+
+                    <!-- Employees Module -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="employeeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-tie"></i> Employees
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="employeeDropdown">
+                            <li><a class="dropdown-item" href="/employees"><i class="fas fa-users"></i> Manage Employees</a></li>
+                            <li><a class="dropdown-item" href="/work-assignments"><i class="fas fa-tasks"></i> Work Assignments</a></li>
+                            <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
+                            <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" href="/employee-payments/payroll"><i class="fas fa-calculator"></i> Payroll Calculator</a></li>
+                            <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" href="/employee-payments"><i class="fas fa-money-check-alt"></i> Payment History</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- User Menu -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span sec:authentication="name">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li sec:authorize="hasRole('ADMIN')">
+                                <a class="dropdown-item" href="/users">
+                                    <i class="fas fa-users-cog"></i> Manage Users
+                                </a>
+                            </li>
+                            <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                                    <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left; cursor: pointer;">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </div>
@@ -46,120 +94,16 @@
     <p id="loadingMessage">Processing...</p>
 </div>
 
-<!-- Global Report Modal (Available on all pages with navbar) -->
-    <div id="globalReportModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
-        <div style="background-color:#fff; margin:10% auto; padding:30px; width:400px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-            <span onclick="closeReportModalGlobal()" style="float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
-            <h3 style="text-align:center; margin-bottom:20px;">Client Payment Report</h3>
+<script>
+    // === Loading Overlay Helper Functions ===
+    function showLoading(message = 'Processing...') {
+        document.getElementById('loadingMessage').textContent = message;
+        document.getElementById('loadingOverlay').classList.add('show');
+    }
 
-            <form th:action="@{/print/report}" method="get">
-                <div class="mb-3">
-                    <label class="form-label">Start Date:</label>
-                    <input type="date" name="startDate" id="globalReportStartDate" class="form-control" required/>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">End Date:</label>
-                    <input type="date" name="endDate" id="globalReportEndDate" class="form-control" required/>
-                </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-chart-line"></i> View Report
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Profit Analysis Modal -->
-    <div id="profitAnalysisModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
-        <div style="background-color:#fff; margin:10% auto; padding:30px; width:400px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-            <span onclick="closeProfitAnalysisModal()" style="float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
-            <h3 style="text-align:center; margin-bottom:20px;"><i class="fas fa-chart-line"></i> Profit Analysis Report</h3>
-
-            <form th:action="@{/profit-analysis/report}" method="get">
-                <div class="mb-3">
-                    <label class="form-label">Start Date:</label>
-                    <input type="date" name="startDate" id="profitAnalysisStartDate" class="form-control" required/>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">End Date:</label>
-                    <input type="date" name="endDate" id="profitAnalysisEndDate" class="form-control" required/>
-                </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-chart-pie"></i> View Profit Analysis
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // === Loading Overlay Helper Functions ===
-        function showLoading(message = 'Processing...') {
-            document.getElementById('loadingMessage').textContent = message;
-            document.getElementById('loadingOverlay').classList.add('show');
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingOverlay').classList.remove('show');
-        }
-
-        function openReportModalGlobal() {
-            // Set default dates: 1st of current month and today
-            const today = new Date();
-            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-            // Format dates to YYYY-MM-DD for date input
-            const formatDate = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
-            document.getElementById('globalReportStartDate').value = formatDate(firstOfMonth);
-            document.getElementById('globalReportEndDate').value = formatDate(today);
-            document.getElementById('globalReportModal').style.display = 'block';
-        }
-
-        function closeReportModalGlobal() {
-            document.getElementById('globalReportModal').style.display = 'none';
-        }
-
-        function openProfitAnalysisModal() {
-            // Set default dates: 1st of current month and today
-            const today = new Date();
-            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-            const formatDate = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
-            document.getElementById('profitAnalysisStartDate').value = formatDate(firstOfMonth);
-            document.getElementById('profitAnalysisEndDate').value = formatDate(today);
-            document.getElementById('profitAnalysisModal').style.display = 'block';
-        }
-
-        function closeProfitAnalysisModal() {
-            document.getElementById('profitAnalysisModal').style.display = 'none';
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const reportModal = document.getElementById('globalReportModal');
-            const profitModal = document.getElementById('profitAnalysisModal');
-
-            if (event.target === reportModal) {
-                closeReportModalGlobal();
-            }
-            if (event.target === profitModal) {
-                closeProfitAnalysisModal();
-            }
-        }
-    </script>
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('show');
+    }
+</script>
 </body>
 </html>

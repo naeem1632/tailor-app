@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+
+<div style="max-width: 400px; width: 100%; padding: 20px;">
+    <div style="background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); padding: 40px;">
+
+        <!-- Logo/Title -->
+        <div style="text-align: center; margin-bottom: 32px;">
+            <h2 style="color: #667eea; font-weight: 700; margin-bottom: 8px;">Stitch &amp; Style</h2>
+            <p style="color: #666; font-size: 14px;">Sign in to your account</p>
+        </div>
+
+        <!-- Success Message -->
+        <div th:if="${success}" class="alert alert-success" role="alert"
+             style="font-size: 14px; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert"
+             style="font-size: 14px; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+        </div>
+
+        <!-- Login Form -->
+        <form th:action="@{/login}" method="post">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-user"></i> Username
+                </label>
+                <input type="text" name="username" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 12px; font-size: 14px;"
+                       placeholder="Enter your username" required autofocus/>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input type="password" name="password" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 12px; font-size: 14px;"
+                       placeholder="Enter your password" required/>
+            </div>
+
+            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div class="form-check">
+                    <input type="checkbox" name="remember-me" id="rememberMe" class="form-check-input"/>
+                    <label for="rememberMe" class="form-check-label" style="font-size: 14px; color: #666;">
+                        Remember me
+                    </label>
+                </div>
+                <a th:href="@{/forgot-password}" style="font-size: 14px; color: #667eea; text-decoration: none;">
+                    Forgot password?
+                </a>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 8px;
+                           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </form>
+
+        <!-- Registration Link -->
+        <div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid #e0e0e0;">
+            <p style="font-size: 14px; color: #666; margin: 0;">
+                Don't have an account?
+                <a th:href="@{/register}" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                    Sign Up
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 20px;">
+        <p style="font-size: 12px; color: rgba(255,255,255,0.8);">
+            &copy; 2026 Stitch &amp; Style. All rights reserved.
+        </p>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

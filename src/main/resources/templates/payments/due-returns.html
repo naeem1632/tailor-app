@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Due Returns - Stitch & Style</title>
+    <title>Orders Due for Return - Stitch & Style</title>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
@@ -34,11 +34,145 @@
 
 <div class="container-fluid" style="padding-top: 20px;">
 
-<h1><i class="fas fa-calendar-check"></i> Orders Due for Return (Overdue & Next 7 Days)</h1>
+<h1><i class="fas fa-calendar-check"></i> Orders Due for Return</h1>
 
 <div class="toolbar-3">
     <div class="toolbar-left">
         <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+    <div class="toolbar-right">
+        <form method="get" action="/payments/due-returns" style="display: flex; gap: 10px; align-items: center;">
+            <label for="view" style="margin: 0; font-weight: 600;">View:</label>
+            <select id="view" name="view" class="form-control" style="width: auto;">
+                <option value="upcoming" th:selected="${view == 'upcoming'}">Upcoming Only</option>
+                <option value="overdue" th:selected="${view == 'overdue'}">Overdue Only</option>
+                <option value="all" th:selected="${view == 'all'}">All (Overdue + Upcoming)</option>
+            </select>
+
+            <label for="readyStatusFilter" style="margin: 0; font-weight: 600;">Status:</label>
+            <select id="readyStatusFilter" name="readyStatusFilter" class="form-control" style="width: auto;">
+                <option value="all" th:selected="${readyStatusFilter == 'all'}">All</option>
+                <option value="ready" th:selected="${readyStatusFilter == 'ready'}">Ready</option>
+                <option value="notready" th:selected="${readyStatusFilter == 'notready'}">Not Ready</option>
+            </select>
+
+            <label for="fromDate" style="margin: 0; font-weight: 600;">From:</label>
+            <input type="date" id="fromDate" name="fromDate" class="form-control" style="width: auto;"
+                   th:value="${fromDate != null ? fromDate : ''}"/>
+
+            <label for="toDate" style="margin: 0; font-weight: 600;">To:</label>
+            <input type="date" id="toDate" name="toDate" class="form-control" style="width: auto;"
+                   th:value="${toDate != null ? toDate : ''}"/>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-filter"></i> Filter
+            </button>
+            <a href="/payments/due-returns" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Clear
+            </a>
+        </form>
+    </div>
+</div>
+
+<!-- Overdue vs Upcoming Breakdown Summary -->
+<div class="card mb-4" style="border: 2px solid #dee2e6;">
+    <div class="card-header" style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+        <h4 style="margin: 0; color: #495057;">
+            <i class="fas fa-chart-bar"></i> Overdue vs Upcoming Breakdown
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Overdue Column -->
+            <div class="col-md-6" style="border-right: 2px solid #dee2e6;">
+                <h5 style="color: #dc3545; text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-triangle"></i> Overdue Items
+                </h5>
+                <table class="table table-sm" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th style="width: 50%;">Item Type</th>
+                        <th style="text-align: center;">Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><i class="fas fa-tshirt text-primary"></i> Dresses</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-danger" style="font-size: 1rem; padding: 6px 12px;"
+                                  th:text="${overdueDressCount}">0</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-vest text-success"></i> Waistcoats</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-danger" style="font-size: 1rem; padding: 6px 12px;"
+                                  th:text="${overdueWaistcoatCount}">0</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-shirt text-info"></i> Shirts</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-danger" style="font-size: 1rem; padding: 6px 12px;"
+                                  th:text="${overdueShirtCount}">0</span>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 2px solid #dee2e6; font-weight: 700;">
+                        <td><i class="fas fa-box"></i> Total Overdue</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-danger" style="font-size: 1.1rem; padding: 8px 14px;"
+                                  th:text="${overdueDressCount + overdueWaistcoatCount + overdueShirtCount}">0</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Upcoming Column -->
+            <div class="col-md-6">
+                <h5 style="color: #28a745; text-align: center; margin-bottom: 20px;">
+                    <i class="fas fa-calendar-alt"></i> Upcoming Items
+                </h5>
+                <table class="table table-sm" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th style="width: 50%;">Item Type</th>
+                        <th style="text-align: center;">Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><i class="fas fa-tshirt text-primary"></i> Dresses</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-success" style="font-size: 1rem; padding: 6px 12px;"
+                                  th:text="${upcomingDressCount}">0</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-vest text-success"></i> Waistcoats</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-success" style="font-size: 1rem; padding: 6px 12px;"
+                                  th:text="${upcomingWaistcoatCount}">0</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-shirt text-info"></i> Shirts</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-success" style="font-size: 1rem; padding: 6px 12px;"
+                                  th:text="${upcomingShirtCount}">0</span>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 2px solid #dee2e6; font-weight: 700;">
+                        <td><i class="fas fa-box"></i> Total Upcoming</td>
+                        <td style="text-align: center;">
+                            <span class="badge bg-success" style="font-size: 1.1rem; padding: 8px 14px;"
+                                  th:text="${upcomingDressCount + upcomingWaistcoatCount + upcomingShirtCount}">0</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -49,8 +183,9 @@
         <th>ID</th>
         <th>Client Name</th>
         <th>Phone</th>
-        <th>Dress Count</th>
-        <th>Waistcoat Count</th>
+        <th>Dress</th>
+        <th>Waistcoat</th>
+        <th>Shirt</th>
         <th>Return Date</th>
         <th>Ready Status</th>
         <th>Actions</th>
@@ -76,6 +211,13 @@
                   style="color: #6c757d;">-</span>
         </td>
         <td>
+            <span th:if="${payment.shirtCount != null and payment.shirtCount > 0}"
+                  th:text="${payment.shirtCount}"
+                  class="badge bg-info"></span>
+            <span th:unless="${payment.shirtCount != null and payment.shirtCount > 0}"
+                  style="color: #6c757d;">-</span>
+        </td>
+        <td>
             <span class="due-badge"
                   th:classappend="${payment.returnDate.isBefore(T(java.time.LocalDate).now()) ? 'urgent' : ''}"
                   th:text="${#temporals.format(payment.returnDate, 'dd-MMM-yyyy')}">
@@ -94,9 +236,10 @@
         </td>
     </tr>
     <tr th:if="${#lists.isEmpty(payments)}">
-        <td colspan="8" style="text-align: center; color: #6c757d; padding: 30px;">
+        <td colspan="9" style="text-align: center; color: #6c757d; padding: 30px;">
             <i class="fas fa-check-circle" style="font-size: 3rem; color: #28a745;"></i><br>
-            <strong>No overdue or upcoming orders due for return!</strong>
+            <strong th:if="${fromDate != null || toDate != null}">No orders found for the selected date range!</strong>
+            <strong th:unless="${fromDate != null || toDate != null}">No overdue or upcoming orders due for return!</strong>
         </td>
     </tr>
     </tbody>
@@ -105,5 +248,16 @@
 </div><!-- Close container-fluid -->
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Clear date fields when view dropdown changes
+    document.getElementById('view').addEventListener('change', function() {
+        // Clear the date input fields
+        document.getElementById('fromDate').value = '';
+        document.getElementById('toDate').value = '';
+
+        // Submit the form to apply the new view with default dates
+        this.form.submit();
+    });
+</script>
 </body>
 </html>

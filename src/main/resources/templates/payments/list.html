@@ -67,6 +67,7 @@
     <thead>
     <tr>
         <th></th>
+        <th>Order #</th>
         <th>Date</th>
         <th>Dress</th>
         <th>Waistcoat</th>
@@ -94,6 +95,7 @@
                 <button class="expand-btn" type="button"
                         th:attr="onclick='toggleInstallments(' + ${p.id} + ')'">▼</button>
             </td>
+            <td th:text="${p.id}" style="font-weight: 600;"></td>
             <td th:text="${@dateFormatter.format(p.date)}"></td>
             <td th:text="${(p.dressCount != null and p.dressCount > 0)
                 ? p.dressCount + ' @ ' + p.dressRate
@@ -210,12 +212,17 @@
                 <a th:href="@{'/print/invoice/client/' + ${client.id} + '/date/' + ${p.date}}"
                    class="btn-action payments-list-btn btn-invoice"
                    target="_blank">Invoice</a>
+
+                <a th:href="@{'/work-assignments/assign/' + ${p.id}}"
+                   class="btn-action payments-list-btn"
+                   style="background-color: #17a2b8 !important; color: white !important;"
+                   title="Assign work to employees">Assign Work</a>
             </td>
         </tr>
 
         <!-- ✅ Installments Table -->
         <tr th:id="'installments-' + ${p.id}" class="installment-row" style="display:none;">
-            <td colspan="19">
+            <td colspan="20">
                 <table class="installments-table">
                     <thead>
                     <tr><th>Date</th><th>Paid Amount</th><th>Payment Type</th><th>Note</th><th>Actions</th></tr>

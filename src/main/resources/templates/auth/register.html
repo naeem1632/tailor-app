@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register - Stitch &amp; Style</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+
+<div style="max-width: 500px; width: 100%; padding: 20px;">
+    <div style="background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); padding: 40px;">
+
+        <!-- Logo/Title -->
+        <div style="text-align: center; margin-bottom: 32px;">
+            <h2 style="color: #667eea; font-weight: 700; margin-bottom: 8px;">Create Account</h2>
+            <p style="color: #666; font-size: 14px;">Sign up for Stitch &amp; Style</p>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert"
+             style="font-size: 14px; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+        </div>
+
+        <!-- Registration Form -->
+        <form th:action="@{/register}" method="post" th:object="${user}">
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-user"></i> Full Name
+                </label>
+                <input type="text" th:field="*{fullName}" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 10px; font-size: 14px;"
+                       placeholder="Enter your full name" required/>
+                <div class="text-danger" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"
+                     style="font-size: 12px; margin-top: 4px;"></div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-user-circle"></i> Username
+                </label>
+                <input type="text" th:field="*{username}" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 10px; font-size: 14px;"
+                       placeholder="Choose a username" required/>
+                <div class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"
+                     style="font-size: 12px; margin-top: 4px;"></div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" th:field="*{email}" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 10px; font-size: 14px;"
+                       placeholder="your.email@example.com" required/>
+                <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"
+                     style="font-size: 12px; margin-top: 4px;"></div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input type="password" th:field="*{password}" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 10px; font-size: 14px;"
+                       placeholder="Choose a password (min 6 characters)" required minlength="6"/>
+                <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"
+                     style="font-size: 12px; margin-top: 4px;"></div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-lock"></i> Confirm Password
+                </label>
+                <input type="password" name="confirmPassword" class="form-control"
+                       style="border-radius: 8px; border: 2px solid #e0e0e0; padding: 10px; font-size: 14px;"
+                       placeholder="Re-enter your password" required minlength="6"/>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border-radius: 8px;
+                           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+        </form>
+
+        <!-- Login Link -->
+        <div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid #e0e0e0;">
+            <p style="font-size: 14px; color: #666; margin: 0;">
+                Already have an account?
+                <a th:href="@{/login}" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                    Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 20px;">
+        <p style="font-size: 12px; color: rgba(255,255,255,0.8);">
+            &copy; 2026 Stitch &amp; Style. All rights reserved.
+        </p>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
