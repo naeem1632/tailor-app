@@ -15,16 +15,18 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <div class="page-header-standard">
         <h1><i class="fas fa-history"></i> Expense History</h1>
-        <a href="/expenses" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Settings
-        </a>
+        <div class="header-actions">
+            <a href="/expenses" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back to Settings
+            </a>
+        </div>
     </div>
 
-    <p style="color: #666; margin-bottom: 20px;">
-        Track changes in expense rates over time. The profit analysis report uses historical expense data to calculate accurate profits for each order based on the costs that were active at the time.
-    </p>
+    <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle"></i> Track changes in expense rates over time. The profit analysis report uses historical expense data to calculate accurate profits for each order based on the costs that were active at the time.
+    </div>
 
     <div th:if="${#lists.isEmpty(expenseHistory)}" style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
         <i class="fas fa-info-circle" style="font-size: 3rem; color: #6c757d;"></i>

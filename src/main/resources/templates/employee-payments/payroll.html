@@ -15,10 +15,17 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <h1 style="margin-bottom: 20px;">Payroll Calculator</h1>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-calculator"></i> Payroll Calculator</h1>
+        <div class="header-actions">
+            <a th:href="@{/employee-payments}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
     <!-- Employee Selection & Date Range Filter -->
-    <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+    <div class="card-info">
         <form method="get" th:action="@{/employee-payments/payroll}" id="filterForm">
             <div class="row align-items-end">
                 <div class="col-md-3">
@@ -40,10 +47,10 @@
                     <input type="date" name="endDate" class="form-control" th:value="${endDate}"/>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary" style="margin-right: 8px;">
+                    <button type="submit" class="btn-primary-custom" style="margin-right: 8px;">
                         <i class="fas fa-filter"></i> Filter
                     </button>
-                    <a th:href="@{/employee-payments/payroll}" class="btn btn-secondary">Clear</a>
+                    <a th:href="@{/employee-payments/payroll}" class="btn-secondary-custom">Clear</a>
                 </div>
             </div>
         </form>

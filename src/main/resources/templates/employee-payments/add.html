@@ -15,14 +15,25 @@
 
 <div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
 
-    <h1 style="margin-bottom: 20px;">Make Employee Payment</h1>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-hand-holding-usd"></i> Make Employee Payment</h1>
+        <div class="header-actions">
+            <a th:href="@{/employee-payments}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
     <!-- Messages -->
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+    </div>
 
     <!-- Employee Selection (if not selected) -->
-    <div th:if="${selectedEmployee == null}" style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+    <div th:if="${selectedEmployee == null}" class="card-info">
         <form method="get" th:action="@{/employee-payments/add}">
             <label style="display: block; margin-bottom: 8px; font-weight: 600;">Select Employee</label>
             <div style="display: flex; gap: 12px;">
@@ -30,7 +41,7 @@
                     <option value="">-- Select Employee --</option>
                     <option th:each="emp : ${employees}" th:value="${emp.id}" th:text="${emp.name}"></option>
                 </select>
-                <button type="submit" class="btn btn-primary">Continue</button>
+                <button type="submit" class="btn-primary-custom">Continue</button>
             </div>
         </form>
     </div>
@@ -104,7 +115,7 @@
                         <textarea name="notes" class="form-control" rows="3" placeholder="Add any additional notes about this payment..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg btn-block" style="font-size: 16px;">
+                    <button type="submit" class="btn-success-custom" style="width: 100%; font-size: 16px;">
                         <i class="fas fa-check-circle"></i> Create Payment
                     </button>
                 </form>
@@ -153,7 +164,7 @@
         </div>
 
         <div>
-            <a th:href="@{/employee-payments/payroll(employeeId=${selectedEmployee.id})}" class="btn btn-secondary">
+            <a th:href="@{/employee-payments/payroll(employeeId=${selectedEmployee.id})}" class="btn-secondary-custom">
                 <i class="fas fa-arrow-left"></i> Back to Payroll
             </a>
         </div>

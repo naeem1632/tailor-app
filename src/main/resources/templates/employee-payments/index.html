@@ -15,15 +15,17 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">Employee Payment Records</h1>
-        <a th:href="@{/employee-payments/payroll}" class="btn btn-success">
-            <i class="fas fa-calculator"></i> Payroll Calculator
-        </a>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-money-check-alt"></i> Employee Payment Records</h1>
+        <div class="header-actions">
+            <a th:href="@{/employee-payments/payroll}" class="btn-success-custom">
+                <i class="fas fa-calculator"></i> Payroll Calculator
+            </a>
+        </div>
     </div>
 
     <!-- Filter Section -->
-    <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+    <div class="card-info">
         <form method="get" th:action="@{/employee-payments}">
             <div class="row align-items-end">
                 <div class="col-md-4">
@@ -46,16 +48,20 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                    <a th:href="@{/employee-payments}" class="btn btn-secondary" style="margin-left: 8px;">Clear</a>
+                    <button type="submit" class="btn-primary-custom">Filter</button>
+                    <a th:href="@{/employee-payments}" class="btn-secondary-custom" style="margin-left: 8px;">Clear</a>
                 </div>
             </div>
         </form>
     </div>
 
     <!-- Messages -->
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+    </div>
 
     <!-- Payments Table -->
     <table class="table">

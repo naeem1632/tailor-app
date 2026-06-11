@@ -16,11 +16,22 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <h1 style="margin-bottom: 20px;">Assign Work to Employees</h1>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-tasks"></i> Assign Work to Employees</h1>
+        <div class="header-actions">
+            <a th:href="@{/work-assignments}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
     <!-- Messages -->
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+    </div>
 
     <!-- Validation Error Container (for JavaScript validation errors) -->
     <div id="validationErrorContainer" class="alert alert-danger" role="alert" style="display: none;">
@@ -31,7 +42,7 @@
     </div>
 
     <!-- Order Details Card -->
-    <div style="background: #f0f4f8; border-left: 4px solid #007bff; border-radius: 4px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="card-info" style="border-left: 4px solid #17a2b8;">
         <div style="display: flex; align-items: center; gap: 20px;">
             <div style="background: #007bff; color: white; border-radius: 4px; padding: 8px 16px;">
                 <div style="font-size: 11px; opacity: 0.9;">Order</div>
@@ -86,11 +97,21 @@
         </div>
     </div>
 
+    <!-- Available Quantities Summary -->
+    <div class="card-info" style="border-left: 4px solid #28a745; margin-top: 16px;">
+        <h5 style="margin: 0 0 12px 0; color: #28a745; font-size: 15px;">
+            <i class="fas fa-clipboard-check"></i> Available for Assignment
+        </h5>
+        <div id="availableQuantitiesSummary" style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px;">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
     <div class="row">
         <!-- Assign New Work Form -->
         <div class="col-md-4">
-            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 8px;">
+            <div class="card-standard">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;">
                     <span th:if="${editMode == null || !editMode}">Assign Work to Employee</span>
                     <span th:if="${editMode != null && editMode}">Edit Work Assignment</span>
                 </h4>
@@ -433,33 +454,33 @@
                                         <label style="font-size: 12px; font-weight: 600; margin-bottom: 8px; display: block;">Select Embellishment Type & Items with Quantity:</label>
                                         <div style="border: 1px solid #ced4da; border-radius: 4px; padding: 10px; background: #fff;">
                                             <!-- Matel -->
-                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                            <div id="embellishment_matel_row" style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="MATEL" value="KAMEEZ" id="embellishment_matel" style="margin: 0;"/>
-                                                <label for="embellishment_matel" style="font-size: 13px; margin: 0; flex: 1;">Matel (Kameez)</label>
+                                                <label for="embellishment_matel" style="font-size: 13px; margin: 0; flex: 1;">Matel (Kameez) <span id="embellishment_matel_info" style="color: #dc3545; font-style: italic; display: none;">- Not in order</span></label>
                                                 <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="KAMEEZ" data-embellishment="MATEL" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                             <!-- Tich -->
-                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                            <div id="embellishment_tich_row" style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="TICH" value="KAMEEZ" id="embellishment_tich" style="margin: 0;"/>
-                                                <label for="embellishment_tich" style="font-size: 13px; margin: 0; flex: 1;">Tich (Kameez)</label>
+                                                <label for="embellishment_tich" style="font-size: 13px; margin: 0; flex: 1;">Tich (Kameez) <span id="embellishment_tich_info" style="color: #dc3545; font-style: italic; display: none;">- Not in order</span></label>
                                                 <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="KAMEEZ" data-embellishment="TICH" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                             <!-- Kanta -->
-                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                            <div id="embellishment_kanta_row" style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="KANTA" value="SHALWAR" id="embellishment_kanta" style="margin: 0;"/>
-                                                <label for="embellishment_kanta" style="font-size: 13px; margin: 0; flex: 1;">Kanta (Shalwar)</label>
+                                                <label for="embellishment_kanta" style="font-size: 13px; margin: 0; flex: 1;">Kanta (Shalwar) <span id="embellishment_kanta_info" style="color: #dc3545; font-style: italic; display: none;">- Not in order</span></label>
                                                 <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="SHALWAR" data-embellishment="KANTA" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                             <!-- Jali -->
-                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                            <div id="embellishment_jali_row" style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="JALI" value="SHALWAR" id="embellishment_jali" style="margin: 0;"/>
-                                                <label for="embellishment_jali" style="font-size: 13px; margin: 0; flex: 1;">Jali (Shalwar)</label>
+                                                <label for="embellishment_jali" style="font-size: 13px; margin: 0; flex: 1;">Jali (Shalwar) <span id="embellishment_jali_info" style="color: #dc3545; font-style: italic; display: none;">- Not in order</span></label>
                                                 <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="SHALWAR" data-embellishment="JALI" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                             <!-- Krhai -->
-                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div id="embellishment_krhai_row" style="display: flex; align-items: center; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-embellishment-checkbox" data-work-type="EMBELLISHMENT" data-embellishment="KRHAI" value="KAMEEZ" id="embellishment_krhai" style="margin: 0;"/>
-                                                <label for="embellishment_krhai" style="font-size: 13px; margin: 0; flex: 1;">Krhai (Kameez)</label>
+                                                <label for="embellishment_krhai" style="font-size: 13px; margin: 0; flex: 1;">Krhai (Kameez) <span id="embellishment_krhai_info" style="color: #dc3545; font-style: italic; display: none;">- Not in order</span></label>
                                                 <input type="number" class="form-control form-control-sm batch-embellishment-quantity" data-item="KAMEEZ" data-embellishment="KRHAI" data-work-type="EMBELLISHMENT" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                         </div>
@@ -492,11 +513,11 @@
                     <thead>
                     <tr>
                         <th style="width: 12%;">Date</th>
+                        <th style="width: 10%;">Order Info</th>
                         <th style="width: 15%;">Employee</th>
                         <th style="width: 13%;">Work Type</th>
                         <th style="width: 12%;">Item</th>
                         <th style="width: 7%;">Qty</th>
-                        <th style="width: 10%;">Order Info</th>
                         <th style="width: 10%;">Amount</th>
                         <th style="width: 11%;">Status</th>
                         <th style="width: 10%;">Actions</th>
@@ -509,6 +530,11 @@
                             <div th:if="${assignment.assignedTime != null}" style="font-size: 10px; color: #666;"
                                  th:text="${#temporals.format(assignment.assignedTime, 'hh:mm a')}"></div>
                         </td>
+                        <td style="font-size: 11px; color: #666;">
+                            <div>Order #<span th:text="${assignment.payment.id}" style="font-weight: 600;"></span></div>
+                            <div th:text="${assignment.payment.client.name}" style="font-size: 10px;"></div>
+                            <div th:text="${#temporals.format(assignment.payment.date, 'dd MMM')}" style="font-size: 10px;"></div>
+                        </td>
                         <td th:text="${assignment.employee.name}" style="font-size: 12px;"></td>
                         <td th:text="${assignment.workType}" style="font-size: 12px;"></td>
                         <td>
@@ -518,11 +544,6 @@
                                   style="color: #6c757d; font-size: 10px;" th:text="' (' + ${assignment.embellishmentType} + ')'"></span>
                         </td>
                         <td th:text="${assignment.assignedCount}" style="font-size: 12px;"></td>
-                        <td style="font-size: 11px; color: #666;">
-                            <div>Order #<span th:text="${assignment.payment.id}" style="font-weight: 600;"></span></div>
-                            <div th:text="${assignment.payment.client.name}" style="font-size: 10px;"></div>
-                            <div th:text="${#temporals.format(assignment.payment.date, 'dd MMM')}" style="font-size: 10px;"></div>
-                        </td>
                         <td style="font-size: 12px;">Rs. <span th:text="${#numbers.formatInteger(assignment.totalAmount, 0, 'COMMA')}"></span></td>
                         <td>
                             <span th:if="${assignment.status == 'ASSIGNED'}"
@@ -576,8 +597,8 @@
             <h3>⚠ Confirm Deletion</h3>
             <p>Are you sure you want to delete this work assignment?</p>
             <div class="modal-actions">
-                <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
-                <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn-danger-custom">Yes, Delete</button>
+                <button id="cancelDeleteBtn" class="btn-secondary-custom">Cancel</button>
             </div>
         </div>
     </div>
@@ -626,6 +647,12 @@
     /*[/]*/
 
     $(document).ready(function() {
+        // Calculate and display available quantities
+        updateAvailableQuantitiesSummary();
+
+        // Disable embellishment checkboxes if not in order
+        disableUnavailableEmbellishments();
+
         // Initialize Select2 with custom template
         $('.select2-employee').select2({
             placeholder: '-- Select Employee --',
@@ -841,16 +868,66 @@
         document.getElementById('validationErrorContainer').style.display = 'none';
     }
 
-    // Validate quantities against order
-    function validateQuantities(workTypes, itemTypes, quantities, embellishmentTypes) {
-        // Calculate already assigned quantities from existing assignments
-        const alreadyAssigned = {
-            dress: 0,
+    // Disable embellishment checkboxes if not in order
+    function disableUnavailableEmbellishments() {
+        const embellishments = [
+            { type: 'MATEL', quantity: orderQuantities.withMatel },
+            { type: 'TICH', quantity: orderQuantities.withTich },
+            { type: 'KANTA', quantity: orderQuantities.withKanta },
+            { type: 'JALI', quantity: orderQuantities.withJali },
+            { type: 'KRHAI', quantity: orderQuantities.withKrhai }
+        ];
+
+        embellishments.forEach(emb => {
+            const checkbox = document.getElementById('embellishment_' + emb.type.toLowerCase());
+            const infoSpan = document.getElementById('embellishment_' + emb.type.toLowerCase() + '_info');
+            const row = document.getElementById('embellishment_' + emb.type.toLowerCase() + '_row');
+
+            if (emb.quantity === 0) {
+                // Disable checkbox
+                checkbox.disabled = true;
+                checkbox.checked = false;
+
+                // Show info message
+                if (infoSpan) {
+                    infoSpan.style.display = 'inline';
+                }
+
+                // Gray out the entire row
+                if (row) {
+                    row.style.opacity = '0.5';
+                    row.style.cursor = 'not-allowed';
+                }
+            } else {
+                // Enable checkbox
+                checkbox.disabled = false;
+
+                // Hide info message
+                if (infoSpan) {
+                    infoSpan.style.display = 'none';
+                }
+
+                // Normal styling
+                if (row) {
+                    row.style.opacity = '1';
+                    row.style.cursor = 'default';
+                }
+            }
+        });
+    }
+
+    // Update available quantities summary
+    function updateAvailableQuantitiesSummary() {
+        // Calculate already assigned quantities - separate by work type
+        const alreadyCutStitched = {
             kameez: 0,
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0,
+            waistcoat: 0
+        };
+
+        const alreadyEmbellished = {
             matel: 0,
             tich: 0,
             kanta: 0,
@@ -858,32 +935,176 @@
             krhai: 0
         };
 
-        // Sum up existing assignments
         existingAssignments.forEach(assignment => {
             const workType = assignment.workType;
             const itemType = assignment.itemType.toLowerCase();
             const count = assignment.assignedCount;
             const embType = assignment.embellishmentType ? assignment.embellishmentType.toLowerCase() : '';
 
-            if (workType === 'EMBELLISHMENT' && embType) {
-                if (alreadyAssigned[embType] !== undefined) {
-                    alreadyAssigned[embType] += count;
+            if (workType === 'CUTTING' || workType === 'STITCHING') {
+                if (alreadyCutStitched[itemType] !== undefined) {
+                    alreadyCutStitched[itemType] += count;
                 }
-            } else {
-                if (alreadyAssigned[itemType] !== undefined) {
-                    alreadyAssigned[itemType] += count;
+            } else if (workType === 'EMBELLISHMENT' && embType) {
+                if (alreadyEmbellished[embType] !== undefined) {
+                    alreadyEmbellished[embType] += count;
                 }
             }
         });
 
-        // Calculate total quantities being assigned NOW (new assignments)
-        const newAssignments = {
+        // Calculate available quantities
+        const summaryHtml = [];
+
+        // Main items from order - show available for CUTTING/STITCHING
+        if (orderQuantities.dressCount > 0) {
+            const availableKameez = orderQuantities.dressCount - alreadyCutStitched.kameez;
+            const availableShalwar = orderQuantities.dressCount - alreadyCutStitched.shalwar;
+            const availablePajama = orderQuantities.dressCount - alreadyCutStitched.pajama;
+
+            summaryHtml.push(`<div style="background: ${availableKameez > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableKameez > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Kameez (Cut/Stitch):</strong> ${availableKameez} / ${orderQuantities.dressCount}
+            </div>`);
+
+            summaryHtml.push(`<div style="background: ${availableShalwar > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableShalwar > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Shalwar (Cut/Stitch):</strong> ${availableShalwar} / ${orderQuantities.dressCount}
+            </div>`);
+
+            summaryHtml.push(`<div style="background: ${availablePajama > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availablePajama > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Pajama (Cut/Stitch):</strong> ${availablePajama} / ${orderQuantities.dressCount}
+            </div>`);
+        }
+
+        if (orderQuantities.shirtCount > 0) {
+            const availableShirt = orderQuantities.shirtCount - alreadyCutStitched.shirt;
+            summaryHtml.push(`<div style="background: ${availableShirt > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableShirt > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Shirt (Cut/Stitch):</strong> ${availableShirt} / ${orderQuantities.shirtCount}
+            </div>`);
+        }
+
+        if (orderQuantities.waistcoatCount > 0) {
+            const availableWaistcoat = orderQuantities.waistcoatCount - alreadyCutStitched.waistcoat;
+            summaryHtml.push(`<div style="background: ${availableWaistcoat > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableWaistcoat > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Waistcoat (Cut/Stitch):</strong> ${availableWaistcoat} / ${orderQuantities.waistcoatCount}
+            </div>`);
+        }
+
+        // Embellishments
+        if (orderQuantities.withMatel > 0) {
+            const availableMatel = orderQuantities.withMatel - alreadyEmbellished.matel;
+            summaryHtml.push(`<div style="background: ${availableMatel > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableMatel > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Matel:</strong> ${availableMatel} / ${orderQuantities.withMatel}
+            </div>`);
+        }
+
+        if (orderQuantities.withTich > 0) {
+            const availableTich = orderQuantities.withTich - alreadyEmbellished.tich;
+            summaryHtml.push(`<div style="background: ${availableTich > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableTich > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Tich:</strong> ${availableTich} / ${orderQuantities.withTich}
+            </div>`);
+        }
+
+        if (orderQuantities.withKanta > 0) {
+            const availableKanta = orderQuantities.withKanta - alreadyEmbellished.kanta;
+            summaryHtml.push(`<div style="background: ${availableKanta > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableKanta > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Kanta:</strong> ${availableKanta} / ${orderQuantities.withKanta}
+            </div>`);
+        }
+
+        if (orderQuantities.withJali > 0) {
+            const availableJali = orderQuantities.withJali - alreadyEmbellished.jali;
+            summaryHtml.push(`<div style="background: ${availableJali > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableJali > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Jali:</strong> ${availableJali} / ${orderQuantities.withJali}
+            </div>`);
+        }
+
+        if (orderQuantities.withKrhai > 0) {
+            const availableKrhai = orderQuantities.withKrhai - alreadyEmbellished.krhai;
+            summaryHtml.push(`<div style="background: ${availableKrhai > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableKrhai > 0 ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Krhai:</strong> ${availableKrhai} / ${orderQuantities.withKrhai}
+            </div>`);
+        }
+
+        if (summaryHtml.length === 0) {
+            summaryHtml.push(`<div style="color: #666; font-style: italic;">No items in this order</div>`);
+        }
+
+        document.getElementById('availableQuantitiesSummary').innerHTML = summaryHtml.join('');
+    }
+
+    // Validate quantities against order
+    function validateQuantities(workTypes, itemTypes, quantities, embellishmentTypes) {
+        // Separate tracking for CUTTING/STITCHING vs FINISHING/EMBELLISHMENT
+        // CUTTING/STITCHING consume order quantities
+        // FINISHING/EMBELLISHMENT work on already cut/stitched items
+        const alreadyCutStitched = {
             dress: 0,
             kameez: 0,
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0,
+            waistcoat: 0
+        };
+
+        const alreadyFinished = {
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0
+        };
+
+        const alreadyEmbellished = {
+            matel: 0,
+            tich: 0,
+            kanta: 0,
+            jali: 0,
+            krhai: 0
+        };
+
+        // Sum up existing assignments by work type
+        existingAssignments.forEach(assignment => {
+            const workType = assignment.workType;
+            const itemType = assignment.itemType.toLowerCase();
+            const count = assignment.assignedCount;
+            const embType = assignment.embellishmentType ? assignment.embellishmentType.toLowerCase() : '';
+
+            if (workType === 'CUTTING' || workType === 'STITCHING') {
+                // Cutting and stitching consume order quantities
+                if (alreadyCutStitched[itemType] !== undefined) {
+                    alreadyCutStitched[itemType] += count;
+                }
+            } else if (workType === 'FINISHING') {
+                // Finishing works on cut/stitched items
+                if (alreadyFinished[itemType] !== undefined) {
+                    alreadyFinished[itemType] += count;
+                }
+            } else if (workType === 'EMBELLISHMENT' && embType) {
+                // Embellishment works on cut/stitched items
+                if (alreadyEmbellished[embType] !== undefined) {
+                    alreadyEmbellished[embType] += count;
+                }
+            }
+        });
+
+        // Calculate total quantities being assigned NOW (new assignments)
+        const newCutStitch = {
+            dress: 0,
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0
+        };
+
+        const newFinishing = {
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0
+        };
+
+        const newEmbellishment = {
             matel: 0,
             tich: 0,
             kanta: 0,
@@ -897,38 +1118,56 @@
             const quantity = quantities[i];
             const embellishmentType = embellishmentTypes[i];
 
-            if (workType === 'EMBELLISHMENT') {
-                // Embellishment quantities
-                const embType = embellishmentType.toLowerCase();
-                if (newAssignments[embType] !== undefined) {
-                    newAssignments[embType] += quantity;
-                }
-            } else {
-                // Regular item quantities
+            if (workType === 'CUTTING' || workType === 'STITCHING') {
                 const item = itemType.toLowerCase();
-                if (newAssignments[item] !== undefined) {
-                    newAssignments[item] += quantity;
+                if (newCutStitch[item] !== undefined) {
+                    newCutStitch[item] += quantity;
+                }
+            } else if (workType === 'FINISHING') {
+                const item = itemType.toLowerCase();
+                if (newFinishing[item] !== undefined) {
+                    newFinishing[item] += quantity;
+                }
+            } else if (workType === 'EMBELLISHMENT') {
+                const embType = embellishmentType.toLowerCase();
+                if (newEmbellishment[embType] !== undefined) {
+                    newEmbellishment[embType] += quantity;
                 }
             }
         }
 
-        // Calculate combined totals (already assigned + new assignments)
-        const totals = {
-            dress: alreadyAssigned.dress + newAssignments.dress,
-            kameez: alreadyAssigned.kameez + newAssignments.kameez,
-            shalwar: alreadyAssigned.shalwar + newAssignments.shalwar,
-            pajama: alreadyAssigned.pajama + newAssignments.pajama,
-            shirt: alreadyAssigned.shirt + newAssignments.shirt,
-            waistcoat: alreadyAssigned.waistcoat + newAssignments.waistcoat,
-            matel: alreadyAssigned.matel + newAssignments.matel,
-            tich: alreadyAssigned.tich + newAssignments.tich,
-            kanta: alreadyAssigned.kanta + newAssignments.kanta,
-            jali: alreadyAssigned.jali + newAssignments.jali,
-            krhai: alreadyAssigned.krhai + newAssignments.krhai
+        // Calculate combined totals
+        const totalCutStitch = {
+            dress: alreadyCutStitched.dress + newCutStitch.dress,
+            kameez: alreadyCutStitched.kameez + newCutStitch.kameez,
+            shalwar: alreadyCutStitched.shalwar + newCutStitch.shalwar,
+            pajama: alreadyCutStitched.pajama + newCutStitch.pajama,
+            shirt: alreadyCutStitched.shirt + newCutStitch.shirt,
+            waistcoat: alreadyCutStitched.waistcoat + newCutStitch.waistcoat
+        };
+
+        const totalFinishing = {
+            kameez: alreadyFinished.kameez + newFinishing.kameez,
+            shalwar: alreadyFinished.shalwar + newFinishing.shalwar,
+            pajama: alreadyFinished.pajama + newFinishing.pajama,
+            shirt: alreadyFinished.shirt + newFinishing.shirt,
+            waistcoat: alreadyFinished.waistcoat + newFinishing.waistcoat
+        };
+
+        const totalEmbellishment = {
+            matel: alreadyEmbellished.matel + newEmbellishment.matel,
+            tich: alreadyEmbellished.tich + newEmbellishment.tich,
+            kanta: alreadyEmbellished.kanta + newEmbellishment.kanta,
+            jali: alreadyEmbellished.jali + newEmbellishment.jali,
+            krhai: alreadyEmbellished.krhai + newEmbellishment.krhai
         };
 
         // Validate against order quantities
         const errors = [];
+
+        // ============================================
+        // PART 1: Validate CUTTING/STITCHING against ORDER quantities
+        // ============================================
 
         // For dress: each dress = 1 kameez + 1 shalwar
         const maxFromDress = {
@@ -937,66 +1176,108 @@
             pajama: orderQuantities.dressCount  // pajama can substitute shalwar
         };
 
-        // Check DRESS assignments
-        if (totals.dress > orderQuantities.dressCount) {
-            const available = orderQuantities.dressCount - alreadyAssigned.dress;
-            errors.push(`Cannot assign ${newAssignments.dress} dress(es). Only ${available} available (${alreadyAssigned.dress} already assigned, ${orderQuantities.dressCount} in order).`);
+        // Check DRESS cutting/stitching
+        if (totalCutStitch.dress > orderQuantities.dressCount) {
+            const available = orderQuantities.dressCount - alreadyCutStitched.dress;
+            errors.push(`Cannot cut/stitch ${newCutStitch.dress} dress(es). Only ${available} available (${alreadyCutStitched.dress} already cut/stitched, ${orderQuantities.dressCount} in order).`);
         }
 
-        // Check KAMEEZ assignments (from dress)
-        if (totals.kameez > maxFromDress.kameez) {
-            const available = maxFromDress.kameez - alreadyAssigned.kameez;
-            errors.push(`Cannot assign ${newAssignments.kameez} kameez. Only ${available} available (${alreadyAssigned.kameez} already assigned, ${maxFromDress.kameez} in order).`);
+        // Check KAMEEZ cutting/stitching (from dress)
+        if (totalCutStitch.kameez > maxFromDress.kameez) {
+            const available = maxFromDress.kameez - alreadyCutStitched.kameez;
+            errors.push(`Cannot cut/stitch ${newCutStitch.kameez} kameez. Only ${available} available (${alreadyCutStitched.kameez} already cut/stitched, ${maxFromDress.kameez} in order).`);
         }
 
-        // Check SHALWAR assignments (from dress)
-        if (totals.shalwar > maxFromDress.shalwar) {
-            const available = maxFromDress.shalwar - alreadyAssigned.shalwar;
-            errors.push(`Cannot assign ${newAssignments.shalwar} shalwar. Only ${available} available (${alreadyAssigned.shalwar} already assigned, ${maxFromDress.shalwar} in order).`);
+        // Check SHALWAR cutting/stitching (from dress)
+        if (totalCutStitch.shalwar > maxFromDress.shalwar) {
+            const available = maxFromDress.shalwar - alreadyCutStitched.shalwar;
+            errors.push(`Cannot cut/stitch ${newCutStitch.shalwar} shalwar. Only ${available} available (${alreadyCutStitched.shalwar} already cut/stitched, ${maxFromDress.shalwar} in order).`);
         }
 
-        // Check PAJAMA assignments (from dress)
-        if (totals.pajama > maxFromDress.pajama) {
-            const available = maxFromDress.pajama - alreadyAssigned.pajama;
-            errors.push(`Cannot assign ${newAssignments.pajama} pajama. Only ${available} available (${alreadyAssigned.pajama} already assigned, ${maxFromDress.pajama} in order).`);
+        // Check PAJAMA cutting/stitching (from dress)
+        if (totalCutStitch.pajama > maxFromDress.pajama) {
+            const available = maxFromDress.pajama - alreadyCutStitched.pajama;
+            errors.push(`Cannot cut/stitch ${newCutStitch.pajama} pajama. Only ${available} available (${alreadyCutStitched.pajama} already cut/stitched, ${maxFromDress.pajama} in order).`);
         }
 
-        // Check SHIRT assignments
-        if (totals.shirt > orderQuantities.shirtCount) {
-            const available = orderQuantities.shirtCount - alreadyAssigned.shirt;
-            errors.push(`Cannot assign ${newAssignments.shirt} shirt(s). Only ${available} available (${alreadyAssigned.shirt} already assigned, ${orderQuantities.shirtCount} in order).`);
+        // Check SHALWAR + PAJAMA combined (both come from dress, cannot exceed dress count)
+        const totalShalwarPajama = totalCutStitch.shalwar + totalCutStitch.pajama;
+        if (totalShalwarPajama > orderQuantities.dressCount) {
+            const alreadyAssignedShalwarPajama = alreadyCutStitched.shalwar + alreadyCutStitched.pajama;
+            const available = orderQuantities.dressCount - alreadyAssignedShalwarPajama;
+            errors.push(`Cannot assign ${newCutStitch.shalwar} shalwar + ${newCutStitch.pajama} pajama. Combined total (${totalShalwarPajama}) exceeds dress count. Only ${available} available for shalwar/pajama combined (${alreadyAssignedShalwarPajama} already assigned, ${orderQuantities.dressCount} dresses in order).`);
         }
 
-        // Check WAISTCOAT assignments
-        if (totals.waistcoat > orderQuantities.waistcoatCount) {
-            const available = orderQuantities.waistcoatCount - alreadyAssigned.waistcoat;
-            errors.push(`Cannot assign ${newAssignments.waistcoat} waistcoat(s). Only ${available} available (${alreadyAssigned.waistcoat} already assigned, ${orderQuantities.waistcoatCount} in order).`);
+        // Check SHIRT cutting/stitching
+        if (totalCutStitch.shirt > orderQuantities.shirtCount) {
+            const available = orderQuantities.shirtCount - alreadyCutStitched.shirt;
+            errors.push(`Cannot cut/stitch ${newCutStitch.shirt} shirt(s). Only ${available} available (${alreadyCutStitched.shirt} already cut/stitched, ${orderQuantities.shirtCount} in order).`);
         }
 
-        // Check embellishment quantities
-        if (totals.matel > orderQuantities.withMatel) {
-            const available = orderQuantities.withMatel - alreadyAssigned.matel;
-            errors.push(`Cannot assign ${newAssignments.matel} Matel work(s). Only ${available} available (${alreadyAssigned.matel} already assigned, ${orderQuantities.withMatel} in order).`);
+        // Check WAISTCOAT cutting/stitching
+        if (totalCutStitch.waistcoat > orderQuantities.waistcoatCount) {
+            const available = orderQuantities.waistcoatCount - alreadyCutStitched.waistcoat;
+            errors.push(`Cannot cut/stitch ${newCutStitch.waistcoat} waistcoat(s). Only ${available} available (${alreadyCutStitched.waistcoat} already cut/stitched, ${orderQuantities.waistcoatCount} in order).`);
         }
 
-        if (totals.tich > orderQuantities.withTich) {
-            const available = orderQuantities.withTich - alreadyAssigned.tich;
-            errors.push(`Cannot assign ${newAssignments.tich} Tich work(s). Only ${available} available (${alreadyAssigned.tich} already assigned, ${orderQuantities.withTich} in order).`);
+        // ============================================
+        // PART 2: Validate FINISHING against CUT/STITCHED quantities
+        // ============================================
+
+        // Finishing can only be done on items that have been cut/stitched
+        if (totalFinishing.kameez > totalCutStitch.kameez) {
+            const available = totalCutStitch.kameez - alreadyFinished.kameez;
+            errors.push(`Cannot finish ${newFinishing.kameez} kameez. Only ${available} available for finishing (${totalCutStitch.kameez} cut/stitched, ${alreadyFinished.kameez} already finished).`);
         }
 
-        if (totals.kanta > orderQuantities.withKanta) {
-            const available = orderQuantities.withKanta - alreadyAssigned.kanta;
-            errors.push(`Cannot assign ${newAssignments.kanta} Kanta work(s). Only ${available} available (${alreadyAssigned.kanta} already assigned, ${orderQuantities.withKanta} in order).`);
+        if (totalFinishing.shalwar > totalCutStitch.shalwar) {
+            const available = totalCutStitch.shalwar - alreadyFinished.shalwar;
+            errors.push(`Cannot finish ${newFinishing.shalwar} shalwar. Only ${available} available for finishing (${totalCutStitch.shalwar} cut/stitched, ${alreadyFinished.shalwar} already finished).`);
         }
 
-        if (totals.jali > orderQuantities.withJali) {
-            const available = orderQuantities.withJali - alreadyAssigned.jali;
-            errors.push(`Cannot assign ${newAssignments.jali} Jali work(s). Only ${available} available (${alreadyAssigned.jali} already assigned, ${orderQuantities.withJali} in order).`);
+        if (totalFinishing.pajama > totalCutStitch.pajama) {
+            const available = totalCutStitch.pajama - alreadyFinished.pajama;
+            errors.push(`Cannot finish ${newFinishing.pajama} pajama. Only ${available} available for finishing (${totalCutStitch.pajama} cut/stitched, ${alreadyFinished.pajama} already finished).`);
         }
 
-        if (totals.krhai > orderQuantities.withKrhai) {
-            const available = orderQuantities.withKrhai - alreadyAssigned.krhai;
-            errors.push(`Cannot assign ${newAssignments.krhai} Krhai work(s). Only ${available} available (${alreadyAssigned.krhai} already assigned, ${orderQuantities.withKrhai} in order).`);
+        if (totalFinishing.shirt > totalCutStitch.shirt) {
+            const available = totalCutStitch.shirt - alreadyFinished.shirt;
+            errors.push(`Cannot finish ${newFinishing.shirt} shirt(s). Only ${available} available for finishing (${totalCutStitch.shirt} cut/stitched, ${alreadyFinished.shirt} already finished).`);
+        }
+
+        if (totalFinishing.waistcoat > totalCutStitch.waistcoat) {
+            const available = totalCutStitch.waistcoat - alreadyFinished.waistcoat;
+            errors.push(`Cannot finish ${newFinishing.waistcoat} waistcoat(s). Only ${available} available for finishing (${totalCutStitch.waistcoat} cut/stitched, ${alreadyFinished.waistcoat} already finished).`);
+        }
+
+        // ============================================
+        // PART 3: Validate EMBELLISHMENT against ORDER quantities
+        // ============================================
+
+        // Embellishment quantities come from the order itself (withMatel, withTich, etc.)
+        if (totalEmbellishment.matel > orderQuantities.withMatel) {
+            const available = orderQuantities.withMatel - alreadyEmbellished.matel;
+            errors.push(`Cannot assign ${newEmbellishment.matel} Matel work(s). Only ${available} available (${alreadyEmbellished.matel} already assigned, ${orderQuantities.withMatel} in order).`);
+        }
+
+        if (totalEmbellishment.tich > orderQuantities.withTich) {
+            const available = orderQuantities.withTich - alreadyEmbellished.tich;
+            errors.push(`Cannot assign ${newEmbellishment.tich} Tich work(s). Only ${available} available (${alreadyEmbellished.tich} already assigned, ${orderQuantities.withTich} in order).`);
+        }
+
+        if (totalEmbellishment.kanta > orderQuantities.withKanta) {
+            const available = orderQuantities.withKanta - alreadyEmbellished.kanta;
+            errors.push(`Cannot assign ${newEmbellishment.kanta} Kanta work(s). Only ${available} available (${alreadyEmbellished.kanta} already assigned, ${orderQuantities.withKanta} in order).`);
+        }
+
+        if (totalEmbellishment.jali > orderQuantities.withJali) {
+            const available = orderQuantities.withJali - alreadyEmbellished.jali;
+            errors.push(`Cannot assign ${newEmbellishment.jali} Jali work(s). Only ${available} available (${alreadyEmbellished.jali} already assigned, ${orderQuantities.withJali} in order).`);
+        }
+
+        if (totalEmbellishment.krhai > orderQuantities.withKrhai) {
+            const available = orderQuantities.withKrhai - alreadyEmbellished.krhai;
+            errors.push(`Cannot assign ${newEmbellishment.krhai} Krhai work(s). Only ${available} available (${alreadyEmbellished.krhai} already assigned, ${orderQuantities.withKrhai} in order).`);
         }
 
         return errors;

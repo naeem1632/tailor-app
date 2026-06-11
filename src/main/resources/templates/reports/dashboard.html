@@ -12,12 +12,13 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
         }
 
         .dashboard-container {
             max-width: 900px;
-            margin: 50px auto;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .page-header {
@@ -117,6 +118,9 @@
     </style>
 </head>
 <body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
     <div class="dashboard-container">
         <div class="page-header">
             <h1><i class="fas fa-chart-bar"></i> Reports Dashboard</h1>

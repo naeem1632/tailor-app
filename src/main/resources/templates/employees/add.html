@@ -15,13 +15,20 @@
 
 <div class="container-fluid" style="padding-top: 24px; max-width: 800px;">
 
-    <h1 style="margin-bottom: 20px;">Add New Employee</h1>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-user-plus"></i> Add New Employee</h1>
+        <div class="header-actions">
+            <a th:href="@{/employees}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
     <form th:action="@{/employees/add}" th:object="${employee}" method="post">
 
         <!-- Personal Information -->
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
-            <h4 style="margin-top: 0;">Personal Information</h4>
+        <div class="card-info">
+            <h4 style="margin-top: 0;"><i class="fas fa-user-circle"></i> Personal Information</h4>
 
             <div class="form-group" style="margin-bottom: 16px;">
                 <label for="name" style="font-weight: 600;">Name <span style="color: red;">*</span></label>
@@ -70,8 +77,8 @@
         </div>
 
         <!-- Skills/Capabilities -->
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
-            <h4 style="margin-top: 0;">Skills & Capabilities</h4>
+        <div class="card-info">
+            <h4 style="margin-top: 0;"><i class="fas fa-cogs"></i> Skills & Capabilities</h4>
             <p style="color: #666; font-size: 14px;">Select all that apply:</p>
 
             <div class="row">
@@ -103,8 +110,8 @@
         </div>
 
         <!-- Payment Settings -->
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
-            <h4 style="margin-top: 0;">Payment Settings</h4>
+        <div class="card-info">
+            <h4 style="margin-top: 0;"><i class="fas fa-money-bill-wave"></i> Payment Settings</h4>
 
             <div class="form-group" style="margin-bottom: 16px;">
                 <label for="paymentFrequency" style="font-weight: 600;">Payment Frequency</label>
@@ -125,10 +132,12 @@
 
         <!-- Buttons -->
         <div style="margin-top: 20px;">
-            <button type="submit" class="add-btn">
+            <button type="submit" class="btn-success-custom">
                 <i class="fas fa-save"></i> Save Employee
             </button>
-            <a th:href="@{/employees}" class="btn btn-secondary" style="margin-left: 12px;">Cancel</a>
+            <a th:href="@{/employees}" class="btn-secondary-custom" style="margin-left: 12px;">
+                <i class="fas fa-times"></i> Cancel
+            </a>
         </div>
 
     </form>

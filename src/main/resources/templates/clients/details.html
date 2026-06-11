@@ -46,15 +46,15 @@
 
 <div class="container-fluid" style="padding-top: 20px;">
 
-<h1><i class="fas fa-user-circle"></i> Client Details</h1>
-
-<div class="toolbar-3">
-    <div class="toolbar-left">
-        <a href="/clients" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Clients</a>
-        <a th:href="@{'/clients/view/' + ${client.id}}" class="btn btn-primary">
+<!-- Page Header -->
+<div class="page-header-standard">
+    <h1><i class="fas fa-user-circle"></i> Client Details</h1>
+    <div class="header-actions">
+        <a href="/clients" class="btn-secondary-custom"><i class="fas fa-arrow-left"></i> Back to Clients</a>
+        <a th:href="@{'/clients/view/' + ${client.id}}" class="btn-primary-custom">
             <i class="fas fa-ruler"></i> View Measurements
         </a>
-        <a th:href="@{'/payments/client/' + ${client.id}}" class="btn btn-success">
+        <a th:href="@{'/payments/client/' + ${client.id}}" class="btn-success-custom">
             <i class="fas fa-money-bill-wave"></i> Manage Payments
         </a>
     </div>

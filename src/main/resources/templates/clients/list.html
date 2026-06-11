@@ -9,25 +9,6 @@
     <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-    <style>
-        /* Different colors for action buttons */
-        .btn-edit {
-            background-color: #007bff !important;
-            color: white !important;
-        }
-        .btn-view-client {
-            background-color: #17a2b8 !important;
-            color: white !important;
-        }
-        .btn-measure {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
-        .btn-payment {
-            background-color: #ff8c00 !important;
-            color: white !important;
-        }
-    </style>
 </head>
 <body>
 
@@ -36,13 +17,18 @@
 
 <div class="container-fluid" style="padding-top: 20px;">
 
-<h1>All Clients</h1>
+<!-- Page Header -->
+<div class="page-header-standard">
+    <h1><i class="fas fa-users"></i> All Clients</h1>
+    <div class="header-actions">
+        <button class="btn-success-custom" onclick="openModal()">
+            <i class="fas fa-user-plus"></i> Add Client
+        </button>
+    </div>
+</div>
 
 <!-- TOOLBAR -->
 <div class="toolbar-3">
-    <div class="toolbar-left">
-        <button class="add-btn" onclick="openModal()">Add Client</button>
-    </div>
 
     <div class="toolbar-center">
         <form th:action="@{/clients}" method="get" class="search-form">
@@ -75,16 +61,16 @@
         <td><img th:if="${c.pictureFilename}" th:src="@{${c.pictureFilename}}" alt="pic"/></td>
         <td>
             <a href="javascript:void(0)"
-               class="btn-action btn-edit"
+               class="btn-action-edit"
                th:attr="data-id=${c.id},
                   data-name=${c.name},
                   data-mobile=${c.mobile},
                   data-whatsapp=${c.whatsAppNo},
                   data-address=${c.address}"
-               onclick="openModalFromRow(this)">Edit</a>
-            <a th:href="@{'/clients/details/' + ${c.id}}" class="btn-action btn-view-client">View Client</a>
-            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action btn-payment" target="_blank">Payments</a>
-            <a th:href="@{'/clients/view/' + ${c.id}}" class="btn-action btn-measure" target="_blank">Measurements</a>
+               onclick="openModalFromRow(this)"><i class="fas fa-edit"></i> Edit</a>
+            <a th:href="@{'/clients/details/' + ${c.id}}" class="btn-action-view"><i class="fas fa-eye"></i> View</a>
+            <a th:href="@{'/payments/client/' + ${c.id}}" class="btn-action-secondary" target="_blank"><i class="fas fa-money-bill-wave"></i> Payments</a>
+            <a th:href="@{'/clients/view/' + ${c.id}}" class="btn-action-view" target="_blank"><i class="fas fa-ruler"></i> Measure</a>
         </td>
     </tr>
     </tbody>
@@ -163,7 +149,7 @@
         <h3 id="warningTitle">⚠ Warning</h3>
         <p>Please enter a mobile number first</p>
         <div class="modal-actions">
-            <button id="closeWarningBtn" class="btn-secondary" aria-label="Close warning">OK</button>
+            <button id="closeWarningBtn" class="btn-secondary-custom" aria-label="Close warning">OK</button>
         </div>
     </div>
 </div>
@@ -174,7 +160,7 @@
         <h3 id="cameraErrorTitle">⚠ Camera Error</h3>
         <p id="cameraErrorMessage">Unable to access camera</p>
         <div class="modal-actions">
-            <button id="closeCameraErrorBtn" class="btn-secondary" aria-label="Close error">OK</button>
+            <button id="closeCameraErrorBtn" class="btn-secondary-custom" aria-label="Close error">OK</button>
         </div>
     </div>
 </div>

@@ -15,11 +15,13 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">Work-in-Progress Summary</h1>
-        <a th:href="@{/work-assignments}" class="btn btn-secondary">
-            <i class="fas fa-list"></i> All Assignments
-        </a>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-tasks"></i> Work-in-Progress Summary</h1>
+        <div class="header-actions">
+            <a th:href="@{/work-assignments}" class="btn-secondary-custom">
+                <i class="fas fa-list"></i> All Assignments
+            </a>
+        </div>
     </div>
 
     <!-- Summary Cards -->
@@ -62,7 +64,7 @@
     </div>
 
     <!-- Assigned Work -->
-    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+    <div class="card-standard">
         <h4 style="margin-top: 0; border-bottom: 2px solid #ffc107; padding-bottom: 8px;">
             Assigned Work (<span th:text="${summary.assignedCount}"></span>)
         </h4>

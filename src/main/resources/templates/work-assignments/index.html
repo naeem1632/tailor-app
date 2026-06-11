@@ -15,15 +15,18 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">Work Assignments</h1>
-        <a th:href="@{/work-assignments/wip-summary}" class="btn btn-info">
-            <i class="fas fa-chart-bar"></i> WIP Summary
-        </a>
+    <!-- Page Header -->
+    <div class="page-header-standard">
+        <h1><i class="fas fa-tasks"></i> Work Assignments</h1>
+        <div class="header-actions">
+            <a th:href="@{/work-assignments/wip-summary}" class="btn-info-custom">
+                <i class="fas fa-chart-bar"></i> WIP Summary
+            </a>
+        </div>
     </div>
 
     <!-- Filter Section -->
-    <div style="background: #f8f9fa; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+    <div class="card-info">
         <form method="get" th:action="@{/work-assignments}">
             <div class="row align-items-end">
                 <div class="col-md-3">
@@ -55,10 +58,10 @@
                     <input type="date" name="endDate" class="form-control" th:value="${endDate}"/>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn-primary-custom">
                         <i class="fas fa-filter"></i> Filter
                     </button>
-                    <a th:href="@{/work-assignments}" class="btn btn-secondary" style="margin-left: 8px;">
+                    <a th:href="@{/work-assignments}" class="btn-secondary-custom" style="margin-left: 8px;">
                         <i class="fas fa-times"></i> Clear
                     </a>
                 </div>

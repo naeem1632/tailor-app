@@ -9,11 +9,6 @@
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
-        /* Different colors for action buttons */
-        .btn-measure {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
         .summary-section {
             background-color: #f8f9fa;
             border: 2px solid #dee2e6;
@@ -57,11 +52,11 @@
 
 <div class="container-fluid" style="padding-top: 20px;">
 
-<h1><i class="fas fa-exclamation-circle"></i> Pending Payments</h1>
-
-<div class="toolbar-3">
-    <div class="toolbar-left">
-        <a href="/clients" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Clients</a>
+<!-- Page Header -->
+<div class="page-header-standard">
+    <h1><i class="fas fa-exclamation-circle"></i> Pending Payments</h1>
+    <div class="header-actions">
+        <a href="/clients" class="btn-secondary-custom"><i class="fas fa-arrow-left"></i> Back to Clients</a>
     </div>
 </div>
 
@@ -95,8 +90,8 @@
             th:style="${payment.paymentStatus == 'Paid' ? 'color:green;' :
                       (payment.paymentStatus == 'Partial' ? 'color:orange;' : 'color:red;')}"></td>
         <td>
-            <a th:href="@{'/clients/details/' + ${payment.client.id}}" class="btn-action btn-measure">
-                View Client
+            <a th:href="@{'/clients/details/' + ${payment.client.id}}" class="btn btn-sm btn-info">
+                <i class="fas fa-eye"></i> View Client
             </a>
         </td>
     </tr>

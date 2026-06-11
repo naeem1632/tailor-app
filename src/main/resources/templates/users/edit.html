@@ -15,18 +15,27 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <div style="margin-bottom: 20px;">
-        <h1><i class="fas fa-edit"></i> Edit User</h1>
+    <div class="page-header-standard">
+        <h1><i class="fas fa-user-edit"></i> Edit User</h1>
+        <div class="header-actions">
+            <a th:href="@{/users}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
     </div>
 
     <!-- Messages -->
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+    </div>
 
     <div style="max-width: 800px;">
         <!-- User Info Form -->
-        <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
-            <h5 style="margin-bottom: 16px; border-bottom: 2px solid #007bff; padding-bottom: 8px;">
+        <div class="card-standard">
+            <h5 style="margin-bottom: 16px; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;">
                 <i class="fas fa-user-edit"></i> User Information
             </h5>
             <form th:action="@{/users/edit/{id}(id=${user.id})}" method="post">
@@ -69,17 +78,17 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn-success-custom">
                     <i class="fas fa-save"></i> Save Changes
                 </button>
-                <a th:href="@{/users}" class="btn btn-secondary" style="margin-left: 8px;">
+                <a th:href="@{/users}" class="btn-secondary-custom" style="margin-left: 8px;">
                     <i class="fas fa-arrow-left"></i> Back to Users
                 </a>
             </form>
         </div>
 
         <!-- Change Password Form -->
-        <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <div class="card-standard">
             <h5 style="margin-bottom: 16px; border-bottom: 2px solid #ffc107; padding-bottom: 8px;">
                 <i class="fas fa-key"></i> Change Password
             </h5>
@@ -102,14 +111,14 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-warning">
+                <button type="submit" class="btn-warning-custom">
                     <i class="fas fa-key"></i> Change Password
                 </button>
             </form>
         </div>
 
         <!-- User Status Info -->
-        <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div class="card-standard">
             <h5 style="margin-bottom: 16px; border-bottom: 2px solid #28a745; padding-bottom: 8px;">
                 <i class="fas fa-info-circle"></i> User Status
             </h5>

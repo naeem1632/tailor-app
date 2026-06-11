@@ -257,6 +257,19 @@ public class PaymentsService {
                 .sum();
     }
 
+    // Get order counts by date for the last N days
+    public java.util.Map<LocalDate, Long> getOrderCountsByDate(int days) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(days - 1);
+
+        return paymentsRepository.findAll().stream()
+                .filter(p -> p.getDate() != null && !p.getDate().isBefore(startDate) && !p.getDate().isAfter(endDate))
+                .collect(java.util.stream.Collectors.groupingBy(
+                        Payments::getDate,
+                        java.util.stream.Collectors.counting()
+                ));
+    }
+
     // ✅ WhatsApp Notification - Ready Status Management
 
     /**

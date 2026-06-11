@@ -4,10 +4,12 @@ import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.PaymentInstallment;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.model.PriceSettings;
+import com.example.tailorapp.model.WorkAssignment;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.PaymentsService;
 import com.example.tailorapp.service.PriceSettingsService;
 import com.example.tailorapp.service.WhatsAppService;
+import com.example.tailorapp.service.WorkAssignmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,13 +29,16 @@ public class PaymentsController {
     private final ClientService clientService;
     private final WhatsAppService whatsAppService;
     private final PriceSettingsService priceSettingsService;
+    private final WorkAssignmentService workAssignmentService;
 
     public PaymentsController(PaymentsService paymentsService, ClientService clientService,
-                              WhatsAppService whatsAppService, PriceSettingsService priceSettingsService) {
+                              WhatsAppService whatsAppService, PriceSettingsService priceSettingsService,
+                              WorkAssignmentService workAssignmentService) {
         this.paymentsService = paymentsService;
         this.clientService = clientService;
         this.whatsAppService = whatsAppService;
         this.priceSettingsService = priceSettingsService;
+        this.workAssignmentService = workAssignmentService;
     }
 
     /** Returns default rates as JSON for the Add Payment form pre-fill. */
@@ -90,6 +95,25 @@ public class PaymentsController {
         if (p.isEmpty()) return "redirect:/clients";
 
         Long clientId = p.get().getClient().getId();
+
+        // Check if there are any work assignments related to this payment
+        List<WorkAssignment> assignments = workAssignmentService.findByPayment(p.get());
+        if (!assignments.isEmpty()) {
+            // Build details message
+            StringBuilder details = new StringBuilder();
+            details.append("This order has ").append(assignments.size()).append(" work assignment(s):<br>");
+            for (WorkAssignment wa : assignments) {
+                details.append("• ").append(wa.getEmployee().getName())
+                       .append(" - ").append(wa.getWorkType())
+                       .append(" (").append(wa.getItemType()).append(") - ")
+                       .append(wa.getStatus()).append("<br>");
+            }
+            details.append("<br>Please delete or reassign these work assignments first.");
+
+            ra.addFlashAttribute("error", details.toString());
+            return "redirect:/payments/client/" + clientId;
+        }
+
         paymentsService.delete(id);
         ra.addFlashAttribute("message", "Payment deleted successfully");
         return "redirect:/payments/client/" + clientId;

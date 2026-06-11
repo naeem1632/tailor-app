@@ -8,71 +8,173 @@
     <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
     <style>
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
         }
+
+        /* Modern Metric Cards */
         .metric-card {
             border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.8) 100%);
         }
         .metric-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
+
+        /* Gradient Backgrounds for Cards */
+        .card-gradient-blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-gradient-orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .card-gradient-teal {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .card-gradient-green {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .card-gradient-purple {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .card-gradient-dark {
+            background: linear-gradient(135deg, #868f96 0%, #596164 100%);
+        }
+
         .metric-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin: 10px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 12px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .metric-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
         .metric-icon {
-            font-size: 1.8rem;
-            opacity: 0.8;
+            font-size: 2.5rem;
+            opacity: 0.9;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
+
+        /* Modern Item Counts */
         .item-counts {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
             margin-top: 30px;
-            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
         .item-counts h4 {
-            margin-bottom: 15px;
-            color: #495057;
+            margin-bottom: 20px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 1.1rem;
         }
         .count-item {
             display: inline-block;
-            margin: 0 30px;
-            font-size: 1.1rem;
+            margin: 0 20px;
+            font-size: 1rem;
+            padding: 12px 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .count-item:hover {
+            background: #edf2f7;
+            transform: scale(1.05);
         }
         .count-item .count-value {
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: #007bff;
+            font-weight: 700;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .chart-container h4 {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        /* Modern Action Cards */
         .action-card {
             border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
             cursor: pointer;
+            background: white;
+            overflow: hidden;
         }
         .action-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
         }
-        .page-title {
-            margin-top: 30px;
-            margin-bottom: 30px;
-            color: #333;
+        .action-card .card-body {
+            position: relative;
+        }
+        .action-card i {
+            transition: all 0.3s ease;
+        }
+        .action-card:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Page Header Enhancement */
+        .page-header-standard h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* View Button on Cards */
+        .metric-card .btn-light {
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .metric-card .btn-light:hover {
+            background: rgba(255,255,255,0.35);
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.05);
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -80,21 +182,22 @@
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <div class="container mt-4">
-    <h1 class="page-title text-center">
-        <i class="fas fa-tachometer-alt"></i> Stitch & Style Management Dashboard
-    </h1>
+    <!-- Page Header -->
+    <div class="page-header-standard">
+        <h1><i class="fas fa-tachometer-alt"></i> Stitch & Style Management Dashboard</h1>
+    </div>
 
     <!-- Metrics Cards Row 1 (Clickable) -->
-    <div class="row g-3 mb-3">
+    <div class="row g-4 mb-4">
         <!-- Total Clients -->
         <div class="col-md-4">
-            <div class="card metric-card bg-primary text-white">
-                <div class="card-body text-center py-3">
+            <div class="card metric-card card-gradient-blue text-white">
+                <div class="card-body text-center py-4">
                     <i class="fas fa-users metric-icon"></i>
                     <div class="metric-value" th:text="${totalClients}">0</div>
-                    <div class="metric-label text-white">Total Clients</div>
+                    <div class="metric-label">Total Clients</div>
                     <a href="/clients" class="btn btn-light btn-sm">
-                        <i class="fas fa-eye"></i> View
+                        <i class="fas fa-eye"></i> View All
                     </a>
                 </div>
             </div>
@@ -102,13 +205,13 @@
 
         <!-- Pending Payments -->
         <div class="col-md-4">
-            <div class="card metric-card bg-warning text-white">
-                <div class="card-body text-center py-3">
+            <div class="card metric-card card-gradient-orange text-white">
+                <div class="card-body text-center py-4">
                     <i class="fas fa-money-bill-wave metric-icon"></i>
                     <div class="metric-value" th:text="${pendingAmount}">0</div>
-                    <div class="metric-label text-white">Pending Payments</div>
+                    <div class="metric-label">Pending Payments</div>
                     <a href="/payments/pending" class="btn btn-light btn-sm">
-                        <i class="fas fa-eye"></i> View
+                        <i class="fas fa-eye"></i> View All
                     </a>
                 </div>
             </div>
@@ -116,13 +219,13 @@
 
         <!-- Due Returns -->
         <div class="col-md-4">
-            <div class="card metric-card bg-info text-white">
-                <div class="card-body text-center py-3">
+            <div class="card metric-card card-gradient-teal text-white">
+                <div class="card-body text-center py-4">
                     <i class="fas fa-calendar-check metric-icon"></i>
                     <div class="metric-value" th:text="${dueReturns}">0</div>
-                    <div class="metric-label text-white">Due Returns</div>
+                    <div class="metric-label">Due Returns</div>
                     <a href="/payments/due-returns" class="btn btn-light btn-sm">
-                        <i class="fas fa-eye"></i> View
+                        <i class="fas fa-eye"></i> View All
                     </a>
                 </div>
             </div>
@@ -130,37 +233,47 @@
     </div>
 
     <!-- Metrics Cards Row 2 (Non-Clickable) -->
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-4">
         <!-- In Production Orders -->
         <div class="col-md-4">
-            <div class="card metric-card" style="background-color: #fd7e14;">
-                <div class="card-body text-center text-white py-3">
+            <div class="card metric-card card-gradient-purple text-white">
+                <div class="card-body text-center py-4">
                     <i class="fas fa-cogs metric-icon"></i>
                     <div class="metric-value" th:text="${inProductionOrders}">0</div>
-                    <div class="metric-label text-white">In Production Orders</div>
+                    <div class="metric-label">In Production Orders</div>
                 </div>
             </div>
         </div>
 
         <!-- Ready Orders -->
         <div class="col-md-4">
-            <div class="card metric-card bg-success text-white">
-                <div class="card-body text-center py-3">
+            <div class="card metric-card card-gradient-green text-white">
+                <div class="card-body text-center py-4">
                     <i class="fas fa-clipboard-check metric-icon"></i>
                     <div class="metric-value" th:text="${readyOrders}">0</div>
-                    <div class="metric-label text-white">Ready for Pickup</div>
+                    <div class="metric-label">Ready for Pickup</div>
                 </div>
             </div>
         </div>
 
         <!-- Completed Orders -->
         <div class="col-md-4">
-            <div class="card metric-card bg-secondary text-white">
-                <div class="card-body text-center py-3">
+            <div class="card metric-card card-gradient-dark text-white">
+                <div class="card-body text-center py-4">
                     <i class="fas fa-check-circle metric-icon"></i>
                     <div class="metric-value" th:text="${completedOrders}">0</div>
-                    <div class="metric-label text-white">Completed Orders</div>
+                    <div class="metric-label">Completed Orders</div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4><i class="fas fa-chart-line"></i> Orders Trend (Last 15 Days)</h4>
+                <canvas id="ordersChart" style="max-height: 300px;"></canvas>
             </div>
         </div>
     </div>
@@ -264,7 +377,98 @@
 </div>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-<script>
+<script th:inline="javascript">
+    // Orders Chart
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('ordersChart').getContext('2d');
+
+        // Get actual data from server (last 15 days)
+        /*<![CDATA[*/
+        const chartLabels = [[${chartLabels}]];
+        const chartDataValues = [[${chartData}]];
+        /*]]>*/
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+        gradient.addColorStop(1, 'rgba(118, 75, 162, 0.1)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Orders',
+                    data: chartDataValues,
+                    backgroundColor: gradient,
+                    borderColor: '#667eea',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: '#764ba2',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Orders: ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            color: '#718096',
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: '#e2e8f0',
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#718096',
+                            font: {
+                                size: 11
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+    });
+
     function openReportModalFromDashboard() {
         // Set default dates: 1st of current month and today
         const today = new Date();

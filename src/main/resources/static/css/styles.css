@@ -1365,3 +1365,290 @@ table:has(tr.section-title) tbody tr td:nth-child(3) {
 body:not(:has(tr.section-title)) table {
   table-layout: auto;
 }
+
+/* ==========================================================
+   PHASE 1: STANDARDIZED PAGE HEADERS & BUTTONS
+========================================================== */
+
+/* ====== STANDARDIZED PAGE HEADER LAYOUT ====== */
+.page-header-standard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.page-header-standard h1 {
+  margin: 0;
+  text-align: left;
+  font-size: 24px;
+  font-weight: 700;
+  color: #14889e;
+}
+
+.page-header-standard .header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ====== STANDARDIZED BUTTON SYSTEM ====== */
+
+/* Primary Action Button - Teal Gradient */
+.btn-primary-custom {
+  background: linear-gradient(45deg, #17a2b8, #138496);
+  color: white !important;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary-custom:hover {
+  background: linear-gradient(45deg, #138496, #0d6efd);
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Success Button - Green (for Add actions) */
+.btn-success-custom {
+  background: #28a745;
+  color: white !important;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-success-custom:hover {
+  background: #218838;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Warning Button - Orange/Yellow */
+.btn-warning-custom {
+  background: #ffc107;
+  color: #212529 !important;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-warning-custom:hover {
+  background: #e0a800;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Danger Button - Red (for Delete) */
+.btn-danger-custom {
+  background: #dc3545;
+  color: white !important;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-danger-custom:hover {
+  background: #c82333;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Info Button - Blue */
+.btn-info-custom {
+  background: #0d6efd;
+  color: white !important;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-info-custom:hover {
+  background: #0b5ed7;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Secondary Button - Gray */
+.btn-secondary-custom {
+  background: #6c757d;
+  color: white !important;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-secondary-custom:hover {
+  background: #5a6268;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* ====== TABLE ACTION BUTTONS (Small variants) ====== */
+.btn-action-view {
+  background: #17a2b8;
+  color: white !important;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.15s ease-in-out;
+  margin: 0 2px;
+}
+
+.btn-action-view:hover {
+  background: #138496;
+  transform: scale(1.07);
+}
+
+.btn-action-edit {
+  background: #0d6efd;
+  color: white !important;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.15s ease-in-out;
+  margin: 0 2px;
+}
+
+.btn-action-edit:hover {
+  background: #0b5ed7;
+  transform: scale(1.07);
+}
+
+.btn-action-delete {
+  background: #dc3545;
+  color: white !important;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.15s ease-in-out;
+  margin: 0 2px;
+}
+
+.btn-action-delete:hover {
+  background: #c82333;
+  transform: scale(1.07);
+}
+
+.btn-action-secondary {
+  background: #6c757d;
+  color: white !important;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.15s ease-in-out;
+  margin: 0 2px;
+}
+
+.btn-action-secondary:hover {
+  background: #5a6268;
+  transform: scale(1.07);
+}
+
+/* ====== STANDARDIZED CARD COMPONENTS ====== */
+
+/* Base Standard Card */
+.card-standard {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Info Card - Light background */
+.card-info {
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+/* Metric Card - For dashboard */
+.card-metric {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.card-metric:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Card Header */
+.card-header-custom {
+  border-bottom: 2px solid #17a2b8;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}

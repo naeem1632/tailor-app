@@ -15,11 +15,14 @@
 
 <div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h1 style="margin: 0;"><i class="fas fa-coins"></i> Labor Rates</h1>
-        <a th:href="@{/piece-rate-settings/add}" class="add-btn">
-            <i class="fas fa-plus"></i> Add New Rates
-        </a>
+    <!-- Page Header -->
+    <div class="page-header-standard">
+        <h1><i class="fas fa-coins"></i> Labor Rates</h1>
+        <div class="header-actions">
+            <a th:href="@{/piece-rate-settings/add}" class="btn-success-custom">
+                <i class="fas fa-plus"></i> Add New Rates
+            </a>
+        </div>
     </div>
 
     <p style="color: #666; margin-bottom: 20px;">
@@ -149,10 +152,10 @@
         </div>
 
         <div style="margin-top: 16px; display: flex; gap: 8px;">
-            <a th:href="@{/piece-rate-settings/view/{id}(id=${currentSettings.id})}" class="btn btn-info">
+            <a th:href="@{/piece-rate-settings/view/{id}(id=${currentSettings.id})}" class="btn-info-custom">
                 <i class="fas fa-eye"></i> View Details
             </a>
-            <a th:href="@{/piece-rate-settings/edit/{id}(id=${currentSettings.id})}" class="btn btn-warning">
+            <a th:href="@{/piece-rate-settings/edit/{id}(id=${currentSettings.id})}" class="btn-warning-custom">
                 <i class="fas fa-edit"></i> Edit
             </a>
         </div>

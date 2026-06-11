@@ -15,28 +15,32 @@
 
 <div class="container-fluid" style="padding-top: 24px;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;" th:text="${employee.name}"></h1>
-        <div>
-            <a th:href="@{/employees/edit/{id}(id=${employee.id})}" class="btn btn-warning">
+    <div class="page-header-standard">
+        <h1><i class="fas fa-user"></i> <span th:text="${employee.name}"></span></h1>
+        <div class="header-actions">
+            <a th:href="@{/employees/edit/{id}(id=${employee.id})}" class="btn-warning-custom">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a th:href="@{/employees}" class="btn btn-secondary" style="margin-left: 8px;">
+            <a th:href="@{/employees}" class="btn-secondary-custom">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
         </div>
     </div>
 
     <!-- Messages -->
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+    </div>
 
     <div class="row">
         <!-- Left Column: Employee Info -->
         <div class="col-md-6">
             <!-- Personal Information -->
-            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">Personal Information</h4>
+            <div class="card-standard">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;"><i class="fas fa-user-circle"></i> Personal Information</h4>
 
                 <div style="margin-bottom: 12px;">
                     <strong>Status:</strong>
@@ -82,8 +86,8 @@
             </div>
 
             <!-- Skills & Capabilities -->
-            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">Skills & Capabilities</h4>
+            <div class="card-standard">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;"><i class="fas fa-cogs"></i> Skills & Capabilities</h4>
 
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                     <span th:if="${employee.canCut}" style="background: #e7f3ff; color: #004085; padding: 8px 16px; border-radius: 8px; font-size: 14px;">
@@ -112,8 +116,8 @@
 
         <!-- Right Column: Payroll Summary -->
         <div class="col-md-6">
-            <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-                <h4 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 8px;">Payroll Summary</h4>
+            <div class="card-standard">
+                <h4 style="margin-top: 0; border-bottom: 2px solid #28a745; padding-bottom: 8px;"><i class="fas fa-calculator"></i> Payroll Summary</h4>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
                     <div style="background: #d4edda; padding: 16px; border-radius: 4px; text-align: center;">
@@ -136,10 +140,10 @@
                 </div>
 
                 <div style="display: flex; gap: 8px;">
-                    <a th:href="@{/employee-payments/payroll(employeeId=${employee.id})}" class="btn btn-success" style="flex: 1;">
+                    <a th:href="@{/employee-payments/payroll(employeeId=${employee.id})}" class="btn-success-custom" style="flex: 1;">
                         <i class="fas fa-calculator"></i> View Payroll
                     </a>
-                    <a th:href="@{/employee-payments/add(employeeId=${employee.id})}" class="btn btn-primary" style="flex: 1;">
+                    <a th:href="@{/employee-payments/add(employeeId=${employee.id})}" class="btn-primary-custom" style="flex: 1;">
                         <i class="fas fa-money-bill"></i> Make Payment
                     </a>
                 </div>
@@ -148,8 +152,8 @@
     </div>
 
     <!-- Work Assignments -->
-    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-        <h4 style="margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;">Active Work Assignments</h4>
+    <div class="card-standard">
+        <h4 style="margin-top: 0; border-bottom: 2px solid #17a2b8; padding-bottom: 8px;"><i class="fas fa-tasks"></i> Active Work Assignments</h4>
 
         <table class="table" th:if="${!#lists.isEmpty(activeAssignments)}">
             <thead>
@@ -197,7 +201,7 @@
     <div style="display: flex; gap: 12px; margin-top: 20px;">
         <form th:action="@{/employees/status/{id}(id=${employee.id})}" method="post" style="display: inline;">
             <input type="hidden" name="status" th:value="${employee.employeeStatus == 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'}"/>
-            <button type="submit" class="btn btn-warning">
+            <button type="submit" class="btn-warning-custom">
                 <span th:if="${employee.employeeStatus == 'ACTIVE'}">
                     <i class="fas fa-pause"></i> Mark as Inactive
                 </span>
@@ -208,7 +212,7 @@
         </form>
 
         <form th:action="@{/employees/delete/{id}(id=${employee.id})}" method="post" style="display: inline;" id="deleteEmployeeForm">
-            <button type="button" class="btn btn-danger" id="deleteEmployeeBtn">
+            <button type="button" class="btn-danger-custom" id="deleteEmployeeBtn">
                 <i class="fas fa-trash"></i> Delete Employee
             </button>
         </form>
@@ -220,8 +224,8 @@
             <h3>⚠ Confirm Deletion</h3>
             <p>Are you sure you want to delete this employee? This action cannot be undone.</p>
             <div class="modal-actions">
-                <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
-                <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+                <button id="confirmDeleteBtn" class="btn-danger-custom">Yes, Delete</button>
+                <button id="cancelDeleteBtn" class="btn-secondary-custom">Cancel</button>
             </div>
         </div>
     </div>

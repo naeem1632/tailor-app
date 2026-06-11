@@ -9,40 +9,10 @@
     <link rel="stylesheet" th:href="@{/css/fonts.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
-        /* Action buttons on payments listing page - arranged in two rows */
-        .payments-list-btn {
-            font-size: 11px !important;
-            padding: 4px 8px !important;
-            margin: 2px !important;
-            white-space: nowrap;
-            display: inline-block;
-        }
-
         /* Two-row button layout for Actions column */
         td.actions-cell {
             white-space: normal !important;
             max-width: 160px;
-        }
-
-        /* Different colors for each button */
-        .btn-edit-payment {
-            background-color: #007bff !important;
-            color: white !important;
-        }
-
-        .btn-delete-payment {
-            background-color: #dc3545 !important;
-            color: white !important;
-        }
-
-        .btn-installment {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
-
-        .btn-invoice {
-            background-color: #ff8c00 !important;
-            color: white !important;
         }
     </style>
 </head>
@@ -54,12 +24,28 @@
 
 <div class="container-fluid" style="padding-top: 20px;">
 
-<h1 th:text="'Payments & Schedule for ' + ${client.name}"></h1>
+<!-- Flash Messages -->
+<div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="fas fa-check-circle"></i> <span th:text="${message}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-circle"></i> <span th:utext="${error}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
 
-<div class="toolbar-3">
-    <div class="toolbar-left">
-        <button class="add-btn" onclick="openModal()">Add Payment</button>
-    </div>
+<!-- Page Header -->
+<div class="page-header-standard">
+    <h1>
+        <i class="fas fa-money-check-alt"></i>
+        <span th:text="'Payments & Schedule for ' + ${client.name}"></span>
+    </h1>
+</div>
+
+<div style="margin-bottom: 20px;">
+    <button class="btn-success-custom" onclick="openModal()">
+        <i class="fas fa-plus"></i> Add Payment
+    </button>
 </div>
 
 <!-- ✅ PAYMENT LIST -->
@@ -187,7 +173,7 @@
 
             <td th:text="${p.notes}"></td>
             <td class="actions-cell">
-                <a href="javascript:void(0)" class="btn-action payments-list-btn btn-edit-payment"
+                <a href="javascript:void(0)" class="btn btn-sm btn-primary" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
                    th:attr="data-id=${p.id}, data-date=${p.date},
                             data-dresscount=${p.dressCount}, data-dressrate=${p.dressRate},
                             data-waistcoatcount=${p.waistcoatCount}, data-waistcoatrate=${p.waistcoatRate},
@@ -201,22 +187,23 @@
                             data-kantaamount=${p.kantaAmount}, data-withkanta=${p.withKanta},
                             data-jaliamount=${p.jaliAmount}, data-withjali=${p.withJali},
                             data-krhaiamount=${p.krhaiAmount}, data-withkrhai=${p.withKrhai}"
-                   onclick="openModalFromRow(this)">Edit</a>
+                   onclick="openModalFromRow(this)"><i class="fas fa-edit"></i> Edit</a>
 
-                <a th:href="@{'/payments/delete/' + ${p.id}}" class="btn-action btn-delete payments-list-btn btn-delete-payment" data-type="payment">Delete</a>
+                <a href="javascript:void(0)" class="btn btn-sm btn-danger" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
+                   th:attr="data-payment-id=${p.id}, data-client-id=${client.id}"
+                   onclick="confirmDelete(this)"><i class="fas fa-trash"></i> Delete</a>
 
-                <a href="javascript:void(0)" class="btn-action payments-list-btn btn-installment"
+                <a href="javascript:void(0)" class="btn btn-sm btn-success" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
                    th:attr="data-id=${p.id}"
-                   onclick="openInstallmentModal(this)">Installment</a>
+                   onclick="openInstallmentModal(this)"><i class="fas fa-money-bill-wave"></i> Installment</a>
 
                 <a th:href="@{'/print/invoice/client/' + ${client.id} + '/date/' + ${p.date}}"
-                   class="btn-action payments-list-btn btn-invoice"
-                   target="_blank">Invoice</a>
+                   class="btn btn-sm btn-warning" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
+                   target="_blank"><i class="fas fa-file-invoice"></i> Invoice</a>
 
                 <a th:href="@{'/work-assignments/assign/' + ${p.id}}"
-                   class="btn-action payments-list-btn"
-                   style="background-color: #17a2b8 !important; color: white !important;"
-                   title="Assign work to employees">Assign Work</a>
+                   class="btn btn-sm btn-info" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
+                   title="Assign work to employees"><i class="fas fa-tasks"></i> Assign</a>
             </td>
         </tr>
 
@@ -414,8 +401,8 @@
         <h3>⚠ Confirm Deletion</h3>
         <p id="deleteConfirmMessage">Are you sure you want to delete this record?</p>
         <div class="modal-actions">
-            <button id="confirmDeleteBtn" class="btn-danger">Yes, Delete</button>
-            <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+            <button id="confirmDeleteBtn" class="btn-danger-custom">Yes, Delete</button>
+            <button id="cancelDeleteBtn" class="btn-secondary-custom">Cancel</button>
         </div>
     </div>
 </div>
@@ -432,6 +419,26 @@
            row.style.display = "none";
            if (btn) btn.textContent = "▼";
        }
+   }
+
+   function confirmDelete(element) {
+       const paymentId = element.getAttribute('data-payment-id');
+       const deleteUrl = '/payments/delete/' + paymentId;
+       const modal = document.getElementById('confirmDeleteModal');
+       const confirmBtn = document.getElementById('confirmDeleteBtn');
+       const cancelBtn = document.getElementById('cancelDeleteBtn');
+       const messageEl = document.getElementById('deleteConfirmMessage');
+
+       messageEl.textContent = 'Are you sure you want to delete this payment record?';
+       modal.style.display = 'flex';
+
+       // Set confirm action
+       confirmBtn.onclick = function() {
+           window.location.href = deleteUrl;
+       };
+
+       // Cancel button (handled by existing event listener, but added for clarity)
+       // Outside click (handled by existing event listener)
    }
 
         const paymentModal = document.getElementById("paymentModal");
