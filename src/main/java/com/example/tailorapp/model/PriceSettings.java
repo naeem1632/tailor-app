@@ -2,13 +2,18 @@ package com.example.tailorapp.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDate;
 
 @Entity
 @Data
 public class PriceSettings {
 
     @Id
-    Long id = 1L; // Always a single row with id=1
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    LocalDate effectiveDate;
+    String notes;
 
     Long dressRate;
     Long waistcoatRate;
@@ -21,7 +26,7 @@ public class PriceSettings {
     Long krhaiRate;
 
     public PriceSettings() {
-        this.id = 1L;
+        this.effectiveDate = LocalDate.now();
         this.dressRate = 0L;
         this.waistcoatRate = 0L;
         this.shirtRate = 0L;

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Edit Expense Rates')}\"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 700px;">
+
+    <div class="page-header-standard">
+        <h1><i class="fas fa-edit"></i> Edit Expense Rates</h1>
+        <div class="header-actions">
+            <a th:href="@{/expenses}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-warning" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> Editing these expenses will affect historical records. Consider adding new expenses instead if you need to track changes over time.
+    </div>
+
+    <form th:action="@{/expenses/update/{id}(id=${expenses.id})}" th:object="${expenses}" method="post">
+
+        <!-- Effective Date -->
+        <div class="card-info" style="background: #fff3cd; border-color: #ffc107; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="effectiveDate" style="font-weight: 700;">Effective Date <span style="color: red;">*</span></label>
+                <input type="date" id="effectiveDate" th:field="*{effectiveDate}" class="form-control" required style="max-width: 250px;"/>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Garment Expenses -->
+            <div class="col-md-6">
+                <div class="card-info">
+                    <h4 style="margin-top: 0;"><i class="fas fa-tshirt"></i> Garment Expenses (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Dress</label>
+                        <input type="number" th:field="*{dressExpense}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Waistcoat</label>
+                        <input type="number" th:field="*{waistcoatExpense}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Shirt</label>
+                        <input type="number" th:field="*{shirtExpense}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Embellishment Expenses -->
+            <div class="col-md-6">
+                <div class="card-info">
+                    <h4 style="margin-top: 0;"><i class="fas fa-gem"></i> Embellishment Expenses (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Matel</label>
+                        <input type="number" th:field="*{matelExpense}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Tich</label>
+                        <input type="number" th:field="*{tichExpense}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Kanta</label>
+                        <input type="number" th:field="*{kantaExpense}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Jali</label>
+                        <input type="number" th:field="*{jaliExpense}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Krhai</label>
+                        <input type="number" th:field="*{krhaiExpense}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card-info">
+            <div class="form-group">
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" th:field="*{notes}" class="form-control" rows="3" placeholder="Add any notes about these expense changes..."></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button type="submit" class="btn-success-custom">
+                <i class="fas fa-save"></i> Update Expense Rates
+            </button>
+            <a th:href="@{/expenses}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+
+    </form>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

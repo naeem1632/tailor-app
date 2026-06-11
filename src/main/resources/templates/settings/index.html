@@ -1,114 +1,137 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Price List - Stitch &amp; Style</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fonts.css}">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-</head>
+<head th:replace="~{fragments/head :: head('Price List')}"></head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container-fluid" style="padding-top: 24px; max-width: 600px;">
+<div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
 
     <!-- Page Header -->
     <div class="page-header-standard">
         <h1><i class="fas fa-tags"></i> Price List</h1>
+        <div class="header-actions">
+            <a th:href="@{/settings/add}" class="btn-success-custom">
+                <i class="fas fa-plus"></i> Add New Prices
+            </a>
+        </div>
     </div>
 
     <p style="color: #666; margin-bottom: 20px;">
-        Set the default rates used when creating a new payment. Rates can still be overridden per order.
+        Set default rates used when creating a new payment. Changes are tracked with effective dates for accurate historical pricing.
+        <br><strong>Current Active Prices:</strong> <span th:if="${currentSettings}" th:text="'Effective from ' + ${#temporals.format(currentSettings.effectiveDate, 'dd MMM yyyy')}"></span>
     </p>
 
-    <!-- Success message -->
-    <div th:if="${successMessage}" class="alert alert-success" role="alert">
-        <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
-    </div>
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
-    <form th:action="@{/settings/save}" th:object="${settings}" method="post">
+    <!-- Current Active Prices -->
+    <div th:if="${currentSettings}" style="background: #e7f3ff; border: 2px solid #007bff; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h4 style="margin-top: 0; color: #007bff;">
+            <i class="fas fa-star"></i> Current Active Prices
+            <span style="font-size: 14px; font-weight: 400; color: #666;">
+                (Effective: <span th:text="${#temporals.format(currentSettings.effectiveDate, 'dd MMM yyyy')}"></span>)
+            </span>
+        </h4>
 
-        <table style="width:100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);">
-            <thead style="background: linear-gradient(45deg, #17a2b8, #138496); color: white;">
-            <tr>
-                <th style="text-align:left; padding:12px; font-size: 14px; letter-spacing: 0.3px;">
-                    Garment / Item
-                </th>
-                <th style="text-align:left; padding:12px; font-size: 14px; letter-spacing: 0.3px;">
-                    Default Rate (per piece)
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Dress</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{dressRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Waistcoat</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{waistcoatRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Shirt</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{shirtRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="padding:8px 12px; background:#f8f9fa; font-size:12px; color:#666; font-style:italic;">
-                    Embellishments (per piece rate)
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Matel</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{matelRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Tich</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{tichRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Kanta</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{kantaRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Jali</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{jaliRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; font-weight:600;">Krhai</td>
-                <td style="padding:10px 12px;">
-                    <input type="number" th:field="*{krhaiRate}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="row">
+            <div class="col-md-6">
+                <table style="width: 100%; margin-bottom: 16px;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Garment Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Dress:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.dressRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Waistcoat:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.waistcoatRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shirt:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.shirtRate}"></span></td>
+                    </tr>
+                </table>
+            </div>
 
-        <div style="margin-top:20px; display: flex; gap: 12px;">
-            <button type="submit" class="btn-success-custom">
-                <i class="fas fa-save"></i> Save Prices
-            </button>
-            <a href="/" class="btn-secondary-custom">
-                <i class="fas fa-times"></i> Cancel
-            </a>
+            <div class="col-md-6">
+                <table style="width: 100%;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Embellishment Rates</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Matel:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.matelRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Tich:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.tichRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Kanta:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.kantaRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Jali:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.jaliRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Krhai:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentSettings.krhaiRate}"></span></td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
-    </form>
+        <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <a th:href="@{/settings/view/{id}(id=${currentSettings.id})}" class="btn-info-custom">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+            <a th:href="@{/settings/edit/{id}(id=${currentSettings.id})}" class="btn-warning-custom">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        </div>
+    </div>
+
+    <!-- Price History -->
+    <h4 style="margin-top: 30px; margin-bottom: 16px;">Price History</h4>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Effective Date</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(settingsList)}">
+            <td colspan="3" style="text-align: center; padding: 40px; color: #999;">
+                No price settings found. Click "Add New Prices" to get started.
+            </td>
+        </tr>
+        <tr th:each="settings : ${settingsList}">
+            <td>
+                <strong th:text="${#temporals.format(settings.effectiveDate, 'dd MMM yyyy')}"></strong>
+                <span th:if="${currentSettings != null && settings.id == currentSettings.id}"
+                      style="background: #007bff; color: white; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-left: 8px;">
+                    CURRENT
+                </span>
+            </td>
+            <td th:text="${settings.notes ?: '-'}"></td>
+            <td>
+                <a th:href="@{/settings/view/{id}(id=${settings.id})}" class="btn btn-sm btn-info" title="View">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a th:href="@{/settings/edit/{id}(id=${settings.id})}" class="btn btn-sm btn-warning" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
 </div>
 

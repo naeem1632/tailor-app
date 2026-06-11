@@ -1,79 +1,86 @@
 package com.example.tailorapp.service;
 
-import com.example.tailorapp.model.Expense;
 import com.example.tailorapp.model.ExpenseHistory;
 import com.example.tailorapp.repository.ExpenseHistoryRepository;
-import com.example.tailorapp.repository.ExpenseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class ExpenseService {
 
-    private final ExpenseRepository repo;
     private final ExpenseHistoryRepository historyRepo;
 
-    public ExpenseService(ExpenseRepository repo, ExpenseHistoryRepository historyRepo) {
-        this.repo = repo;
+    public ExpenseService(ExpenseHistoryRepository historyRepo) {
         this.historyRepo = historyRepo;
     }
 
-    /** Returns the single expense settings row, creating a blank one if it doesn't exist yet. */
-    public Expense getExpense() {
-        return repo.findById(1L).orElseGet(() -> repo.save(new Expense()));
+    /**
+     * Returns current active expense settings (most recent by effective date)
+     */
+    public ExpenseHistory getExpenses() {
+        return historyRepo.findAll().stream()
+                .max(Comparator.comparing(ExpenseHistory::getEffectiveDate))
+                .orElseGet(() -> {
+                    ExpenseHistory defaultExpenses = new ExpenseHistory();
+                    defaultExpenses.setEffectiveDate(LocalDate.now());
+                    defaultExpenses.setDressExpense(0L);
+                    defaultExpenses.setWaistcoatExpense(0L);
+                    defaultExpenses.setShirtExpense(0L);
+                    defaultExpenses.setMatelExpense(0L);
+                    defaultExpenses.setTichExpense(0L);
+                    defaultExpenses.setKantaExpense(0L);
+                    defaultExpenses.setJaliExpense(0L);
+                    defaultExpenses.setKrhaiExpense(0L);
+                    defaultExpenses.setNotes("Initial default expenses");
+                    return historyRepo.save(defaultExpenses);
+                });
     }
 
     /**
-     * Save current expense settings and create a historical record if values changed
+     * Get all expense records ordered by effective date (newest first)
      */
-    public Expense save(Expense expense) {
-        expense.setId(1L); // always enforce single row
+    public List<ExpenseHistory> getAllExpenses() {
+        List<ExpenseHistory> list = historyRepo.findAll();
+        list.sort(Comparator.comparing(ExpenseHistory::getEffectiveDate).reversed());
+        return list;
+    }
 
-        // Get current expense values before saving
-        Expense oldExpense = repo.findById(1L).orElse(null);
+    /**
+     * Get current expense settings (most recent by effective date)
+     */
+    public Optional<ExpenseHistory> getCurrentExpenses() {
+        return historyRepo.findAll().stream()
+                .max(Comparator.comparing(ExpenseHistory::getEffectiveDate));
+    }
 
-        // Check if expense values have changed
-        boolean hasChanged = oldExpense == null || hasExpenseChanged(oldExpense, expense);
+    /**
+     * Find expense record by ID
+     */
+    public Optional<ExpenseHistory> findById(Long id) {
+        return historyRepo.findById(id);
+    }
 
-        // Save the new expense values
-        Expense saved = repo.save(expense);
-
-        // If values changed, create a historical record with today's date
-        if (hasChanged) {
-            ExpenseHistory history = new ExpenseHistory();
-            history.setEffectiveDate(LocalDate.now());
-            history.setDressExpense(expense.getDressExpense());
-            history.setWaistcoatExpense(expense.getWaistcoatExpense());
-            history.setShirtExpense(expense.getShirtExpense());
-            history.setMatelExpense(expense.getMatelExpense());
-            history.setTichExpense(expense.getTichExpense());
-            history.setKantaExpense(expense.getKantaExpense());
-            history.setJaliExpense(expense.getJaliExpense());
-            history.setKrhaiExpense(expense.getKrhaiExpense());
-            history.setNotes("Updated expense rates");
-
-            historyRepo.save(history);
+    /**
+     * Save expense record
+     */
+    public ExpenseHistory save(ExpenseHistory expenses) {
+        if (expenses.getEffectiveDate() == null) {
+            expenses.setEffectiveDate(LocalDate.now());
         }
-
-        return saved;
+        return historyRepo.save(expenses);
     }
 
     /**
-     * Check if expense values have changed
+     * Delete expense record by ID
      */
-    private boolean hasExpenseChanged(Expense old, Expense newExpense) {
-        return !old.getDressExpense().equals(newExpense.getDressExpense()) ||
-               !old.getWaistcoatExpense().equals(newExpense.getWaistcoatExpense()) ||
-               !old.getShirtExpense().equals(newExpense.getShirtExpense()) ||
-               !old.getMatelExpense().equals(newExpense.getMatelExpense()) ||
-               !old.getTichExpense().equals(newExpense.getTichExpense()) ||
-               !old.getKantaExpense().equals(newExpense.getKantaExpense()) ||
-               !old.getJaliExpense().equals(newExpense.getJaliExpense()) ||
-               !old.getKrhaiExpense().equals(newExpense.getKrhaiExpense());
+    public void deleteById(Long id) {
+        historyRepo.deleteById(id);
     }
 
     /**
@@ -96,31 +103,17 @@ public class ExpenseService {
         }
 
         // Ultimate fallback: create one from current settings
-        Expense currentExpense = getExpense();
+        ExpenseHistory currentExpenses = getExpenses();
         ExpenseHistory fallback = new ExpenseHistory();
         fallback.setEffectiveDate(defaultDate); // Use Feb 1, 2026 as default
-        fallback.setDressExpense(currentExpense.getDressExpense());
-        fallback.setWaistcoatExpense(currentExpense.getWaistcoatExpense());
-        fallback.setShirtExpense(currentExpense.getShirtExpense());
-        fallback.setMatelExpense(currentExpense.getMatelExpense());
-        fallback.setTichExpense(currentExpense.getTichExpense());
-        fallback.setKantaExpense(currentExpense.getKantaExpense());
-        fallback.setJaliExpense(currentExpense.getJaliExpense());
-        fallback.setKrhaiExpense(currentExpense.getKrhaiExpense());
+        fallback.setDressExpense(currentExpenses.getDressExpense());
+        fallback.setWaistcoatExpense(currentExpenses.getWaistcoatExpense());
+        fallback.setShirtExpense(currentExpenses.getShirtExpense());
+        fallback.setMatelExpense(currentExpenses.getMatelExpense());
+        fallback.setTichExpense(currentExpenses.getTichExpense());
+        fallback.setKantaExpense(currentExpenses.getKantaExpense());
+        fallback.setJaliExpense(currentExpenses.getJaliExpense());
+        fallback.setKrhaiExpense(currentExpenses.getKrhaiExpense());
         return fallback;
-    }
-
-    /**
-     * Get all expense history records
-     */
-    public List<ExpenseHistory> getAllExpenseHistory() {
-        return historyRepo.findAllByOrderByEffectiveDateDesc();
-    }
-
-    /**
-     * Save a new expense history record with a specific effective date
-     */
-    public ExpenseHistory saveExpenseHistory(ExpenseHistory history) {
-        return historyRepo.save(history);
     }
 }

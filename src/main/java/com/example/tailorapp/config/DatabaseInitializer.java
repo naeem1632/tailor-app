@@ -1,6 +1,5 @@
 package com.example.tailorapp.config;
 
-import com.example.tailorapp.model.Expense;
 import com.example.tailorapp.model.ExpenseHistory;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.repository.ExpenseHistoryRepository;
@@ -198,23 +197,45 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
 
     private void migrateWorkAssignmentTable() {
+        System.out.println("  - Migrating WorkAssignment table...");
+
+        // Check and add started_date column
         try {
-            // Check if started_date column exists
-            jdbcTemplate.queryForObject(
-                "SELECT started_date FROM work_assignment LIMIT 1",
-                String.class
-            );
-            System.out.println("  - WorkAssignment table already migrated");
-        } catch (Exception e) {
-            System.out.println("  - Migrating WorkAssignment table...");
-
-            // Add new columns with NULL allowed
             jdbcTemplate.execute("ALTER TABLE work_assignment ADD COLUMN started_date DATE");
-            jdbcTemplate.execute("ALTER TABLE work_assignment ADD COLUMN started_time TIME");
-            jdbcTemplate.execute("ALTER TABLE work_assignment ADD COLUMN completed_time TIME");
-
-            System.out.println("  ✓ WorkAssignment table migrated successfully");
+            System.out.println("    Added started_date column");
+        } catch (Exception e) {
+            if (e.getMessage().contains("duplicate column")) {
+                System.out.println("    started_date column already exists");
+            } else {
+                System.out.println("    Error adding started_date: " + e.getMessage());
+            }
         }
+
+        // Check and add started_time column
+        try {
+            jdbcTemplate.execute("ALTER TABLE work_assignment ADD COLUMN started_time TIME");
+            System.out.println("    Added started_time column");
+        } catch (Exception e) {
+            if (e.getMessage().contains("duplicate column")) {
+                System.out.println("    started_time column already exists");
+            } else {
+                System.out.println("    Error adding started_time: " + e.getMessage());
+            }
+        }
+
+        // Check and add completed_time column
+        try {
+            jdbcTemplate.execute("ALTER TABLE work_assignment ADD COLUMN completed_time TIME");
+            System.out.println("    Added completed_time column");
+        } catch (Exception e) {
+            if (e.getMessage().contains("duplicate column")) {
+                System.out.println("    completed_time column already exists");
+            } else {
+                System.out.println("    Error adding completed_time: " + e.getMessage());
+            }
+        }
+
+        System.out.println("  ✓ WorkAssignment table migrated successfully");
     }
 
     private void createEmployeePaymentTransactionTable() {
@@ -255,20 +276,18 @@ public class DatabaseInitializer implements CommandLineRunner {
         List<ExpenseHistory> existingHistory = expenseHistoryRepository.findAll();
 
         if (existingHistory.isEmpty()) {
-            // Get current expense settings
-            Expense currentExpense = expenseService.getExpense();
-
             // Create default expense history record with Feb 1, 2026 as effective date
+            // Using default values of 0 for all expenses
             ExpenseHistory defaultHistory = new ExpenseHistory();
             defaultHistory.setEffectiveDate(LocalDate.of(2026, 2, 1));
-            defaultHistory.setDressExpense(currentExpense.getDressExpense());
-            defaultHistory.setWaistcoatExpense(currentExpense.getWaistcoatExpense());
-            defaultHistory.setShirtExpense(currentExpense.getShirtExpense());
-            defaultHistory.setMatelExpense(currentExpense.getMatelExpense());
-            defaultHistory.setTichExpense(currentExpense.getTichExpense());
-            defaultHistory.setKantaExpense(currentExpense.getKantaExpense());
-            defaultHistory.setJaliExpense(currentExpense.getJaliExpense());
-            defaultHistory.setKrhaiExpense(currentExpense.getKrhaiExpense());
+            defaultHistory.setDressExpense(0L);
+            defaultHistory.setWaistcoatExpense(0L);
+            defaultHistory.setShirtExpense(0L);
+            defaultHistory.setMatelExpense(0L);
+            defaultHistory.setTichExpense(0L);
+            defaultHistory.setKantaExpense(0L);
+            defaultHistory.setJaliExpense(0L);
+            defaultHistory.setKrhaiExpense(0L);
             defaultHistory.setNotes("Initial expense rates (auto-created for existing data compatibility)");
 
             expenseHistoryRepository.save(defaultHistory);

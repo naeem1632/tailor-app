@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Work Assignments - Stitch &amp; Style</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fonts.css}">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-</head>
+<head th:replace="~{fragments/head :: head('Work Assignments')}"></head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -114,7 +106,11 @@
 </div>
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-<script>
+<script th:inline="javascript">
+    // Get CSRF token for forms
+    const csrfToken = /*[[${_csrf.token}]]*/ '';
+    const csrfParamName = /*[[${_csrf.parameterName}]]*/ '';
+
     document.addEventListener('DOMContentLoaded', function() {
         const assignmentsData = document.getElementById('assignments-data');
         if (!assignmentsData) return;
@@ -222,7 +218,7 @@
 
             order.assignments.forEach(assignment => {
                 const statusBadge = getStatusBadge(assignment.status);
-                const actionButtons = getActionButtons(assignment.status, assignment.assignmentId);
+                const actionButtons = getActionButtons(assignment.status, assignment.assignmentId, order.paymentId);
 
                 // Determine which date/time to show based on status
                 let displayDate = assignment.assignedDate;
@@ -270,6 +266,9 @@
         });
 
         container.innerHTML = html;
+
+        // Restore the previously expanded order
+        restoreExpandedOrder();
     });
 
     function toggleOrder(orderId) {
@@ -279,9 +278,26 @@
         if (content.style.display === 'none') {
             content.style.display = 'block';
             icon.className = 'fas fa-chevron-up';
+            // Save expanded state
+            localStorage.setItem('expandedOrder', orderId);
         } else {
             content.style.display = 'none';
             icon.className = 'fas fa-chevron-down';
+            // Clear saved state
+            localStorage.removeItem('expandedOrder');
+        }
+    }
+
+    // Restore expanded order after page load
+    function restoreExpandedOrder() {
+        const expandedOrder = localStorage.getItem('expandedOrder');
+        if (expandedOrder) {
+            const content = document.getElementById(expandedOrder);
+            const icon = document.getElementById('icon-' + expandedOrder);
+            if (content && icon) {
+                content.style.display = 'block';
+                icon.className = 'fas fa-chevron-up';
+            }
         }
     }
 
@@ -295,10 +311,11 @@
         return badges[status] || status;
     }
 
-    function getActionButtons(status, assignmentId) {
+    function getActionButtons(status, assignmentId, paymentId) {
         if (status === 'ASSIGNED') {
             return `
-                <form action="/work-assignments/start/${assignmentId}" method="post" style="display: inline;">
+                <form action="/work-assignments/start/${assignmentId}" method="post" style="display: inline;" onsubmit="saveExpandedOrder('order-${paymentId}')">
+                    <input type="hidden" name="${csrfParamName}" value="${csrfToken}">
                     <button type="submit" class="btn btn-sm btn-primary" title="Start Work">
                         <i class="fas fa-play"></i>
                     </button>
@@ -306,7 +323,8 @@
             `;
         } else if (status === 'IN_PROGRESS') {
             return `
-                <form action="/work-assignments/complete/${assignmentId}" method="post" style="display: inline;">
+                <form action="/work-assignments/complete/${assignmentId}" method="post" style="display: inline;" onsubmit="saveExpandedOrder('order-${paymentId}')">
+                    <input type="hidden" name="${csrfParamName}" value="${csrfToken}">
                     <button type="submit" class="btn btn-sm btn-success" title="Complete">
                         <i class="fas fa-check"></i>
                     </button>
@@ -314,6 +332,10 @@
             `;
         }
         return '';
+    }
+
+    function saveExpandedOrder(orderId) {
+        localStorage.setItem('expandedOrder', orderId);
     }
 
     function formatNumber(num) {

@@ -1,17 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Stitch & Style</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
-    <style>
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-        }
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- Dashboard-Specific Styles -->
+    <style>
         /* Modern Metric Cards */
         .metric-card {
             border: none;
@@ -125,6 +120,10 @@
             margin-bottom: 20px;
             font-size: 1.1rem;
         }
+        .chart-container canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
 
         /* Modern Action Cards */
         .action-card {
@@ -150,15 +149,6 @@
             transform: scale(1.1);
         }
 
-        /* Page Header Enhancement */
-        .page-header-standard h1 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-        }
-
         /* View Button on Cards */
         .metric-card .btn-light {
             background: rgba(255,255,255,0.25);
@@ -174,7 +164,6 @@
             transform: scale(1.05);
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -273,7 +262,9 @@
         <div class="col-12">
             <div class="chart-container">
                 <h4><i class="fas fa-chart-line"></i> Orders Trend (Last 15 Days)</h4>
-                <canvas id="ordersChart" style="max-height: 300px;"></canvas>
+                <div style="position: relative; height: 400px; width: 100%;">
+                    <canvas id="ordersChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -416,7 +407,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: false

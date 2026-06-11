@@ -1,13 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Client Payments')}"></head>
 <head>
-    <title>Client Payments - Stitch & Style</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fonts.css}">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
         /* Two-row button layout for Actions column */
         td.actions-cell {
@@ -38,8 +32,11 @@
 <div class="page-header-standard">
     <h1>
         <i class="fas fa-money-check-alt"></i>
-        <span th:text="'Payments & Schedule for ' + ${client.name}"></span>
+        <span th:text="'Payments & Schedule for ' + ${client.name} + ' (' + ${client.id} + ')'"></span>
     </h1>
+    <div class="header-actions">
+        <img th:if="${client.pictureFilename}" th:src="@{${client.pictureFilename}}" alt="Client Photo" class="client-photo">
+    </div>
 </div>
 
 <div style="margin-bottom: 20px;">

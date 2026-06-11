@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('View Expense Rates')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 700px;">
+
+    <div class="page-header-standard">
+        <h1><i class="fas fa-eye"></i> View Expense Rates</h1>
+        <div class="header-actions">
+            <a th:href="@{/expenses}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="card-info" style="background: #e7f3ff; border-color: #007bff; margin-bottom: 20px;">
+        <h4 style="margin-top: 0; color: #007bff;"><i class="fas fa-calendar"></i> Effective Date</h4>
+        <p style="font-size: 18px; font-weight: 700; margin: 0;" th:text="${#temporals.format(expenses.effectiveDate, 'dd MMM yyyy')}"></p>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Garment Expenses -->
+        <div class="col-md-6">
+            <div class="card-info">
+                <h4 style="margin-top: 0;"><i class="fas fa-tshirt"></i> Garment Expenses</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Dress:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.dressExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Waistcoat:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.waistcoatExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Shirt:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.shirtExpense}"></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column - Embellishment Expenses -->
+        <div class="col-md-6">
+            <div class="card-info">
+                <h4 style="margin-top: 0;"><i class="fas fa-gem"></i> Embellishment Expenses</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Matel:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.matelExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Tich:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.tichExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Kanta:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.kantaExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Jali:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.jaliExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Krhai:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.krhaiExpense}"></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card-info" th:if="${expenses.notes}">
+        <h4 style="margin-top: 0;"><i class="fas fa-sticky-note"></i> Notes</h4>
+        <p style="margin: 0; color: #666;" th:text="${expenses.notes}"></p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 24px; display: flex; gap: 12px;">
+        <a th:href="@{/expenses/edit/{id}(id=${expenses.id})}" class="btn-warning-custom">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a th:href="@{/expenses}" class="btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

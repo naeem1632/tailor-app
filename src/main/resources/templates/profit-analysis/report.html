@@ -1,12 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Profit Analysis Report')}"></head>
 <head>
-    <title>Profit Analysis Report</title>
-    <meta charset="UTF-8"/>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fonts.css}">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
     <style>
         /* CRITICAL: Remove any overflow on html/body that breaks sticky */
         html, body {

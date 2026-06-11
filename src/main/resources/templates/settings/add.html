@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Add Price Settings')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 700px;">
+
+    <div class="page-header-standard">
+        <h1><i class="fas fa-plus-circle"></i> Add New Price Settings</h1>
+        <div class="header-actions">
+            <a th:href="@{/settings}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle"></i> Define default rates for garments and embellishments. These rates will be used when creating new payments.
+        <br><strong>Note:</strong> The form is pre-filled with current prices for your convenience.
+    </div>
+
+    <form th:action="@{/settings/save}" th:object="${settings}" method="post">
+
+        <!-- Effective Date -->
+        <div class="card-info" style="background: #fff3cd; border-color: #ffc107; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="effectiveDate" style="font-weight: 700;">Effective Date <span style="color: red;">*</span></label>
+                <input type="date" id="effectiveDate" th:field="*{effectiveDate}" class="form-control" required style="max-width: 250px;"/>
+                <small style="color: #666;">These prices will apply to all new payments from this date forward</small>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Garment Rates -->
+            <div class="col-md-6">
+                <div class="card-info">
+                    <h4 style="margin-top: 0;"><i class="fas fa-tshirt"></i> Garment Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Dress</label>
+                        <input type="number" th:field="*{dressRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Waistcoat</label>
+                        <input type="number" th:field="*{waistcoatRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Shirt</label>
+                        <input type="number" th:field="*{shirtRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Embellishment Rates -->
+            <div class="col-md-6">
+                <div class="card-info">
+                    <h4 style="margin-top: 0;"><i class="fas fa-gem"></i> Embellishment Rates (per piece)</h4>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Matel</label>
+                        <input type="number" th:field="*{matelRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Tich</label>
+                        <input type="number" th:field="*{tichRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Kanta</label>
+                        <input type="number" th:field="*{kantaRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Jali</label>
+                        <input type="number" th:field="*{jaliRate}" class="form-control" min="0" required/>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Krhai</label>
+                        <input type="number" th:field="*{krhaiRate}" class="form-control" min="0" required/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card-info">
+            <div class="form-group">
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" th:field="*{notes}" class="form-control" rows="3" placeholder="Add any notes about these price changes..."></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button type="submit" class="btn-success-custom">
+                <i class="fas fa-save"></i> Save Price Settings
+            </button>
+            <a th:href="@{/settings}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+
+    </form>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

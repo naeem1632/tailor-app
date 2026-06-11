@@ -1,0 +1,611 @@
+/**
+ * Modern Styles for Stitch & Style Application
+ * This file provides a modern, cohesive design system across all pages
+ * Version: 1.0
+ */
+
+/* ============================================
+   GLOBAL STYLES
+   ============================================ */
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+    min-height: 100vh;
+}
+
+/* ============================================
+   MODERN CARDS
+   ============================================ */
+
+.card,
+.card-standard,
+.card-info {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Default white background for standard cards (not gradient cards) */
+.card:not([class*="card-gradient"]),
+.card-standard,
+.card-info {
+    background: white !important;
+}
+
+/* Gradient Card Backgrounds */
+.card-gradient-blue,
+.card-gradient-orange,
+.card-gradient-teal,
+.card-gradient-green,
+.card-gradient-purple,
+.card-gradient-dark {
+    color: white !important;
+}
+
+.card-gradient-blue {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+.card-gradient-orange {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+}
+.card-gradient-teal {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+.card-gradient-green {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
+.card-gradient-purple {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+.card-gradient-dark {
+    background: linear-gradient(135deg, #868f96 0%, #596164 100%) !important;
+}
+
+/* Gradient card text and elements should be white */
+.card-gradient-blue *,
+.card-gradient-orange *,
+.card-gradient-teal *,
+.card-gradient-green *,
+.card-gradient-purple *,
+.card-gradient-dark * {
+    color: white !important;
+}
+
+.card:hover,
+.card-standard:hover,
+.card-info:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+    transform: translateY(-2px);
+}
+
+.card-body {
+    padding: 24px !important;
+}
+
+/* ============================================
+   PAGE HEADERS
+   ============================================ */
+
+.page-header-standard h1,
+.page-header-standard h2 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700 !important;
+}
+
+.page-header-standard {
+    margin-bottom: 24px;
+    animation: fadeInDown 0.5s ease-out;
+}
+
+/* ============================================
+   MODERN TABLES
+   ============================================ */
+
+table {
+    background: white !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08) !important;
+    border: none !important;
+}
+
+table thead th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 16px !important;
+    border: none !important;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
+    transform: scale(1.01);
+}
+
+table tbody td {
+    padding: 14px !important;
+    vertical-align: middle !important;
+    border: none !important;
+}
+
+table tbody tr:last-child {
+    border-bottom: none !important;
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* ============================================
+   MODERN BUTTONS (Enhancement)
+   ============================================ */
+
+.btn-primary-custom,
+.btn-success-custom,
+.btn-warning-custom,
+.btn-danger-custom,
+.btn-secondary-custom,
+.btn-info-custom {
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.btn-primary-custom:hover,
+.btn-success-custom:hover,
+.btn-warning-custom:hover,
+.btn-danger-custom:hover,
+.btn-secondary-custom:hover,
+.btn-info-custom:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.btn-primary-custom:active,
+.btn-success-custom:active,
+.btn-warning-custom:active,
+.btn-danger-custom:active,
+.btn-secondary-custom:active,
+.btn-info-custom:active {
+    transform: translateY(0) !important;
+}
+
+/* Small buttons */
+.btn-sm {
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+}
+
+/* ============================================
+   FORMS & INPUTS
+   ============================================ */
+
+.form-control,
+.form-select {
+    border-radius: 8px !important;
+    border: 2px solid #e0e0e0 !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+    background: white !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    transform: translateY(-1px);
+}
+
+.form-label {
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin-bottom: 8px !important;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+
+.modal-content {
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+    animation: slideInUp 0.3s ease-out;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom: none !important;
+    padding: 20px 24px !important;
+}
+
+.modal-header h3,
+.modal-header h4,
+.modal-header h5 {
+    color: white !important;
+    margin: 0 !important;
+}
+
+.modal-header .close,
+.modal-header .btn-close {
+    color: white !important;
+    opacity: 0.9;
+}
+
+.modal-body {
+    padding: 24px !important;
+}
+
+.modal-footer {
+    border-top: none !important;
+    padding: 16px 24px 24px !important;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.5) !important;
+}
+
+.modal-box {
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+    animation: slideInUp 0.3s ease-out;
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
+
+.alert {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    padding: 16px 20px !important;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    color: #155724 !important;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+    color: #721c24 !important;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+    color: #856404 !important;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%) !important;
+    color: #0c5460 !important;
+}
+
+/* ============================================
+   BADGES & LABELS
+   ============================================ */
+
+.badge {
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px;
+}
+
+/* Status badges */
+.badge-success,
+.bg-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
+
+.badge-warning,
+.bg-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+.badge-danger,
+.bg-danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+}
+
+.badge-info,
+.bg-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.badge-primary,
+.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* ============================================
+   TOOLBAR & FILTERS
+   ============================================ */
+
+.toolbar-3,
+.toolbar-center {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    border: none !important;
+}
+
+.search-form input {
+    border-radius: 8px !important;
+    border: 2px solid #e0e0e0 !important;
+    padding: 10px 16px !important;
+    transition: all 0.3s ease !important;
+}
+
+.search-form input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Apply animations to elements */
+.card,
+.card-standard,
+.card-info {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+table {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Stagger animation for multiple cards */
+.row > div:nth-child(1) .card { animation-delay: 0.1s; }
+.row > div:nth-child(2) .card { animation-delay: 0.2s; }
+.row > div:nth-child(3) .card { animation-delay: 0.3s; }
+.row > div:nth-child(4) .card { animation-delay: 0.4s; }
+
+/* ============================================
+   CONTAINER & SPACING
+   ============================================ */
+
+.container,
+.container-fluid {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* ============================================
+   SCROLLBAR STYLING (Optional Modern Touch)
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+
+.pagination .page-link {
+    border-radius: 8px !important;
+    margin: 0 4px !important;
+    border: 2px solid #e0e0e0 !important;
+    color: #667eea !important;
+    transition: all 0.3s ease !important;
+}
+
+.pagination .page-link:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: transparent !important;
+}
+
+/* ============================================
+   DROPDOWN MENUS
+   ============================================ */
+
+.dropdown-menu {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+    padding: 8px !important;
+    animation: fadeInDown 0.2s ease-out;
+}
+
+.dropdown-item {
+    border-radius: 8px !important;
+    padding: 10px 16px !important;
+    transition: all 0.2s ease !important;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+    transform: translateX(4px);
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+
+.nav-tabs {
+    border-bottom: 2px solid #e0e0e0 !important;
+}
+
+.nav-tabs .nav-link {
+    border: none !important;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 12px 24px !important;
+    color: #6c757d !important;
+    transition: all 0.3s ease !important;
+}
+
+.nav-tabs .nav-link:hover {
+    background: rgba(102, 126, 234, 0.05) !important;
+}
+
+.nav-tabs .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   SPECIAL EFFECTS
+   ============================================ */
+
+/* Glass-morphism effect for special cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Gradient text utility class */
+.gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Hover glow effect */
+.glow-on-hover:hover {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 16px !important;
+    }
+
+    .page-header-standard h1 {
+        font-size: 1.5rem !important;
+    }
+
+    table thead th {
+        font-size: 0.75rem !important;
+        padding: 12px 8px !important;
+    }
+
+    table tbody td {
+        padding: 10px 8px !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .card,
+    .card-standard,
+    .card-info {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}

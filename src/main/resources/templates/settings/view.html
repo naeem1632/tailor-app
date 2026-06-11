@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('View Price Settings')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 700px;">
+
+    <div class="page-header-standard">
+        <h1><i class="fas fa-eye"></i> View Price Settings</h1>
+        <div class="header-actions">
+            <a th:href="@{/settings}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="card-info" style="background: #e7f3ff; border-color: #007bff; margin-bottom: 20px;">
+        <h4 style="margin-top: 0; color: #007bff;"><i class="fas fa-calendar"></i> Effective Date</h4>
+        <p style="font-size: 18px; font-weight: 700; margin: 0;" th:text="${#temporals.format(settings.effectiveDate, 'dd MMM yyyy')}"></p>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Garment Rates -->
+        <div class="col-md-6">
+            <div class="card-info">
+                <h4 style="margin-top: 0;"><i class="fas fa-tshirt"></i> Garment Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Dress:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.dressRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Waistcoat:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.waistcoatRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Shirt:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.shirtRate}"></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column - Embellishment Rates -->
+        <div class="col-md-6">
+            <div class="card-info">
+                <h4 style="margin-top: 0;"><i class="fas fa-gem"></i> Embellishment Rates</h4>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Matel:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.matelRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Tich:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.tichRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Kanta:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.kantaRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Jali:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.jaliRate}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Krhai:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${settings.krhaiRate}"></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card-info" th:if="${settings.notes}">
+        <h4 style="margin-top: 0;"><i class="fas fa-sticky-note"></i> Notes</h4>
+        <p style="margin: 0; color: #666;" th:text="${settings.notes}"></p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 24px; display: flex; gap: 12px;">
+        <a th:href="@{/settings/edit/{id}(id=${settings.id})}" class="btn-warning-custom">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        <a th:href="@{/settings}" class="btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

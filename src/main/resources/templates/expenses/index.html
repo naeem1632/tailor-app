@@ -1,125 +1,137 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Expenditures - Stitch &amp; Style</title>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fonts.css}">
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
-</head>
+<head th:replace="~{fragments/head :: head('Expense Rates')}"></head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container-fluid" style="padding-top: 24px; max-width: 600px;">
+<div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
 
     <!-- Page Header -->
     <div class="page-header-standard">
-        <h1><i class="fas fa-money-bill-wave"></i> Expenditures</h1>
+        <h1><i class="fas fa-money-bill-wave"></i> Expense Rates</h1>
         <div class="header-actions">
-            <a href="/expenses/history" class="btn-secondary-custom">
-                <i class="fas fa-history"></i> View History
+            <a th:href="@{/expenses/add}" class="btn-success-custom">
+                <i class="fas fa-plus"></i> Add New Expenses
             </a>
         </div>
     </div>
 
     <p style="color: #666; margin-bottom: 20px;">
-        Set the cost/expense for making each garment and embellishment. These values will be used to calculate profit automatically.
-        <br><strong>Note:</strong> Changes are automatically saved to expense history for accurate profit calculations.
+        Set the cost/expense for making each garment and embellishment. These values are used to calculate profit automatically.
+        <br><strong>Current Active Expenses:</strong> <span th:if="${currentExpenses}" th:text="'Effective from ' + ${#temporals.format(currentExpenses.effectiveDate, 'dd MMM yyyy')}"></span>
     </p>
 
-    <!-- Success message -->
-    <div th:if="${successMessage}" class="alert alert-success" role="alert">
-        <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
-    </div>
+    <!-- Messages -->
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
-    <!-- Error message -->
-    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
-        <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
-    </div>
+    <!-- Current Active Expenses -->
+    <div th:if="${currentExpenses}" style="background: #e7f3ff; border: 2px solid #007bff; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h4 style="margin-top: 0; color: #007bff;">
+            <i class="fas fa-star"></i> Current Active Expenses
+            <span style="font-size: 14px; font-weight: 400; color: #666;">
+                (Effective: <span th:text="${#temporals.format(currentExpenses.effectiveDate, 'dd MMM yyyy')}"></span>)
+            </span>
+        </h4>
 
-    <form th:action="@{/expenses/save}" th:object="${expense}" method="post">
+        <div class="row">
+            <div class="col-md-6">
+                <table style="width: 100%; margin-bottom: 16px;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Garment Expenses</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Dress:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.dressExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Waistcoat:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.waistcoatExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Shirt:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.shirtExpense}"></span></td>
+                    </tr>
+                </table>
+            </div>
 
-        <table style="width:100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);">
-            <thead style="background: linear-gradient(45deg, #17a2b8, #138496); color: white;">
-            <tr>
-                <th style="text-align:left; padding:12px; font-size: 14px; letter-spacing: 0.3px;">
-                    Garment / Item
-                </th>
-                <th style="text-align:left; padding:12px; font-size: 14px; letter-spacing: 0.3px;">
-                    Cost/Expense (per piece)
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Dress</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{dressExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Waistcoat</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{waistcoatExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Shirt</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{shirtExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="padding:8px 12px; background:#f8f9fa; font-size:12px; color:#666; font-style:italic;">
-                    Embellishments (per piece cost)
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Matel</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{matelExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Tich</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{tichExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Kanta</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{kantaExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6; font-weight:600;">Jali</td>
-                <td style="padding:10px 12px; border-bottom:1px solid #dee2e6;">
-                    <input type="number" th:field="*{jaliExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            <tr>
-                <td style="padding:10px 12px; font-weight:600;">Krhai</td>
-                <td style="padding:10px 12px;">
-                    <input type="number" th:field="*{krhaiExpense}" min="0" style="width:180px;"/>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-        <div style="margin-top:20px; display: flex; gap: 12px;">
-            <button type="submit" class="btn-success-custom">
-                <i class="fas fa-save"></i> Save Expenses
-            </button>
-            <a href="/" class="btn-secondary-custom">
-                <i class="fas fa-times"></i> Cancel
-            </a>
+            <div class="col-md-6">
+                <table style="width: 100%;">
+                    <tr style="background: #f8f9fa;">
+                        <td colspan="2" style="padding: 8px; font-weight: 700;">Embellishment Expenses</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Matel:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.matelExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Tich:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.tichExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Kanta:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.kantaExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Jali:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.jaliExpense}"></span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">Krhai:</td>
+                        <td style="padding: 6px; text-align: right; font-weight: 600;">Rs. <span th:text="${currentExpenses.krhaiExpense}"></span></td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
-    </form>
+        <div style="margin-top: 16px; display: flex; gap: 8px;">
+            <a th:href="@{/expenses/view/{id}(id=${currentExpenses.id})}" class="btn-info-custom">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+            <a th:href="@{/expenses/edit/{id}(id=${currentExpenses.id})}" class="btn-warning-custom">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+        </div>
+    </div>
+
+    <!-- Expense History -->
+    <h4 style="margin-top: 30px; margin-bottom: 16px;">Expense History</h4>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Effective Date</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${#lists.isEmpty(expensesList)}">
+            <td colspan="3" style="text-align: center; padding: 40px; color: #999;">
+                No expense records found. Click "Add New Expenses" to get started.
+            </td>
+        </tr>
+        <tr th:each="expenses : ${expensesList}">
+            <td>
+                <strong th:text="${#temporals.format(expenses.effectiveDate, 'dd MMM yyyy')}"></strong>
+                <span th:if="${currentExpenses != null && expenses.id == currentExpenses.id}"
+                      style="background: #007bff; color: white; padding: 2px 8px; border-radius: 8px; font-size: 11px; margin-left: 8px;">
+                    CURRENT
+                </span>
+            </td>
+            <td th:text="${expenses.notes ?: '-'}"></td>
+            <td>
+                <a th:href="@{/expenses/view/{id}(id=${expenses.id})}" class="btn btn-sm btn-info" title="View">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a th:href="@{/expenses/edit/{id}(id=${expenses.id})}" class="btn btn-sm btn-warning" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
 </div>
 
