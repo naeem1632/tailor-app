@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Work Assignments')}"></head>
+<style>
+    tr.row-highlight {
+        background-color: #fff3cd !important;
+        animation: highlightPulse 5s ease-in-out forwards;
+    }
+
+    tr.row-highlight td {
+        background-color: transparent !important;
+    }
+
+    @keyframes highlightPulse {
+        0% {
+            background-color: #fff3cd;
+        }
+        50% {
+            background-color: #ffe082;
+        }
+        100% {
+            background-color: transparent;
+        }
+    }
+</style>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -11,6 +33,9 @@
     <div class="page-header-standard">
         <h1><i class="fas fa-tasks"></i> Work Assignments</h1>
         <div class="header-actions">
+            <button type="button" class="btn-warning-custom" onclick="showBulkTransferModal()" style="margin-right: 8px;">
+                <i class="fas fa-users"></i> Bulk Transfer
+            </button>
             <a th:href="@{/work-assignments/wip-summary}" class="btn-info-custom">
                 <i class="fas fa-chart-bar"></i> WIP Summary
             </a>
@@ -62,8 +87,14 @@
     </div>
 
     <!-- Messages -->
-    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
-    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
     <!-- Assignments Grouped by Order -->
     <div th:if="${#lists.isEmpty(assignments)}" style="text-align: center; padding: 60px; background: #f8f9fa; border-radius: 4px; color: #999;">
@@ -90,6 +121,7 @@
                           data-started-time=${assignment.startedTime != null ? #temporals.format(assignment.startedTime, 'hh:mm a') : ''},
                           data-completed-date=${assignment.completedDate != null ? #temporals.format(assignment.completedDate, 'dd MMM yyyy') : ''},
                           data-completed-time=${assignment.completedTime != null ? #temporals.format(assignment.completedTime, 'hh:mm a') : ''},
+                          data-employee-id=${assignment.employee.id},
                           data-employee-name=${assignment.employee.name},
                           data-work-type=${assignment.workType},
                           data-item-type=${assignment.itemType},
@@ -110,6 +142,15 @@
     // Get CSRF token for forms
     const csrfToken = /*[[${_csrf.token}]]*/ '';
     const csrfParamName = /*[[${_csrf.parameterName}]]*/ '';
+
+    // Get all employees for reassignment dropdown
+    const allEmployees = [];
+    /*[# th:each="emp : ${employees}"]*/
+    allEmployees.push({
+        id: /*[[${emp.id}]]*/ 0,
+        name: /*[[${emp.name}]]*/ ''
+    });
+    /*[/]*/
 
     document.addEventListener('DOMContentLoaded', function() {
         const assignmentsData = document.getElementById('assignments-data');
@@ -142,6 +183,7 @@
                 startedTime: item.dataset.startedTime,
                 completedDate: item.dataset.completedDate,
                 completedTime: item.dataset.completedTime,
+                employeeId: item.dataset.employeeId,
                 employeeName: item.dataset.employeeName,
                 workType: item.dataset.workType,
                 itemType: item.dataset.itemType,
@@ -218,7 +260,8 @@
 
             order.assignments.forEach(assignment => {
                 const statusBadge = getStatusBadge(assignment.status);
-                const actionButtons = getActionButtons(assignment.status, assignment.assignmentId, order.paymentId);
+                const workTypeBadge = getWorkTypeBadge(assignment.workType);
+                const actionButtons = getActionButtons(assignment.status, assignment.assignmentId, order.paymentId, assignment.employeeId);
 
                 // Determine which date/time to show based on status
                 let displayDate = assignment.assignedDate;
@@ -236,14 +279,14 @@
                 }
 
                 html += `
-                    <tr>
+                    <tr data-assignment-id="${assignment.assignmentId}">
                         <td>
                             <div style="font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 2px;">${dateLabel}</div>
                             <div style="font-size: 13px;">${displayDate}</div>
                             ${displayTime ? `<div style="font-size: 11px; color: #666;">${displayTime}</div>` : ''}
                         </td>
                         <td>${assignment.employeeName}</td>
-                        <td>${assignment.workType}</td>
+                        <td>${workTypeBadge}</td>
                         <td>
                             ${assignment.itemType}
                             ${assignment.isDesign ? '<span style="color: #dc3545; font-size: 11px;"> (Design)</span>' : ''}
@@ -267,9 +310,48 @@
 
         container.innerHTML = html;
 
-        // Restore the previously expanded order
-        restoreExpandedOrder();
+        // Restore the previously expanded order and scroll position after DOM is ready
+        setTimeout(function() {
+            restoreExpandedOrder();
+            restoreScrollPosition();
+            highlightUpdatedRow();
+        }, 200);
     });
+
+    // Highlight the updated assignment row
+    function highlightUpdatedRow() {
+        const updatedAssignmentId = localStorage.getItem('updatedAssignmentId');
+        if (updatedAssignmentId) {
+            console.log('Looking for assignment ID:', updatedAssignmentId);
+
+            // Find the row with the matching assignment ID
+            const row = document.querySelector(`tr[data-assignment-id="${updatedAssignmentId}"]`);
+            console.log('Found row:', row);
+
+            if (row) {
+                console.log('Row classes before:', row.className);
+
+                // Add a highlight class with animation
+                row.classList.add('row-highlight');
+
+                console.log('Row classes after:', row.className);
+                console.log('Row background color:', window.getComputedStyle(row).backgroundColor);
+
+                // Scroll the row into view if it's inside a collapsed accordion
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Remove highlight class after 6 seconds (after animation completes)
+                setTimeout(() => {
+                    console.log('Removing highlight class');
+                    row.classList.remove('row-highlight');
+                }, 6000);
+            } else {
+                console.log('Row not found for assignment ID:', updatedAssignmentId);
+            }
+
+            localStorage.removeItem('updatedAssignmentId');
+        }
+    }
 
     function toggleOrder(orderId) {
         const content = document.getElementById(orderId);
@@ -301,6 +383,15 @@
         }
     }
 
+    // Restore scroll position
+    function restoreScrollPosition() {
+        const savedScrollPosition = localStorage.getItem('scrollPosition');
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+            localStorage.removeItem('scrollPosition');
+        }
+    }
+
     function getStatusBadge(status) {
         const badges = {
             'ASSIGNED': '<span style="background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 8px; font-size: 11px;">ASSIGNED</span>',
@@ -311,36 +402,304 @@
         return badges[status] || status;
     }
 
-    function getActionButtons(status, assignmentId, paymentId) {
+    function getWorkTypeBadge(workType) {
+        const badges = {
+            'CUTTING': '<span style="background: #e3f2fd; color: #1565c0; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">CUTTING</span>',
+            'STITCHING': '<span style="background: #f3e5f5; color: #6a1b9a; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">STITCHING</span>',
+            'FINISHING': '<span style="background: #fff3e0; color: #e65100; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">FINISHING</span>',
+            'EMBELLISHMENT': '<span style="background: #fce4ec; color: #c2185b; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">EMBELLISHMENT</span>'
+        };
+        return badges[workType] || workType;
+    }
+
+    function getActionButtons(status, assignmentId, paymentId, employeeId) {
+        let buttons = '';
+
         if (status === 'ASSIGNED') {
-            return `
-                <form action="/work-assignments/start/${assignmentId}" method="post" style="display: inline;" onsubmit="saveExpandedOrder('order-${paymentId}')">
-                    <input type="hidden" name="${csrfParamName}" value="${csrfToken}">
-                    <button type="submit" class="btn btn-sm btn-primary" title="Start Work">
-                        <i class="fas fa-play"></i>
-                    </button>
-                </form>
+            // Start Work button
+            buttons += `
+                <button type="button" class="btn btn-sm btn-primary" title="Start Work"
+                        onclick="performAction('start', ${assignmentId}, ${paymentId})">
+                    <i class="fas fa-play"></i>
+                </button>
             `;
         } else if (status === 'IN_PROGRESS') {
-            return `
-                <form action="/work-assignments/complete/${assignmentId}" method="post" style="display: inline;" onsubmit="saveExpandedOrder('order-${paymentId}')">
-                    <input type="hidden" name="${csrfParamName}" value="${csrfToken}">
-                    <button type="submit" class="btn btn-sm btn-success" title="Complete">
-                        <i class="fas fa-check"></i>
-                    </button>
-                </form>
+            // Complete button
+            buttons += `
+                <button type="button" class="btn btn-sm btn-success" title="Complete" style="margin-right: 4px;"
+                        onclick="performAction('complete', ${assignmentId}, ${paymentId})">
+                    <i class="fas fa-check"></i>
+                </button>
+            `;
+            // Pause button
+            buttons += `
+                <button type="button" class="btn btn-sm btn-warning" title="Pause Work"
+                        onclick="performAction('pause', ${assignmentId}, ${paymentId})">
+                    <i class="fas fa-pause"></i>
+                </button>
             `;
         }
-        return '';
+
+        // Reassign button for ASSIGNED and IN_PROGRESS statuses (hide for COMPLETED)
+        if (status === 'ASSIGNED' || status === 'IN_PROGRESS') {
+            buttons += `
+                <button type="button" class="btn btn-sm btn-info" title="Reassign" onclick="showReassignModal(${assignmentId}, ${paymentId}, ${employeeId})">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+            `;
+        }
+
+        // Show completion badge for COMPLETED status
+        if (status === 'COMPLETED') {
+            buttons += `
+                <span style="color: #28a745; font-size: 14px;" title="Work completed">
+                    <i class="fas fa-check-circle"></i>
+                </span>
+            `;
+        }
+
+        return buttons;
     }
 
     function saveExpandedOrder(orderId) {
         localStorage.setItem('expandedOrder', orderId);
+        // Save scroll position before form submission
+        localStorage.setItem('scrollPosition', window.scrollY);
     }
+
+    // Auto-dismiss alerts after page load
+    window.addEventListener('load', function() {
+        // Auto-dismiss alerts after 10 seconds
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 10000); // 10 seconds
+        });
+    });
 
     function formatNumber(num) {
         return parseInt(num).toLocaleString('en-US');
     }
+
+    // Show reassign modal
+    function showReassignModal(assignmentId, paymentId, currentEmployeeId) {
+        document.getElementById('reassignAssignmentId').value = assignmentId;
+        document.getElementById('reassignPaymentId').value = paymentId;
+
+        // Populate employee dropdown excluding current employee
+        const employeeSelect = document.getElementById('newEmployeeId');
+        employeeSelect.innerHTML = '<option value="">-- Select Employee --</option>';
+
+        allEmployees.forEach(emp => {
+            // Skip the current employee
+            if (emp.id != currentEmployeeId) {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = emp.name;
+                employeeSelect.appendChild(option);
+            }
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById('reassignModal'));
+        modal.show();
+    }
+
+    // Show bulk transfer modal
+    function showBulkTransferModal() {
+        const modal = new bootstrap.Modal(document.getElementById('bulkTransferModal'));
+        modal.show();
+    }
+
+    // Perform action (start, complete, pause) via AJAX
+    function performAction(action, assignmentId, paymentId) {
+        // Save state before reload
+        localStorage.setItem('expandedOrder', 'order-' + paymentId);
+        localStorage.setItem('scrollPosition', window.scrollY);
+        localStorage.setItem('updatedAssignmentId', assignmentId);
+
+        fetch(`/work-assignments/${action}/${assignmentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `${csrfParamName}=${csrfToken}`
+        })
+        .then(response => {
+            // Reload the page to refresh data
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error performing action. Please try again.');
+        });
+    }
 </script>
+
+<!-- Reassign Modal -->
+<div class="modal fade" id="reassignModal" tabindex="-1" aria-labelledby="reassignModalLabel" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog" style="z-index: 1056;">
+        <div class="modal-content" style="z-index: 1057;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Reassign Work</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="reassignForm" onsubmit="submitReassign(event); return false;">
+                <input type="hidden" id="reassignAssignmentId"/>
+                <input type="hidden" id="reassignPaymentId"/>
+
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="newEmployeeId" style="font-weight: 600; margin-bottom: 8px;">Reassign to Employee <span style="color: red;">*</span></label>
+                        <select name="newEmployeeId" id="newEmployeeId" class="form-control" required>
+                            <option value="">-- Select Employee --</option>
+                            <!-- Options populated dynamically by JavaScript -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reassignReason" style="font-weight: 600; margin-bottom: 8px;">Reason (Optional)</label>
+                        <textarea name="reason" id="reassignReason" class="form-control" rows="3"
+                                  placeholder="Enter reason for reassignment..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-exchange-alt"></i> Reassign
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Transfer Modal -->
+<div class="modal fade" id="bulkTransferModal" tabindex="-1" aria-labelledby="bulkTransferModalLabel" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg" style="z-index: 1056;">
+        <div class="modal-content" style="z-index: 1057;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title"><i class="fas fa-users"></i> Bulk Transfer Work</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/work-assignments/bulk-transfer}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Transfer all work assignments from one employee to another. Only unpaid assignments will be transferred.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="fromEmployeeId" style="font-weight: 600; margin-bottom: 8px;">From Employee <span style="color: red;">*</span></label>
+                                <select name="fromEmployeeId" id="fromEmployeeId" class="form-control" required>
+                                    <option value="">-- Select Employee --</option>
+                                    <option th:each="emp : ${employees}" th:value="${emp.id}" th:text="${emp.name}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="toEmployeeId" style="font-weight: 600; margin-bottom: 8px;">To Employee <span style="color: red;">*</span></label>
+                                <select name="toEmployeeId" id="toEmployeeId" class="form-control" required>
+                                    <option value="">-- Select Employee --</option>
+                                    <option th:each="emp : ${employees}" th:value="${emp.id}" th:text="${emp.name}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="font-weight: 600; margin-bottom: 8px;">Include Statuses <span style="color: red;">*</span></label>
+                        <div style="display: flex; gap: 16px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="statuses" value="ASSIGNED" id="statusAssigned" checked>
+                                <label class="form-check-label" for="statusAssigned">Assigned</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="statuses" value="IN_PROGRESS" id="statusInProgress" checked>
+                                <label class="form-check-label" for="statusInProgress">In Progress</label>
+                            </div>
+                        </div>
+                        <small style="color: #666;">Select which work statuses to transfer</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bulkReason" style="font-weight: 600; margin-bottom: 8px;">Reason (Optional)</label>
+                        <textarea name="reason" id="bulkReason" class="form-control" rows="3"
+                                  placeholder="e.g., Employee on leave, Emergency reassignment..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-users"></i> Transfer Work
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Submit reassign form via AJAX
+    function submitReassign(event) {
+        event.preventDefault();
+
+        const assignmentId = document.getElementById('reassignAssignmentId').value;
+        const newEmployeeId = document.getElementById('newEmployeeId').value;
+        const reason = document.getElementById('reassignReason').value;
+        const paymentId = document.getElementById('reassignPaymentId').value;
+
+        if (!newEmployeeId) {
+            alert('Please select an employee');
+            return;
+        }
+
+        // Save state before reload
+        localStorage.setItem('expandedOrder', 'order-' + paymentId);
+        localStorage.setItem('scrollPosition', window.scrollY);
+        localStorage.setItem('updatedAssignmentId', assignmentId);
+
+        // Submit via AJAX
+        const formData = new FormData();
+        formData.append(csrfParamName, csrfToken);
+        formData.append('newEmployeeId', newEmployeeId);
+        formData.append('reason', reason);
+        formData.append('paymentId', paymentId);
+
+        fetch(`/work-assignments/reassign/${assignmentId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('reassignModal'));
+                modal.hide();
+
+                // Clear form
+                document.getElementById('newEmployeeId').value = '';
+                document.getElementById('reassignReason').value = '';
+
+                // Reload page to refresh data
+                window.location.reload();
+            } else {
+                alert('Error reassigning work. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error reassigning work. Please try again.');
+        });
+    }
+</script>
+
 </body>
 </html>

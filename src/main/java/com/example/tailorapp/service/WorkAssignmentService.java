@@ -4,11 +4,13 @@ import com.example.tailorapp.model.Employee;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.model.PieceRateSettings;
 import com.example.tailorapp.model.WorkAssignment;
+import com.example.tailorapp.repository.EmployeeRepository;
 import com.example.tailorapp.repository.WorkAssignmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,13 +21,16 @@ public class WorkAssignmentService {
     private final WorkAssignmentRepository workAssignmentRepository;
     private final PieceRateSettingsService pieceRateSettingsService;
     private final EmployeeService employeeService;
+    private final EmployeeRepository employeeRepository;
 
     public WorkAssignmentService(WorkAssignmentRepository workAssignmentRepository,
                                  PieceRateSettingsService pieceRateSettingsService,
-                                 EmployeeService employeeService) {
+                                 EmployeeService employeeService,
+                                 EmployeeRepository employeeRepository) {
         this.workAssignmentRepository = workAssignmentRepository;
         this.pieceRateSettingsService = pieceRateSettingsService;
         this.employeeService = employeeService;
+        this.employeeRepository = employeeRepository;
     }
 
     public List<WorkAssignment> findAll() {
@@ -152,6 +157,121 @@ public class WorkAssignmentService {
      */
     public WorkAssignment cancelWork(Long assignmentId) {
         return updateStatus(assignmentId, "CANCELLED");
+    }
+
+    /**
+     * Pause work (revert IN_PROGRESS back to ASSIGNED)
+     * Preserves startedDate and startedTime for history
+     */
+    public WorkAssignment pauseWork(Long assignmentId) {
+        WorkAssignment assignment = workAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        if (!"IN_PROGRESS".equals(assignment.getStatus())) {
+            throw new RuntimeException("Only in-progress work can be paused");
+        }
+
+        assignment.setStatus("ASSIGNED");
+
+        // Add pause note to track history
+        String pauseNote = "Paused on " + LocalDateTime.now().format(
+                java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
+        if (assignment.getNotes() == null || assignment.getNotes().isEmpty()) {
+            assignment.setNotes(pauseNote);
+        } else {
+            assignment.setNotes(assignment.getNotes() + "; " + pauseNote);
+        }
+
+        return workAssignmentRepository.save(assignment);
+    }
+
+    /**
+     * Reassign work to a different employee
+     */
+    public WorkAssignment reassignWork(Long assignmentId, Long newEmployeeId, String reason) {
+        WorkAssignment assignment = workAssignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+        // Can only reassign ASSIGNED or IN_PROGRESS work
+        if ("COMPLETED".equals(assignment.getStatus()) || "CANCELLED".equals(assignment.getStatus())) {
+            throw new RuntimeException("Cannot reassign completed or cancelled work");
+        }
+
+        // Cannot reassign if already paid
+        if (Boolean.TRUE.equals(assignment.getIsPaid())) {
+            throw new RuntimeException("Cannot reassign paid work");
+        }
+
+        // Cannot reassign to the same employee
+        if (assignment.getEmployee().getId().equals(newEmployeeId)) {
+            throw new RuntimeException("Cannot reassign to the same employee. Please select a different employee.");
+        }
+
+        Employee newEmployee = employeeRepository.findById(newEmployeeId)
+                .orElseThrow(() -> new RuntimeException("New employee not found"));
+
+        // Track original employee if this is first reassignment
+        if (assignment.getOriginalEmployeeId() == null) {
+            assignment.setOriginalEmployeeId(assignment.getEmployee().getId());
+        }
+
+        // Update reassignment tracking
+        assignment.setEmployee(newEmployee);
+        assignment.setReassignedDate(LocalDateTime.now());
+        assignment.setReassignmentReason(reason);
+
+        // Handle null reassignmentCount (for existing assignments created before this field was added)
+        Integer currentCount = assignment.getReassignmentCount();
+        if (currentCount == null) {
+            currentCount = 0;
+        }
+        assignment.setReassignmentCount(currentCount + 1);
+
+        // If work was in progress, reset to ASSIGNED for new employee
+        if ("IN_PROGRESS".equals(assignment.getStatus())) {
+            assignment.setStatus("ASSIGNED");
+            assignment.setStartedDate(null);
+            assignment.setStartedTime(null);
+        }
+
+        // Add reassignment note
+        String reassignNote = "Reassigned to " + newEmployee.getName() + " on " +
+                LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm"));
+        if (reason != null && !reason.isEmpty()) {
+            reassignNote += " - Reason: " + reason;
+        }
+
+        if (assignment.getNotes() == null || assignment.getNotes().isEmpty()) {
+            assignment.setNotes(reassignNote);
+        } else {
+            assignment.setNotes(assignment.getNotes() + "; " + reassignNote);
+        }
+
+        return workAssignmentRepository.save(assignment);
+    }
+
+    /**
+     * Bulk reassign all work from one employee to another
+     */
+    public int bulkReassignWork(Long fromEmployeeId, Long toEmployeeId, List<String> statuses, String reason) {
+        Employee fromEmployee = employeeRepository.findById(fromEmployeeId)
+                .orElseThrow(() -> new RuntimeException("Source employee not found"));
+        Employee toEmployee = employeeRepository.findById(toEmployeeId)
+                .orElseThrow(() -> new RuntimeException("Target employee not found"));
+
+        List<WorkAssignment> assignments = workAssignmentRepository.findByEmployeeOrderByAssignedDateDesc(fromEmployee);
+
+        int reassignedCount = 0;
+        for (WorkAssignment assignment : assignments) {
+            // Only reassign if status is in the filter list and not paid
+            if (statuses.contains(assignment.getStatus()) &&
+                !Boolean.TRUE.equals(assignment.getIsPaid())) {
+                reassignWork(assignment.getId(), toEmployeeId, reason);
+                reassignedCount++;
+            }
+        }
+
+        return reassignedCount;
     }
 
     /**

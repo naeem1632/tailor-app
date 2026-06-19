@@ -74,7 +74,7 @@ public class EmployeePaymentService {
         Long totalPaid = calculateTotalPayments(employee);
         Long unpaidAmount = workAssignmentService.calculateUnpaidAmount(employee);
         List<WorkAssignment> unpaidWork = workAssignmentService.findUnpaidCompletedWork(employee);
-        List<EmployeePayment> paymentHistory = findByEmployee(employee);
+        List<EmployeePayment> paymentHistory = findByEmployeeWithTransactionsAndDeductions(employee);
 
         return new PayrollSummary(employee, totalPaid, unpaidAmount, unpaidWork.size(),
                                  paymentHistory, unpaidWork);
@@ -192,6 +192,72 @@ public class EmployeePaymentService {
      */
     public List<EmployeePayment> findByPaymentStatus(String status) {
         return employeePaymentRepository.findByPaymentStatusOrderByCreatedAtDesc(status);
+    }
+
+    /**
+     * Find all payments with transactions and deductions eagerly loaded
+     * Uses 3-step loading to avoid MultipleBagFetchException
+     */
+    public List<EmployeePayment> findAllWithTransactionsAndDeductions() {
+        // Step 1: Load EmployeePayment with paymentTransactions
+        List<EmployeePayment> payments = employeePaymentRepository.findAllWithTransactions();
+        if (!payments.isEmpty()) {
+            // Step 2: Load advanceDeductions for the transactions
+            employeePaymentRepository.fetchAdvanceDeductionsForTransactions(payments);
+            // Step 3: Load workAssignments
+            employeePaymentRepository.fetchWorkAssignments(payments);
+        }
+        return payments;
+    }
+
+    /**
+     * Find payments by employee with transactions and deductions eagerly loaded
+     * Uses 3-step loading to avoid MultipleBagFetchException
+     */
+    public List<EmployeePayment> findByEmployeeWithTransactionsAndDeductions(Employee employee) {
+        // Step 1: Load EmployeePayment with paymentTransactions
+        List<EmployeePayment> payments = employeePaymentRepository.findByEmployeeWithTransactions(employee);
+        if (!payments.isEmpty()) {
+            // Step 2: Load advanceDeductions for the transactions
+            employeePaymentRepository.fetchAdvanceDeductionsForTransactions(payments);
+            // Step 3: Load workAssignments
+            employeePaymentRepository.fetchWorkAssignments(payments);
+        }
+        return payments;
+    }
+
+    /**
+     * Find payments by status with transactions and deductions eagerly loaded
+     * Uses 3-step loading to avoid MultipleBagFetchException
+     */
+    public List<EmployeePayment> findByPaymentStatusWithTransactionsAndDeductions(String status) {
+        // Step 1: Load EmployeePayment with paymentTransactions
+        List<EmployeePayment> payments = employeePaymentRepository.findByPaymentStatusWithTransactions(status);
+        if (!payments.isEmpty()) {
+            // Step 2: Load advanceDeductions for the transactions
+            employeePaymentRepository.fetchAdvanceDeductionsForTransactions(payments);
+            // Step 3: Load workAssignments
+            employeePaymentRepository.fetchWorkAssignments(payments);
+        }
+        return payments;
+    }
+
+    /**
+     * Find payment by id with transactions and deductions eagerly loaded
+     * Uses 4-step loading to avoid MultipleBagFetchException
+     * Includes nested payment and client for work assignments (needed for detail view)
+     */
+    public Optional<EmployeePayment> findByIdWithTransactionsAndDeductions(Long id) {
+        // Step 1: Load EmployeePayment with paymentTransactions
+        Optional<EmployeePayment> paymentOpt = employeePaymentRepository.findByIdWithTransactions(id);
+        if (paymentOpt.isPresent()) {
+            List<EmployeePayment> payments = List.of(paymentOpt.get());
+            // Step 2: Load advanceDeductions for the transactions
+            employeePaymentRepository.fetchAdvanceDeductionsForTransactions(payments);
+            // Step 3 & 4: Load workAssignments with nested payment and client
+            employeePaymentRepository.fetchWorkAssignmentsWithPaymentAndClient(payments);
+        }
+        return paymentOpt;
     }
 
     /**

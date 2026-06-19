@@ -42,6 +42,10 @@ public class ExpenseController {
 
         // Create new expenses pre-filled with current expenses for convenience
         ExpenseHistory newExpenses = new ExpenseHistory();
+
+        // Set default effective date to today
+        newExpenses.setEffectiveDate(java.time.LocalDate.now());
+
         if (currentExpensesOpt.isPresent()) {
             ExpenseHistory currentExpenses = currentExpensesOpt.get();
             newExpenses.setDressExpense(currentExpenses.getDressExpense());

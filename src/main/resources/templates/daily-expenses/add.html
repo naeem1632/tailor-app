@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Add Expense')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 900px;">
+
+    <div class="page-header-standard">
+        <h1><i class="fas fa-plus"></i> Add New Expense</h1>
+        <div class="header-actions">
+            <a th:href="@{/daily-expenses}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Error Messages -->
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}"></span>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 24px;">
+        <form th:action="@{/daily-expenses/add}" method="post" th:object="${expense}">
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Expense Date <span style="color: red;">*</span></label>
+                        <input type="date" th:field="*{expenseDate}" class="form-control" required/>
+                        <div th:if="${#fields.hasErrors('expenseDate')}" class="text-danger" th:errors="*{expenseDate}"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Expense Time <span style="color: red;">*</span></label>
+                        <input type="time" th:field="*{expenseTime}" class="form-control" required/>
+                        <div th:if="${#fields.hasErrors('expenseTime')}" class="text-danger" th:errors="*{expenseTime}"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Amount (Rs.) <span style="color: red;">*</span></label>
+                        <input type="number" th:field="*{amount}" class="form-control" required min="1" placeholder="e.g., 5000"/>
+                        <div th:if="${#fields.hasErrors('amount')}" class="text-danger" th:errors="*{amount}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Category <span style="color: red;">*</span></label>
+                        <select th:field="*{category}" class="form-control" id="categorySelect" required>
+                            <option value="">-- Select Category --</option>
+                            <option value="UTILITIES">Utilities</option>
+                            <option value="RENT">Rent</option>
+                            <option value="MATERIALS">Materials</option>
+                            <option value="SALARIES">Salaries</option>
+                            <option value="MAINTENANCE">Maintenance</option>
+                            <option value="MISCELLANEOUS">Miscellaneous</option>
+                            <option value="OTHER">Other (Specify below)</option>
+                        </select>
+                        <div th:if="${#fields.hasErrors('category')}" class="text-danger" th:errors="*{category}"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group" id="customCategoryGroup" style="display: none;">
+                        <label style="font-weight: 600;">Custom Category <span style="color: red;">*</span></label>
+                        <input type="text" th:field="*{customCategory}" class="form-control" id="customCategoryInput" placeholder="e.g., Marketing, Travel, etc."/>
+                        <div th:if="${#fields.hasErrors('customCategory')}" class="text-danger" th:errors="*{customCategory}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Payment Method <span style="color: red;">*</span></label>
+                        <select th:field="*{paymentMethod}" class="form-control" required>
+                            <option value="CASH">Cash</option>
+                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                            <option value="JAZZCASH">JazzCash</option>
+                            <option value="EASYPAISA">Easypaisa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Description</label>
+                        <input type="text" th:field="*{description}" class="form-control" placeholder="e.g., Electricity bill for March"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="font-weight: 600;">Notes (Optional)</label>
+                <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="Additional notes or details..."></textarea>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <a th:href="@{/daily-expenses}" class="btn-secondary-custom" style="margin-right: 8px;">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn-success-custom">
+                    <i class="fas fa-save"></i> Save Expense
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script>
+    // Show/hide custom category field based on selection
+    document.getElementById('categorySelect').addEventListener('change', function() {
+        const customCategoryGroup = document.getElementById('customCategoryGroup');
+        const customCategoryInput = document.getElementById('customCategoryInput');
+
+        if (this.value === 'OTHER') {
+            customCategoryGroup.style.display = 'block';
+            customCategoryInput.required = true;
+        } else {
+            customCategoryGroup.style.display = 'none';
+            customCategoryInput.required = false;
+            customCategoryInput.value = '';
+        }
+    });
+
+    // Check on page load (in case of validation errors)
+    window.addEventListener('DOMContentLoaded', function() {
+        const categorySelect = document.getElementById('categorySelect');
+        if (categorySelect.value === 'OTHER') {
+            document.getElementById('customCategoryGroup').style.display = 'block';
+            document.getElementById('customCategoryInput').required = true;
+        }
+    });
+</script>
+</body>
+</html>

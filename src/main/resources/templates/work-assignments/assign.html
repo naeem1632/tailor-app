@@ -3,6 +3,28 @@
 <head th:replace="~{fragments/head :: head('Assign Work')}"></head>
 <head>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        tr.row-highlight {
+            background-color: #fff3cd !important;
+            animation: highlightPulse 5s ease-in-out forwards;
+        }
+
+        tr.row-highlight td {
+            background-color: transparent !important;
+        }
+
+        @keyframes highlightPulse {
+            0% {
+                background-color: #fff3cd;
+            }
+            50% {
+                background-color: #ffe082;
+            }
+            100% {
+                background-color: transparent;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -508,7 +530,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="assignment : ${existingAssignments}">
+                    <tr th:each="assignment : ${existingAssignments}" th:attr="data-assignment-id=${assignment.id}">
                         <td>
                             <div th:text="${#temporals.format(assignment.assignedDate, 'dd MMM yyyy')}" style="font-size: 12px;"></div>
                             <div th:if="${assignment.assignedTime != null}" style="font-size: 10px; color: #666;"
@@ -520,7 +542,16 @@
                             <div th:text="${#temporals.format(assignment.payment.date, 'dd MMM')}" style="font-size: 10px;"></div>
                         </td>
                         <td th:text="${assignment.employee.name}" style="font-size: 12px;"></td>
-                        <td th:text="${assignment.workType}" style="font-size: 12px;"></td>
+                        <td>
+                            <span th:if="${assignment.workType == 'CUTTING'}"
+                                  style="background: #e3f2fd; color: #1565c0; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">CUTTING</span>
+                            <span th:if="${assignment.workType == 'STITCHING'}"
+                                  style="background: #f3e5f5; color: #6a1b9a; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">STITCHING</span>
+                            <span th:if="${assignment.workType == 'FINISHING'}"
+                                  style="background: #fff3e0; color: #e65100; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">FINISHING</span>
+                            <span th:if="${assignment.workType == 'EMBELLISHMENT'}"
+                                  style="background: #fce4ec; color: #c2185b; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">EMBELLISHMENT</span>
+                        </td>
                         <td>
                             <span th:text="${assignment.itemType}" style="font-size: 12px;"></span>
                             <span th:if="${assignment.isDesignWork}" style="color: #dc3545; font-size: 10px;"> (Design)</span>
@@ -544,11 +575,37 @@
                             </span>
                         </td>
                         <td>
-                            <a th:href="@{/work-assignments/edit/{id}(id=${assignment.id})}"
+                            <!-- Complete button: Show only for IN_PROGRESS -->
+                            <button type="button" class="btn btn-sm btn-success" title="Mark as Complete"
+                                    th:if="${assignment.status == 'IN_PROGRESS'}"
+                                    th:disabled="${assignment.isPaid}" style="margin-right: 4px; padding: 2px 6px;"
+                                    th:onclick="'completeAssignment(' + ${assignment.id} + ')'"
+                                    onclick="completeAssignment(this.getAttribute('data-id'))"
+                                    th:attr="data-id=${assignment.id}">
+                                <i class="fas fa-check" style="font-size: 11px;"></i>
+                            </button>
+
+                            <!-- Edit button: Show only for ASSIGNED and IN_PROGRESS, hide for COMPLETED -->
+                            <a th:if="${assignment.status == 'ASSIGNED' || assignment.status == 'IN_PROGRESS'}"
+                               th:href="@{/work-assignments/edit/{id}(id=${assignment.id})}"
+                               th:disabled="${assignment.isPaid}"
                                class="btn btn-sm btn-warning" title="Edit" style="margin-right: 4px; padding: 2px 6px;">
                                 <i class="fas fa-edit" style="font-size: 11px;"></i>
                             </a>
-                            <form th:action="@{/work-assignments/delete/{id}(id=${assignment.id})}"
+
+                            <!-- Reassign button: Show only for ASSIGNED and IN_PROGRESS, hide for COMPLETED -->
+                            <button type="button" class="btn btn-sm btn-info" title="Reassign"
+                                    th:if="${assignment.status == 'ASSIGNED' || assignment.status == 'IN_PROGRESS'}"
+                                    th:disabled="${assignment.isPaid}" style="margin-right: 4px; padding: 2px 6px;"
+                                    th:onclick="'showReassignModal(' + ${assignment.id} + ', ' + ${assignment.employee.id} + ')'"
+                                    onclick="showReassignModal(this.getAttribute('data-id'), this.getAttribute('data-emp-id'))"
+                                    th:attr="data-id=${assignment.id},data-emp-id=${assignment.employee.id}">
+                                <i class="fas fa-exchange-alt" style="font-size: 11px;"></i>
+                            </button>
+
+                            <!-- Delete button: Show only for ASSIGNED, hide for IN_PROGRESS and COMPLETED -->
+                            <form th:if="${assignment.status == 'ASSIGNED'}"
+                                  th:action="@{/work-assignments/delete/{id}(id=${assignment.id})}"
                                   method="post" style="display: inline;" class="delete-assignment-form">
                                 <button type="button" class="btn btn-sm btn-danger delete-assignment-btn" title="Delete"
                                         th:disabled="${assignment.isPaid}" style="padding: 2px 6px;"
@@ -556,6 +613,12 @@
                                     <i class="fas fa-trash" style="font-size: 11px;"></i>
                                 </button>
                             </form>
+
+                            <!-- Show completion badge for COMPLETED status -->
+                            <span th:if="${assignment.status == 'COMPLETED'}"
+                                  style="color: #28a745; font-size: 14px;" title="Work completed">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </span>
                         </td>
                     </tr>
                     </tbody>
@@ -583,6 +646,18 @@
             <div class="modal-actions">
                 <button id="confirmDeleteBtn" class="btn-danger-custom">Yes, Delete</button>
                 <button id="cancelDeleteBtn" class="btn-secondary-custom">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Confirmation Modal -->
+    <div id="confirmCompleteModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>✓ Confirm Completion</h3>
+            <p>Are you sure you want to mark this work as completed?</p>
+            <div class="modal-actions">
+                <button id="confirmCompleteBtn" class="btn-primary-custom">Yes, Complete</button>
+                <button id="cancelCompleteBtn" class="btn-secondary-custom">Cancel</button>
             </div>
         </div>
     </div>
@@ -1443,6 +1518,225 @@
             formToSubmit = null;
         }
     });
+
+    // Show reassign modal
+    function showReassignModal(assignmentId, currentEmployeeId) {
+        document.getElementById('reassignAssignmentId').value = assignmentId;
+
+        // Populate employee dropdown excluding current employee
+        const employeeSelect = document.getElementById('newEmployeeId');
+        employeeSelect.innerHTML = '<option value="">-- Select Employee --</option>';
+
+        employees.forEach(emp => {
+            // Skip the current employee
+            if (emp.id != currentEmployeeId) {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = emp.name;
+                employeeSelect.appendChild(option);
+            }
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById('reassignModal'));
+        modal.show();
+    }
+
+    // Submit reassign form via AJAX
+    function submitReassignAjax(event) {
+        event.preventDefault();
+
+        const assignmentId = document.getElementById('reassignAssignmentId').value;
+        const newEmployeeId = document.getElementById('newEmployeeId').value;
+        const reason = document.getElementById('reassignReason').value;
+        const paymentId = document.getElementById('reassignFormPaymentId').value;
+
+        if (!newEmployeeId) {
+            alert('Please select an employee');
+            return;
+        }
+
+        // Save scroll position and assignment ID for highlighting
+        localStorage.setItem('assignPageScrollPosition', window.scrollY);
+        localStorage.setItem('updatedAssignmentId', assignmentId);
+
+        // Get CSRF token from the page (using Thymeleaf inline script)
+        const csrfToken = /*[[${_csrf.token}]]*/ '';
+        const csrfParamName = /*[[${_csrf.parameterName}]]*/ '';
+
+        // Submit via AJAX
+        const formData = new FormData();
+        formData.append(csrfParamName, csrfToken);
+        formData.append('newEmployeeId', newEmployeeId);
+        formData.append('reason', reason);
+        formData.append('paymentId', paymentId);
+
+        fetch(`/work-assignments/reassign/${assignmentId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok || response.redirected) {
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('reassignModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Clear form
+                document.getElementById('newEmployeeId').value = '';
+                document.getElementById('reassignReason').value = '';
+
+                // Reload page to refresh data
+                window.location.reload();
+            } else {
+                return response.text().then(text => {
+                    alert('Error reassigning work: ' + (text || 'Please try again.'));
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error reassigning work. Please try again.');
+        });
+    }
+
+    // Complete assignment
+    let assignmentToComplete = null;
+
+    function completeAssignment(assignmentId) {
+        assignmentToComplete = assignmentId;
+        document.getElementById('confirmCompleteModal').style.display = 'flex';
+    }
+
+    // Confirm complete button
+    document.getElementById('confirmCompleteBtn').addEventListener('click', function() {
+        if (assignmentToComplete) {
+            // Save scroll position and assignment ID for highlighting
+            localStorage.setItem('assignPageScrollPosition', window.scrollY);
+            localStorage.setItem('updatedAssignmentId', assignmentToComplete);
+
+            // Get CSRF token from the page (using Thymeleaf inline script)
+            const csrfToken = /*[[${_csrf.token}]]*/ '';
+            const csrfParamName = /*[[${_csrf.parameterName}]]*/ '';
+
+            // Submit via AJAX
+            const formData = new FormData();
+            formData.append(csrfParamName, csrfToken);
+
+            fetch(`/work-assignments/complete/${assignmentToComplete}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok || response.redirected) {
+                    // Reload page to refresh data
+                    window.location.reload();
+                } else {
+                    return response.text().then(text => {
+                        alert('Error completing work: ' + (text || 'Please try again.'));
+                        document.getElementById('confirmCompleteModal').style.display = 'none';
+                        assignmentToComplete = null;
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error completing work. Please try again.');
+                document.getElementById('confirmCompleteModal').style.display = 'none';
+                assignmentToComplete = null;
+            });
+        }
+    });
+
+    // Cancel complete button
+    document.getElementById('cancelCompleteBtn').addEventListener('click', function() {
+        document.getElementById('confirmCompleteModal').style.display = 'none';
+        assignmentToComplete = null;
+    });
+
+    // Close complete modal on overlay click
+    document.getElementById('confirmCompleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+            assignmentToComplete = null;
+        }
+    });
+
+    // Restore scroll position and highlight updated row on page load
+    window.addEventListener('load', function() {
+        const savedScrollPosition = localStorage.getItem('assignPageScrollPosition');
+        if (savedScrollPosition) {
+            window.scrollTo(0, parseInt(savedScrollPosition));
+            localStorage.removeItem('assignPageScrollPosition');
+        }
+
+        // Highlight the updated assignment row
+        const updatedAssignmentId = localStorage.getItem('updatedAssignmentId');
+        if (updatedAssignmentId) {
+            console.log('Looking for assignment ID:', updatedAssignmentId);
+
+            // Find the row with the matching assignment ID
+            const row = document.querySelector('tr[data-assignment-id="' + updatedAssignmentId + '"]');
+            console.log('Found row:', row);
+
+            if (row) {
+                // Add a highlight class with animation
+                row.classList.add('row-highlight');
+
+                // Scroll the row into view
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Remove highlight class after 6 seconds (after animation completes)
+                setTimeout(() => {
+                    row.classList.remove('row-highlight');
+                }, 6000);
+            } else {
+                console.log('Row not found for assignment ID:', updatedAssignmentId);
+            }
+
+            localStorage.removeItem('updatedAssignmentId');
+        }
+    });
 </script>
+
+<!-- Reassign Modal -->
+<div class="modal fade" id="reassignModal" tabindex="-1" aria-labelledby="reassignModalLabel" aria-hidden="true" style="z-index: 1055;">
+    <div class="modal-dialog" style="z-index: 1056;">
+        <div class="modal-content" style="z-index: 1057;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt"></i> Reassign Work</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="reassignForm" onsubmit="submitReassignAjax(event); return false;">
+                <input type="hidden" id="reassignAssignmentId"/>
+                <input type="hidden" id="reassignFormPaymentId" th:value="${payment.id}"/>
+
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="newEmployeeId" style="font-weight: 600; margin-bottom: 8px;">Reassign to Employee <span style="color: red;">*</span></label>
+                        <select name="newEmployeeId" id="newEmployeeId" class="form-control" required>
+                            <option value="">-- Select Employee --</option>
+                            <!-- Options populated dynamically by JavaScript -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reassignReason" style="font-weight: 600; margin-bottom: 8px;">Reason (Optional)</label>
+                        <textarea name="reason" id="reassignReason" class="form-control" rows="3"
+                                  placeholder="Enter reason for reassignment..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-exchange-alt"></i> Reassign
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

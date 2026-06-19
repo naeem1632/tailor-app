@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Expense Report')}"></head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container-fluid" style="padding-top: 24px; max-width: 1400px;">
+
+    <div class="page-header-standard">
+        <h1><i class="fas fa-chart-bar"></i> Expense Report</h1>
+        <div class="header-actions">
+            <a th:href="@{/daily-expenses}" class="btn-secondary-custom">
+                <i class="fas fa-arrow-left"></i> Back to Expenses
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+        <form method="get" th:action="@{/daily-expenses/report}">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label style="font-weight: 600; margin-bottom: 4px;">Start Date <span style="color: red;">*</span></label>
+                    <input type="date" name="startDate" class="form-control" th:value="${startDate}" required/>
+                </div>
+                <div class="col-md-3">
+                    <label style="font-weight: 600; margin-bottom: 4px;">End Date <span style="color: red;">*</span></label>
+                    <input type="date" name="endDate" class="form-control" th:value="${endDate}" required/>
+                </div>
+                <div class="col-md-3">
+                    <label style="font-weight: 600; margin-bottom: 4px;">Filter by Category</label>
+                    <select name="category" class="form-control">
+                        <option value="">All Categories</option>
+                        <option value="UTILITIES" th:selected="${selectedCategory == 'UTILITIES'}">Utilities</option>
+                        <option value="RENT" th:selected="${selectedCategory == 'RENT'}">Rent</option>
+                        <option value="MATERIALS" th:selected="${selectedCategory == 'MATERIALS'}">Materials</option>
+                        <option value="SALARIES" th:selected="${selectedCategory == 'SALARIES'}">Salaries</option>
+                        <option value="MAINTENANCE" th:selected="${selectedCategory == 'MAINTENANCE'}">Maintenance</option>
+                        <option value="MISCELLANEOUS" th:selected="${selectedCategory == 'MISCELLANEOUS'}">Miscellaneous</option>
+                        <option value="OTHER" th:selected="${selectedCategory == 'OTHER'}">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="fas fa-search"></i> Generate Report
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Report Summary -->
+    <div th:if="${report != null}">
+        <!-- Total Summary Card -->
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 6px; padding: 24px; margin-bottom: 24px; color: white;">
+            <div class="row">
+                <div class="col-md-4">
+                    <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Report Period</div>
+                    <div style="font-size: 18px; font-weight: 700;">
+                        <span th:text="${#temporals.format(report.startDate, 'dd MMM yyyy')}"></span> -
+                        <span th:text="${#temporals.format(report.endDate, 'dd MMM yyyy')}"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Total Expenses</div>
+                    <div style="font-size: 28px; font-weight: 700;">
+                        Rs. <span th:text="${#numbers.formatInteger(report.totalAmount, 0, 'COMMA')}"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Number of Entries</div>
+                    <div style="font-size: 28px; font-weight: 700;">
+                        <span th:text="${#lists.size(report.expenses)}"></span>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${selectedCategory}" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.3);">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Filtered By</div>
+                <div style="font-size: 16px; font-weight: 600;" th:text="${selectedCategory}"></div>
+            </div>
+        </div>
+
+        <!-- Category Summary (only if not filtered by category) -->
+        <div th:if="${(selectedCategory == null || selectedCategory.isEmpty()) && report.categorySummary != null && !report.categorySummary.isEmpty()}"
+             style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">
+                <i class="fas fa-chart-pie"></i> Category Breakdown
+            </h4>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th style="text-align: right;">Amount</th>
+                            <th style="text-align: right;">Percentage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="entry : ${report.categorySummary}">
+                            <td>
+                                <span th:if="${entry.key == 'UTILITIES'}" style="background: #fff3cd; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-lightbulb"></i> UTILITIES
+                                </span>
+                                <span th:if="${entry.key == 'RENT'}" style="background: #d1ecf1; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-home"></i> RENT
+                                </span>
+                                <span th:if="${entry.key == 'MATERIALS'}" style="background: #e2e3e5; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-box"></i> MATERIALS
+                                </span>
+                                <span th:if="${entry.key == 'SALARIES'}" style="background: #d4edda; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-money-bill-wave"></i> SALARIES
+                                </span>
+                                <span th:if="${entry.key == 'MAINTENANCE'}" style="background: #f8d7da; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-tools"></i> MAINTENANCE
+                                </span>
+                                <span th:if="${entry.key == 'MISCELLANEOUS'}" style="background: #e7e7e7; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-list"></i> MISCELLANEOUS
+                                </span>
+                                <span th:if="${entry.key == 'OTHER'}" style="background: #cfe2ff; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                                    <i class="fas fa-question"></i> OTHER
+                                </span>
+                            </td>
+                            <td style="text-align: right; font-weight: 700; color: #dc3545;">
+                                Rs. <span th:text="${#numbers.formatInteger(entry.value, 0, 'COMMA')}"></span>
+                            </td>
+                            <td style="text-align: right; font-weight: 600;">
+                                <span th:text="${#numbers.formatDecimal((entry.value * 100.0 / report.totalAmount), 1, 2)}"></span>%
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Expense List -->
+        <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+            <div style="background: #f8f9fa; padding: 16px; border-bottom: 1px solid #ddd;">
+                <h4 style="margin: 0; color: #007bff;">
+                    <i class="fas fa-list"></i> Detailed Expenses
+                </h4>
+            </div>
+
+            <table class="table" th:if="${!#lists.isEmpty(report.expenses)}">
+                <thead>
+                <tr>
+                    <th>Expense #</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="expense : ${report.expenses}">
+                    <td>
+                        <a th:href="@{/daily-expenses/view/{id}(id=${expense.id})}" style="font-weight: 600; color: #007bff;">
+                            #<span th:text="${expense.id}"></span>
+                        </a>
+                    </td>
+                    <td th:text="${#temporals.format(expense.expenseDate, 'dd MMM yyyy')}"></td>
+                    <td th:text="${expense.expenseTime != null ? #temporals.format(expense.expenseTime, 'hh:mm a') : '-'}"></td>
+                    <td>
+                        <span th:if="${expense.category == 'UTILITIES'}" style="background: #fff3cd; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-lightbulb"></i> UTILITIES
+                        </span>
+                        <span th:if="${expense.category == 'RENT'}" style="background: #d1ecf1; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-home"></i> RENT
+                        </span>
+                        <span th:if="${expense.category == 'MATERIALS'}" style="background: #e2e3e5; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-box"></i> MATERIALS
+                        </span>
+                        <span th:if="${expense.category == 'SALARIES'}" style="background: #d4edda; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-money-bill-wave"></i> SALARIES
+                        </span>
+                        <span th:if="${expense.category == 'MAINTENANCE'}" style="background: #f8d7da; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-tools"></i> MAINTENANCE
+                        </span>
+                        <span th:if="${expense.category == 'MISCELLANEOUS'}" style="background: #e7e7e7; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-list"></i> MISCELLANEOUS
+                        </span>
+                        <span th:if="${expense.category == 'OTHER'}" style="background: #cfe2ff; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;">
+                            <i class="fas fa-question"></i> <span th:text="${expense.customCategory}"></span>
+                        </span>
+                    </td>
+                    <td>
+                        <span th:if="${expense.description != null && !expense.description.isEmpty()}" th:text="${expense.description}" style="color: #666; font-size: 13px;"></span>
+                        <span th:if="${expense.description == null || expense.description.isEmpty()}" style="color: #999; font-style: italic;">-</span>
+                    </td>
+                    <td style="font-weight: 700; color: #dc3545;">
+                        Rs. <span th:text="${#numbers.formatInteger(expense.amount, 0, 'COMMA')}"></span>
+                    </td>
+                    <td>
+                        <span th:if="${expense.paymentMethod == 'CASH'}" style="background: #d4edda; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                            <i class="fas fa-money-bill"></i> CASH
+                        </span>
+                        <span th:if="${expense.paymentMethod == 'BANK_TRANSFER'}" style="background: #cfe2ff; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                            <i class="fas fa-university"></i> BANK
+                        </span>
+                        <span th:if="${expense.paymentMethod == 'JAZZCASH'}" style="background: #fff3cd; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                            <i class="fas fa-mobile-alt"></i> JAZZ
+                        </span>
+                        <span th:if="${expense.paymentMethod == 'EASYPAISA'}" style="background: #e7f3ff; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
+                            <i class="fas fa-mobile-alt"></i> EASY
+                        </span>
+                    </td>
+                </tr>
+                <tr style="background: #f8d7da; font-weight: 700;">
+                    <td colspan="5" style="text-align: right; padding: 12px;">Total:</td>
+                    <td style="padding: 12px; color: #dc3545;">
+                        Rs. <span th:text="${#numbers.formatInteger(report.totalAmount, 0, 'COMMA')}"></span>
+                    </td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${#lists.isEmpty(report.expenses)}" style="text-align: center; padding: 60px; color: #999;">
+                <i class="fas fa-chart-bar" style="font-size: 64px; margin-bottom: 16px; opacity: 0.3;"></i>
+                <div style="font-size: 18px; margin-bottom: 8px;">No expenses found for this period</div>
+                <div style="font-size: 14px;">Try adjusting the date range or filters.</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

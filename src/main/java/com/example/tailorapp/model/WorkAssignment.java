@@ -93,6 +93,16 @@ public class WorkAssignment {
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     private String notes;
 
+    // ===== REASSIGNMENT TRACKING =====
+    private Long originalEmployeeId;  // Track who was first assigned (null if never reassigned)
+
+    private LocalDateTime reassignedDate;  // When it was reassigned
+
+    @Size(max = 500, message = "Reassignment reason cannot exceed 500 characters")
+    private String reassignmentReason;  // Why it was reassigned
+
+    private Integer reassignmentCount;  // How many times reassigned (default 0)
+
     private LocalDateTime createdAt;
 
     @PrePersist
@@ -106,6 +116,9 @@ public class WorkAssignment {
         }
         if (isDesignWork == null) {
             isDesignWork = false;
+        }
+        if (reassignmentCount == null) {
+            reassignmentCount = 0;
         }
         // Auto-calculate total amount
         if (assignedCount != null && ratePerPiece != null) {

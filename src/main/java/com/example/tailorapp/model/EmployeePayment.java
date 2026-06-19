@@ -50,7 +50,8 @@ public class EmployeePayment {
     private String paymentStatus = "PENDING";
 
     // Link to work assignments included in this payment
-    @OneToMany(mappedBy = "employeePayment", cascade = CascadeType.ALL)
+    // Don't cascade delete - work assignments should remain even if payment is deleted
+    @OneToMany(mappedBy = "employeePayment")
     private List<WorkAssignment> workAssignments = new ArrayList<>();
 
     // Payment transactions (can be multiple for partial payments)
@@ -100,5 +101,18 @@ public class EmployeePayment {
         transaction.setEmployeePayment(this);
         amountPaid = (amountPaid != null ? amountPaid : 0L) + transaction.getAmountPaid();
         updatePaymentStatus();
+    }
+
+    /**
+     * Calculate total advance deductions across all payment transactions
+     * Used by templates to avoid stream operations with lambda expressions
+     */
+    public Long getTotalAdvanceDeduction() {
+        if (paymentTransactions == null || paymentTransactions.isEmpty()) {
+            return 0L;
+        }
+        return paymentTransactions.stream()
+                .mapToLong(EmployeePaymentTransaction::getTotalAdvanceDeduction)
+                .sum();
     }
 }

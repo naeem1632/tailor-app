@@ -4,9 +4,11 @@ import com.example.tailorapp.model.Employee;
 import com.example.tailorapp.model.EmployeePayment;
 import com.example.tailorapp.model.EmployeePaymentTransaction;
 import com.example.tailorapp.model.WorkAssignment;
+import com.example.tailorapp.model.AdvancePayment;
 import com.example.tailorapp.service.EmployeePaymentService;
 import com.example.tailorapp.service.EmployeeService;
 import com.example.tailorapp.service.WorkAssignmentService;
+import com.example.tailorapp.service.AdvancePaymentService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,13 +27,16 @@ public class EmployeePaymentController {
     private final EmployeePaymentService employeePaymentService;
     private final EmployeeService employeeService;
     private final WorkAssignmentService workAssignmentService;
+    private final AdvancePaymentService advancePaymentService;
 
     public EmployeePaymentController(EmployeePaymentService employeePaymentService,
                                     EmployeeService employeeService,
-                                    WorkAssignmentService workAssignmentService) {
+                                    WorkAssignmentService workAssignmentService,
+                                    AdvancePaymentService advancePaymentService) {
         this.employeePaymentService = employeePaymentService;
         this.employeeService = employeeService;
         this.workAssignmentService = workAssignmentService;
+        this.advancePaymentService = advancePaymentService;
     }
 
     /**
@@ -47,28 +52,28 @@ public class EmployeePaymentController {
             Employee employee = employeeService.findById(employeeId).orElse(null);
             if (employee != null) {
                 // Filter by both employee and status
-                List<EmployeePayment> allForEmployee = employeePaymentService.findByEmployee(employee);
+                List<EmployeePayment> allForEmployee = employeePaymentService.findByEmployeeWithTransactionsAndDeductions(employee);
                 payments = allForEmployee.stream()
                         .filter(p -> status.equals(p.getPaymentStatus()))
                         .toList();
                 model.addAttribute("selectedEmployee", employee);
             } else {
-                payments = employeePaymentService.findByPaymentStatus(status);
+                payments = employeePaymentService.findByPaymentStatusWithTransactionsAndDeductions(status);
             }
             model.addAttribute("selectedStatus", status);
         } else if (employeeId != null) {
             Employee employee = employeeService.findById(employeeId).orElse(null);
             if (employee != null) {
-                payments = employeePaymentService.findByEmployee(employee);
+                payments = employeePaymentService.findByEmployeeWithTransactionsAndDeductions(employee);
                 model.addAttribute("selectedEmployee", employee);
             } else {
-                payments = employeePaymentService.findAll();
+                payments = employeePaymentService.findAllWithTransactionsAndDeductions();
             }
         } else if (status != null && !status.isEmpty()) {
-            payments = employeePaymentService.findByPaymentStatus(status);
+            payments = employeePaymentService.findByPaymentStatusWithTransactionsAndDeductions(status);
             model.addAttribute("selectedStatus", status);
         } else {
-            payments = employeePaymentService.findAll();
+            payments = employeePaymentService.findAllWithTransactionsAndDeductions();
         }
 
         model.addAttribute("payments", payments);
@@ -146,7 +151,7 @@ public class EmployeePaymentController {
      */
     @GetMapping("/view/{id}")
     public String viewPayment(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        EmployeePayment payment = employeePaymentService.findById(id).orElse(null);
+        EmployeePayment payment = employeePaymentService.findByIdWithTransactionsAndDeductions(id).orElse(null);
 
         if (payment == null) {
             redirectAttributes.addFlashAttribute("error", "Payment not found!");
@@ -154,6 +159,15 @@ public class EmployeePaymentController {
         }
 
         model.addAttribute("payment", payment);
+
+        // Get outstanding advances for this employee
+        List<AdvancePayment> outstandingAdvances =
+            advancePaymentService.findOutstandingByEmployee(payment.getEmployee());
+        Long totalOutstanding = advancePaymentService.getTotalOutstandingByEmployee(payment.getEmployee());
+
+        model.addAttribute("outstandingAdvances", outstandingAdvances);
+        model.addAttribute("totalOutstanding", totalOutstanding != null ? totalOutstanding : 0L);
+
         return "employee-payments/view";
     }
 
@@ -268,16 +282,37 @@ public class EmployeePaymentController {
                                        @RequestParam Long amountPaid,
                                        @RequestParam String paymentMethod,
                                        @RequestParam(required = false) String notes,
+                                       @RequestParam(required = false) Long advanceDeductionAmount,
+                                       @RequestParam(required = false) List<Long> selectedAdvanceIds,
                                        RedirectAttributes redirectAttributes) {
         try {
             EmployeePaymentTransaction transaction = employeePaymentService.addPaymentTransaction(
                     paymentRecordId, paymentDate, paymentTime, amountPaid, paymentMethod, notes);
 
+            // Handle advance deductions if specified
+            if (advanceDeductionAmount != null && advanceDeductionAmount > 0 && selectedAdvanceIds != null && !selectedAdvanceIds.isEmpty()) {
+                Long remainingDeduction = advanceDeductionAmount;
+
+                // Deduct from selected advances (oldest first)
+                for (Long advanceId : selectedAdvanceIds) {
+                    if (remainingDeduction <= 0) break;
+
+                    AdvancePayment advance = advancePaymentService.findById(advanceId).orElse(null);
+                    if (advance != null && advance.getBalanceRemaining() > 0) {
+                        Long deductionForThisAdvance = Math.min(remainingDeduction, advance.getBalanceRemaining());
+                        advancePaymentService.deductAdvance(advance, deductionForThisAdvance, transaction);
+                        remainingDeduction -= deductionForThisAdvance;
+                    }
+                }
+            }
+
             EmployeePayment paymentRecord = employeePaymentService.findById(paymentRecordId).orElse(null);
             if (paymentRecord != null) {
-                redirectAttributes.addFlashAttribute("success",
-                        "Payment of Rs. " + amountPaid + " recorded successfully! Status: " +
-                        paymentRecord.getPaymentStatus());
+                String successMsg = "Payment of Rs. " + amountPaid + " recorded successfully! Status: " + paymentRecord.getPaymentStatus();
+                if (advanceDeductionAmount != null && advanceDeductionAmount > 0) {
+                    successMsg += " | Advance deduction: Rs. " + advanceDeductionAmount;
+                }
+                redirectAttributes.addFlashAttribute("success", successMsg);
             }
             return "redirect:/employee-payments/view/" + paymentRecordId;
         } catch (IllegalArgumentException e) {

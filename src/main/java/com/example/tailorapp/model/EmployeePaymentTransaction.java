@@ -12,6 +12,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -47,6 +49,9 @@ public class EmployeePaymentTransaction {
 
     private LocalDateTime createdAt;
 
+    @OneToMany(mappedBy = "paymentTransaction", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<AdvanceDeduction> advanceDeductions = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -56,5 +61,18 @@ public class EmployeePaymentTransaction {
         if (paymentTime == null) {
             paymentTime = LocalTime.now();
         }
+    }
+
+    /**
+     * Calculate total advance deduction for this transaction
+     * Used by templates to avoid stream operations
+     */
+    public Long getTotalAdvanceDeduction() {
+        if (advanceDeductions == null || advanceDeductions.isEmpty()) {
+            return 0L;
+        }
+        return advanceDeductions.stream()
+                .mapToLong(AdvanceDeduction::getDeductionAmount)
+                .sum();
     }
 }

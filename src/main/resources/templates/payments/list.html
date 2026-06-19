@@ -8,6 +8,28 @@
             white-space: normal !important;
             max-width: 160px;
         }
+
+        /* Row highlight animation */
+        tr.row-highlight {
+            background-color: #fff3cd !important;
+            animation: highlightPulse 5s ease-in-out forwards;
+        }
+
+        tr.row-highlight td {
+            background-color: transparent !important;
+        }
+
+        @keyframes highlightPulse {
+            0% {
+                background-color: #fff3cd;
+            }
+            50% {
+                background-color: #ffe082;
+            }
+            100% {
+                background-color: transparent;
+            }
+        }
     </style>
 </head>
 
@@ -73,7 +95,7 @@
     </thead>
     <tbody>
     <th:block th:each="p : ${payments}">
-        <tr>
+        <tr th:attr="data-payment-id=${p.id}">
             <td>
                 <button class="expand-btn" type="button"
                         th:attr="onclick='toggleInstallments(' + ${p.id} + ')'">▼</button>
@@ -119,7 +141,7 @@
 
             <!-- Ready Status Column -->
             <td>
-                <form th:action="@{/payments/update-ready-status}" method="post" style="display:inline;">
+                <form th:action="@{/payments/update-ready-status}" method="post" style="display:inline;" th:attr="onsubmit='savePaymentState(' + ${p.id} + ')'">
                     <input type="hidden" name="paymentId" th:value="${p.id}"/>
                     <select name="readyStatus" onchange="this.form.submit()"
                             th:style="${p.readyStatus == 'READY' ? 'background-color: #ffc107; font-weight: bold;' :
@@ -198,9 +220,13 @@
                    class="btn btn-sm btn-warning" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
                    target="_blank"><i class="fas fa-file-invoice"></i> Invoice</a>
 
-                <a th:href="@{'/work-assignments/assign/' + ${p.id}}"
+                <a href="javascript:void(0)"
                    class="btn btn-sm btn-info" style="font-size: 11px; padding: 4px 8px; margin: 2px;"
-                   title="Assign work to employees"><i class="fas fa-tasks"></i> Assign</a>
+                   th:attr="data-payment-id=${p.id}, data-ready-status=${p.readyStatus}"
+                   onclick="handleAssignClick(this)"
+                   th:title="${p.readyStatus == null || p.readyStatus == '' ? 'Assign work to employees' : 'View work assignments'}">
+                   <i class="fas fa-tasks"></i> <span th:text="${p.readyStatus == null || p.readyStatus == '' ? 'Assign' : 'View Work'}"></span>
+                </a>
             </td>
         </tr>
 
@@ -389,6 +415,19 @@
                 <a href="javascript:void(0)" onclick="closeEditInstallmentModal()">Cancel</a>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ✅ View Work Assignments Modal -->
+<div id="viewWorkModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 800px;">
+        <h3><i class="fas fa-tasks"></i> Work Assignments for Order #<span id="viewWorkOrderId"></span></h3>
+        <div id="viewWorkContent" style="max-height: 500px; overflow-y: auto;">
+            <!-- Work assignments will be loaded here -->
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeViewWorkModal()" class="btn-secondary-custom">Close</button>
+        </div>
     </div>
 </div>
 
@@ -745,6 +784,181 @@
                     deleteUrl = null;
                 }
             });
+        });
+
+        // Handle assign button click - smart behavior based on ready status
+        function handleAssignClick(button) {
+            const paymentId = button.getAttribute('data-payment-id');
+            const readyStatus = button.getAttribute('data-ready-status');
+
+            // If order is not ready, redirect to assign page
+            if (!readyStatus || readyStatus === '' || readyStatus === 'null') {
+                window.location.href = '/work-assignments/assign/' + paymentId;
+            } else {
+                // If order is ready, show read-only work assignments modal
+                showViewWorkModal(paymentId);
+            }
+        }
+
+        // Show view work assignments modal
+        function showViewWorkModal(paymentId) {
+            document.getElementById('viewWorkOrderId').textContent = paymentId;
+            const modal = document.getElementById('viewWorkModal');
+            const content = document.getElementById('viewWorkContent');
+
+            // Show loading
+            content.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading assignments...</div>';
+            modal.style.display = 'flex';
+
+            // Fetch work assignments for this payment
+            fetch('/work-assignments/by-payment/' + paymentId)
+                .then(response => response.json())
+                .then(assignments => {
+                    if (assignments.length === 0) {
+                        content.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No work assignments found for this order.</p>';
+                        return;
+                    }
+
+                    // Build work assignments table
+                    let html = `
+                        <table style="width: 100%; margin-top: 10px;">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Work Type</th>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+                                    <th>Assigned</th>
+                                    <th>Completed</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    assignments.forEach(assignment => {
+                        const statusColor = assignment.status === 'COMPLETED' ? '#28a745' :
+                                          assignment.status === 'IN_PROGRESS' ? '#007bff' : '#ffc107';
+
+                        const workTypeColors = {
+                            'CUTTING': 'background: #e3f2fd; color: #1565c0;',
+                            'STITCHING': 'background: #f3e5f5; color: #6a1b9a;',
+                            'FINISHING': 'background: #fff3e0; color: #e65100;',
+                            'EMBELLISHMENT': 'background: #fce4ec; color: #c2185b;'
+                        };
+
+                        // Format assigned date/time
+                        let assignedDateTime = '-';
+                        if (assignment.assignedDate) {
+                            const assignedDate = new Date(assignment.assignedDate);
+                            assignedDateTime = assignedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                            if (assignment.assignedTime) {
+                                assignedDateTime += '<br><span style="font-size: 11px; color: #666;">' + assignment.assignedTime + '</span>';
+                            }
+                        }
+
+                        // Format completed date/time
+                        let completedDateTime = '-';
+                        if (assignment.completedDate) {
+                            const completedDate = new Date(assignment.completedDate);
+                            completedDateTime = completedDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                            if (assignment.completedTime) {
+                                completedDateTime += '<br><span style="font-size: 11px; color: #666;">' + assignment.completedTime + '</span>';
+                            }
+                        }
+
+                        html += `
+                            <tr>
+                                <td>${assignment.employeeName}</td>
+                                <td><span style="${workTypeColors[assignment.workType] || ''} padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;">${assignment.workType}</span></td>
+                                <td>${assignment.itemType}${assignment.isDesignWork ? ' <span style="color: #dc3545;">(Design)</span>' : ''}</td>
+                                <td>${assignment.assignedCount}</td>
+                                <td>Rs. ${assignment.ratePerPiece.toLocaleString()}</td>
+                                <td style="font-weight: 600;">Rs. ${assignment.totalAmount.toLocaleString()}</td>
+                                <td style="font-size: 12px;">${assignedDateTime}</td>
+                                <td style="font-size: 12px;">${completedDateTime}</td>
+                                <td><span style="color: ${statusColor}; font-weight: 600;">${assignment.status}</span></td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error fetching assignments:', error);
+                    content.innerHTML = '<p style="text-align: center; color: #dc3545; padding: 20px;">Error loading assignments. Please try again.</p>';
+                });
+        }
+
+        // Close view work modal
+        function closeViewWorkModal() {
+            document.getElementById('viewWorkModal').style.display = 'none';
+        }
+
+        // Save payment state before form submission
+        function savePaymentState(paymentId) {
+            localStorage.setItem('updatedPaymentId', paymentId);
+            localStorage.setItem('paymentsScrollPosition', window.scrollY);
+            localStorage.setItem('expandedPayment', paymentId);
+        }
+
+        // Restore scroll position and highlight updated row on page load
+        window.addEventListener('load', function() {
+            // Restore scroll position
+            const savedScrollPosition = localStorage.getItem('paymentsScrollPosition');
+            if (savedScrollPosition) {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+                localStorage.removeItem('paymentsScrollPosition');
+            }
+
+            // Highlight the updated payment row
+            const updatedPaymentId = localStorage.getItem('updatedPaymentId');
+            if (updatedPaymentId) {
+                console.log('Looking for payment ID:', updatedPaymentId);
+
+                // Find the row with the matching payment ID
+                const row = document.querySelector('tr[data-payment-id="' + updatedPaymentId + '"]');
+                console.log('Found row:', row);
+
+                if (row) {
+                    console.log('Row classes before:', row.className);
+
+                    // Add a highlight class with animation
+                    row.classList.add('row-highlight');
+
+                    console.log('Row classes after:', row.className);
+
+                    // Scroll the row into view
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Remove highlight class after 6 seconds (after animation completes)
+                    setTimeout(() => {
+                        console.log('Removing highlight class');
+                        row.classList.remove('row-highlight');
+                    }, 6000);
+                } else {
+                    console.log('Row not found for payment ID:', updatedPaymentId);
+                }
+
+                localStorage.removeItem('updatedPaymentId');
+            }
+
+            // Restore expanded installment details
+            const expandedPayment = localStorage.getItem('expandedPayment');
+            if (expandedPayment) {
+                const installmentRow = document.getElementById('installments-' + expandedPayment);
+                if (installmentRow) {
+                    installmentRow.style.display = 'table-row';
+                }
+                localStorage.removeItem('expandedPayment');
+            }
         });
 </script>
 

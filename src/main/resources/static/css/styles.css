@@ -1543,9 +1543,14 @@ body:not(:has(tr.section-title)) table {
   margin: 0 2px;
 }
 
-.btn-action-view:hover {
+.btn-action-view:hover,
+.btn-action-view:focus,
+.btn-action-view:active,
+.btn-action-view:visited {
   background: #138496;
+  color: white !important;
   transform: scale(1.07);
+  text-decoration: none;
 }
 
 .btn-action-edit {
@@ -1563,9 +1568,14 @@ body:not(:has(tr.section-title)) table {
   margin: 0 2px;
 }
 
-.btn-action-edit:hover {
+.btn-action-edit:hover,
+.btn-action-edit:focus,
+.btn-action-edit:active,
+.btn-action-edit:visited {
   background: #0b5ed7;
+  color: white !important;
   transform: scale(1.07);
+  text-decoration: none;
 }
 
 .btn-action-delete {
@@ -1583,9 +1593,14 @@ body:not(:has(tr.section-title)) table {
   margin: 0 2px;
 }
 
-.btn-action-delete:hover {
+.btn-action-delete:hover,
+.btn-action-delete:focus,
+.btn-action-delete:active,
+.btn-action-delete:visited {
   background: #c82333;
+  color: white !important;
   transform: scale(1.07);
+  text-decoration: none;
 }
 
 .btn-action-secondary {
@@ -1603,9 +1618,14 @@ body:not(:has(tr.section-title)) table {
   margin: 0 2px;
 }
 
-.btn-action-secondary:hover {
+.btn-action-secondary:hover,
+.btn-action-secondary:focus,
+.btn-action-secondary:active,
+.btn-action-secondary:visited {
   background: #5a6268;
+  color: white !important;
   transform: scale(1.07);
+  text-decoration: none;
 }
 
 /* ====== STANDARDIZED CARD COMPONENTS ====== */

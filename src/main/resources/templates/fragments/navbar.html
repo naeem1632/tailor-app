@@ -30,6 +30,7 @@
                         <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
                             <li><a class="dropdown-item" href="/reports/payment-report"><i class="fas fa-file-invoice-dollar"></i> Payment Report</a></li>
                             <li><a class="dropdown-item" href="/reports/profit-analysis"><i class="fas fa-chart-line"></i> Profit Analysis</a></li>
+                            <li><a class="dropdown-item" href="/payroll-report"><i class="fas fa-money-check-alt"></i> Payroll Report</a></li>
                         </ul>
                     </li>
 
@@ -42,6 +43,7 @@
                             <li><a class="dropdown-item" href="/settings"><i class="fas fa-tags"></i> Price List</a></li>
                             <li><a class="dropdown-item" href="/piece-rate-settings"><i class="fas fa-coins"></i> Labor Rates</a></li>
                             <li><a class="dropdown-item" href="/expenses"><i class="fas fa-money-bill-wave"></i> Expenditures</a></li>
+                            <li><a class="dropdown-item" href="/daily-expenses"><i class="fas fa-receipt"></i> Daily Expenses</a></li>
                         </ul>
                     </li>
 
@@ -56,6 +58,7 @@
                             <li sec:authorize="hasRole('ADMIN')"><hr class="dropdown-divider"></li>
                             <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" href="/employee-payments/payroll"><i class="fas fa-calculator"></i> Payroll Calculator</a></li>
                             <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" href="/employee-payments"><i class="fas fa-money-check-alt"></i> Payment History</a></li>
+                            <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item" href="/employee-advances"><i class="fas fa-hand-holding-usd"></i> Advance Payments</a></li>
                         </ul>
                     </li>
                 </ul>

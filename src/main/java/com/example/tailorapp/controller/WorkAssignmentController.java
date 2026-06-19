@@ -283,6 +283,76 @@ public class WorkAssignmentController {
     }
 
     /**
+     * Pause work (revert IN_PROGRESS back to ASSIGNED)
+     */
+    @PostMapping("/pause/{id}")
+    public String pauseWork(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            workAssignmentService.pauseWork(id);
+            redirectAttributes.addFlashAttribute("success", "Work paused successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error pausing work: " + e.getMessage());
+        }
+        return "redirect:/work-assignments";
+    }
+
+    /**
+     * Reassign work to a different employee
+     */
+    @PostMapping("/reassign/{id}")
+    public String reassignWork(@PathVariable Long id,
+                              @RequestParam Long newEmployeeId,
+                              @RequestParam(required = false) String reason,
+                              @RequestParam(required = false) Long paymentId,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            WorkAssignment assignment = workAssignmentService.findById(id).orElse(null);
+            if (assignment == null) {
+                redirectAttributes.addFlashAttribute("error", "Assignment not found!");
+                return "redirect:/work-assignments";
+            }
+
+            Long assignmentPaymentId = assignment.getPayment().getId();
+            workAssignmentService.reassignWork(id, newEmployeeId, reason);
+            redirectAttributes.addFlashAttribute("success", "Work reassigned successfully!");
+
+            // If paymentId is provided, redirect to assign page, otherwise to work-assignments index
+            if (paymentId != null) {
+                return "redirect:/work-assignments/assign/" + paymentId;
+            } else {
+                return "redirect:/work-assignments/assign/" + assignmentPaymentId;
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error reassigning work: " + e.getMessage());
+
+            // Try to redirect back to the assign page if paymentId is available
+            if (paymentId != null) {
+                return "redirect:/work-assignments/assign/" + paymentId;
+            }
+            return "redirect:/work-assignments";
+        }
+    }
+
+    /**
+     * Bulk transfer all work from one employee to another
+     */
+    @PostMapping("/bulk-transfer")
+    public String bulkTransferWork(@RequestParam Long fromEmployeeId,
+                                  @RequestParam Long toEmployeeId,
+                                  @RequestParam List<String> statuses,
+                                  @RequestParam(required = false) String reason,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            int count = workAssignmentService.bulkReassignWork(fromEmployeeId, toEmployeeId, statuses, reason);
+            redirectAttributes.addFlashAttribute("success",
+                "Successfully transferred " + count + " assignment(s) to new employee!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error transferring work: " + e.getMessage());
+        }
+        return "redirect:/work-assignments";
+    }
+
+    /**
      * Show edit form for assignment (uses same assign page)
      */
     @GetMapping("/edit/{id}")
@@ -423,10 +493,12 @@ public class WorkAssignmentController {
      */
     @GetMapping("/by-payment/{paymentId}")
     @ResponseBody
-    public List<WorkAssignment> getAssignmentsByPayment(@PathVariable Long paymentId) {
+    public List<com.example.tailorapp.dto.WorkAssignmentDTO> getAssignmentsByPayment(@PathVariable Long paymentId) {
         Payments payment = paymentsService.findById(paymentId).orElse(null);
         if (payment != null) {
-            return workAssignmentService.findByPayment(payment);
+            return workAssignmentService.findByPayment(payment).stream()
+                    .map(com.example.tailorapp.dto.WorkAssignmentDTO::fromEntity)
+                    .toList();
         }
         return List.of();
     }

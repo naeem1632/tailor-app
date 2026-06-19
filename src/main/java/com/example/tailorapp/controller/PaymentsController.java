@@ -374,13 +374,60 @@ public class PaymentsController {
     public String updateReadyStatus(@RequestParam("paymentId") Long paymentId,
                                     @RequestParam("readyStatus") String readyStatus,
                                     RedirectAttributes ra) {
-        Optional<Payments> paymentOpt = paymentsService.updateReadyStatus(paymentId, readyStatus);
+        Optional<Payments> paymentOpt = paymentsService.findById(paymentId);
         if (paymentOpt.isEmpty()) {
             ra.addFlashAttribute("error", "Payment not found");
             return "redirect:/clients";
         }
 
-        ra.addFlashAttribute("message", "Ready status updated to: " + readyStatus);
+        Payments payment = paymentOpt.get();
+
+        // Validate: If marking as READY, NOTIFIED, or PICKED_UP, check if all work is completed
+        // Note: Orders without work assignments (legacy orders) can be marked as ready
+        if (readyStatus != null && !readyStatus.isEmpty()) {
+            List<WorkAssignment> assignments = workAssignmentService.findByPayment(payment);
+
+            // Only validate if there ARE work assignments
+            // If no assignments exist, it's a legacy order and can be marked ready without validation
+            if (!assignments.isEmpty()) {
+                // Check if there are any incomplete assignments
+                List<WorkAssignment> incompleteAssignments = assignments.stream()
+                    .filter(a -> !"COMPLETED".equals(a.getStatus()))
+                    .toList();
+
+                if (!incompleteAssignments.isEmpty()) {
+                    // Build error message showing incomplete work
+                    StringBuilder errorMsg = new StringBuilder("Cannot mark order as Ready. The following work is still pending:\n");
+                    for (WorkAssignment assignment : incompleteAssignments) {
+                        errorMsg.append("• ")
+                               .append(assignment.getEmployee().getName())
+                               .append(" - ")
+                               .append(assignment.getWorkType())
+                               .append(" (")
+                               .append(assignment.getItemType())
+                               .append(") - Status: ")
+                               .append(assignment.getStatus())
+                               .append("\n");
+                    }
+                    errorMsg.append("Please complete all work assignments before marking the order as Ready.");
+
+                    ra.addFlashAttribute("error", errorMsg.toString());
+                    return "redirect:/payments/client/" + payment.getClient().getId();
+                }
+            }
+        }
+
+        // If validation passes or clearing ready status, proceed with update
+        paymentOpt = paymentsService.updateReadyStatus(paymentId, readyStatus);
+        if (paymentOpt.isEmpty()) {
+            ra.addFlashAttribute("error", "Failed to update ready status");
+            return "redirect:/clients";
+        }
+
+        String statusMessage = (readyStatus == null || readyStatus.isEmpty())
+            ? "Ready status cleared"
+            : "Ready status updated to: " + readyStatus;
+        ra.addFlashAttribute("message", statusMessage);
         return "redirect:/payments/client/" + paymentOpt.get().getClient().getId();
     }
 

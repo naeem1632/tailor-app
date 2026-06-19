@@ -88,36 +88,34 @@
     </div>
 
     <!-- Work Assignments -->
-    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-        <h4 style="margin-top: 0; border-bottom: 2px solid #007bff; padding-bottom: 8px;">
-            Work Assignments (<span th:text="${#lists.size(payment.workAssignments)}"></span> items)
-        </h4>
-
-        <!-- Work Summary -->
-        <div style="margin-bottom: 16px; padding: 12px; background: #f8f9fa; border-radius: 4px;">
-            <div style="font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px;">Work Summary:</div>
-            <div style="font-size: 11px; color: #666; line-height: 1.8;">
-                <span th:each="assignment : ${payment.workAssignments}" style="display: inline-block; margin-right: 12px;">
-                    <span th:if="${assignment.workType == 'CUTTING'}">
-                        <span style="color: #007bff; font-weight: 600;">Cut</span>
-                    </span>
-                    <span th:if="${assignment.workType == 'STITCHING' && !assignment.isDesignWork}">
-                        <span style="color: #28a745; font-weight: 600;">Stitch</span>
-                    </span>
-                    <span th:if="${assignment.workType == 'STITCHING' && assignment.isDesignWork}">
-                        <span style="color: #dc3545; font-weight: 600;">Design</span>
-                    </span>
-                    <span th:if="${assignment.workType == 'FINISHING'}">
-                        <span style="color: #6f42c1; font-weight: 600;">Finish</span>
-                    </span>
-                    <span th:if="${assignment.workType == 'EMBELLISHMENT'}">
-                        <span style="color: #fd7e14; font-weight: 600;">Embel</span>
-                    </span>
-                    <span th:text="${assignment.itemType}"></span>
-                    (<span th:text="${assignment.assignedCount}"></span>)
-                </span>
+    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; overflow: hidden;">
+        <div onclick="toggleSection('work-assignments')" style="background: #f8f9fa; padding: 16px; cursor: pointer; border-bottom: 1px solid #ddd;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0; color: #007bff;">
+                    Work Assignments (<span th:text="${#lists.size(payment.workAssignments)}"></span> items)
+                </h4>
+                <i class="fas fa-chevron-down" id="icon-work-assignments" style="color: #007bff; font-size: 18px;"></i>
             </div>
         </div>
+        <div id="work-assignments" style="display: block; padding: 20px;">
+
+            <!-- Work Summary -->
+            <div style="margin-bottom: 16px; padding: 16px; background: #f8f9fa; border-radius: 4px; border: 1px solid #dee2e6;">
+                <div style="font-weight: 600; color: #495057; margin-bottom: 10px; font-size: 14px;">Quantity Summary:</div>
+                <div style="font-size: 11px; color: #666; line-height: 1.8;">
+                    <!-- Hidden data for JavaScript -->
+                    <div style="display: none;" class="work-data">
+                        <span th:each="assignment : ${payment.workAssignments}"
+                              th:attr="data-work-type=${assignment.workType},
+                                       data-item-type=${assignment.itemType},
+                                       data-is-design=${assignment.isDesignWork},
+                                       data-quantity=${assignment.assignedCount}">
+                        </span>
+                    </div>
+                    <!-- Display area -->
+                    <div class="work-items-display" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                </div>
+            </div>
 
         <table class="table" th:if="${!#lists.isEmpty(payment.workAssignments)}">
             <thead>
@@ -157,6 +155,7 @@
             </tr>
             </tbody>
         </table>
+        </div>
     </div>
 
     <!-- Payment Transactions -->
@@ -175,6 +174,7 @@
                 <th>Payment Date</th>
                 <th>Payment Time</th>
                 <th>Amount Paid</th>
+                <th>Advance Deducted</th>
                 <th>Payment Method</th>
                 <th>Notes</th>
             </tr>
@@ -186,6 +186,20 @@
                 <td th:text="${transaction.paymentTime != null ? #temporals.format(transaction.paymentTime, 'hh:mm a') : '-'}"></td>
                 <td style="font-weight: 700; color: #28a745;">
                     Rs. <span th:text="${#numbers.formatInteger(transaction.amountPaid, 0, 'COMMA')}"></span>
+                </td>
+                <td>
+                    <span th:if="${transaction.advanceDeductions != null && !transaction.advanceDeductions.isEmpty()}">
+                        <span th:with="totalDeduction=${transaction.getTotalAdvanceDeduction()}">
+                            <span style="font-weight: 600; color: #ffc107;">
+                                Rs. <span th:text="${#numbers.formatInteger(totalDeduction, 0, 'COMMA')}"></span>
+                            </span>
+                            <br/>
+                            <small style="font-size: 10px; color: #666;">
+                                (<span th:text="${transaction.advanceDeductions.size()}"></span> advance<span th:if="${transaction.advanceDeductions.size() > 1}">s</span>)
+                            </small>
+                        </span>
+                    </span>
+                    <span th:if="${transaction.advanceDeductions == null || transaction.advanceDeductions.isEmpty()}" style="color: #999; font-size: 12px;">-</span>
                 </td>
                 <td>
                     <span th:if="${transaction.paymentMethod == 'CASH'}" style="background: #d4edda; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
@@ -206,7 +220,7 @@
             <tr style="background: #d4edda; font-weight: 700;">
                 <td colspan="3" style="text-align: right; padding: 12px;">Total Paid:</td>
                 <td style="padding: 12px;">Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid, 0, 'COMMA')}"></span></td>
-                <td colspan="2"></td>
+                <td colspan="3"></td>
             </tr>
             </tbody>
         </table>
@@ -223,12 +237,23 @@
         <h4 style="color: #28a745; margin-top: 0;">
             <i class="fas fa-money-bill-wave"></i> Make Payment
         </h4>
-        <p style="color: #666; margin-bottom: 20px;">
+        <p style="color: #666; margin-bottom: 8px;">
             Record a full or partial payment for this record. Remaining amount:
             <strong style="color: #dc3545;">Rs. <span th:text="${#numbers.formatInteger(payment.amountRemaining, 0, 'COMMA')}"></span></strong>
         </p>
 
-        <form th:action="@{/employee-payments/add-transaction/{id}(id=${payment.id})}" method="post">
+        <!-- Outstanding Advances Alert -->
+        <div th:if="${totalOutstanding > 0}" style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-exclamation-triangle" style="color: #856404;"></i>
+                <strong style="color: #856404;">Outstanding Advances: Rs. <span th:text="${#numbers.formatInteger(totalOutstanding, 0, 'COMMA')}"></span></strong>
+            </div>
+            <div style="font-size: 12px; color: #856404; margin-top: 4px;">
+                You can deduct advance amount from this payment below.
+            </div>
+        </div>
+
+        <form th:action="@{/employee-payments/add-transaction/{id}(id=${payment.id})}" method="post" id="paymentForm">
             <div class="row">
                 <div class="col-md-3">
                     <div class="form-group">
@@ -266,7 +291,42 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <!-- Advance Deduction Section -->
+            <div th:if="${totalOutstanding > 0}" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 16px; margin-top: 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <label style="font-weight: 600; margin: 0;">
+                        <input type="checkbox" id="deductAdvanceCheckbox" style="margin-right: 8px;">
+                        Deduct Outstanding Advance
+                    </label>
+                </div>
+
+                <div id="advanceDeductionSection" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-weight: 600;">Deduction Amount <span style="color: red;">*</span></label>
+                        <input type="number" name="advanceDeductionAmount" id="advanceDeductionAmount"
+                               class="form-control" min="1"
+                               th:max="${totalOutstanding}"
+                               th:placeholder="'Max: Rs. ' + ${#numbers.formatInteger(totalOutstanding, 0, 'COMMA')}"
+                               disabled/>
+                        <small style="color: #666;">Total outstanding: Rs. <span th:text="${#numbers.formatInteger(totalOutstanding, 0, 'COMMA')}"></span></small>
+                    </div>
+
+                    <!-- Hidden inputs for advance IDs (all outstanding advances will be deducted in order) -->
+                    <input type="hidden" th:each="advance : ${outstandingAdvances}"
+                           name="selectedAdvanceIds" th:value="${advance.id}"/>
+
+                    <div style="font-size: 12px; color: #666;">
+                        <strong>Outstanding Advances:</strong>
+                        <div th:each="advance : ${outstandingAdvances}" style="margin-top: 4px;">
+                            #<span th:text="${advance.id}"></span> -
+                            <span th:text="${#temporals.format(advance.advanceDate, 'dd MMM yyyy')}"></span> -
+                            Rs. <span th:text="${#numbers.formatInteger(advance.balanceRemaining, 0, 'COMMA')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
                 <label style="font-weight: 600;">Notes (Optional)</label>
                 <textarea name="notes" class="form-control" rows="2" placeholder="e.g., Partial payment - remaining next week"></textarea>
             </div>
@@ -314,6 +374,76 @@
 
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script>
+    // Toggle section visibility
+    function toggleSection(sectionId) {
+        const content = document.getElementById(sectionId);
+        const icon = document.getElementById('icon-' + sectionId);
+
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        } else {
+            content.style.display = 'none';
+            icon.className = 'fas fa-chevron-down';
+        }
+    }
+
+    // Group and display work items summary
+    document.addEventListener('DOMContentLoaded', function() {
+        const workDataContainer = document.querySelector('.work-data');
+        if (workDataContainer) {
+            const displayArea = document.querySelector('.work-items-display');
+            const workItems = workDataContainer.querySelectorAll('span[data-work-type]');
+
+            // Build quantity map
+            const quantityMap = new Map();
+
+            workItems.forEach(item => {
+                const workType = item.getAttribute('data-work-type');
+                const itemType = item.getAttribute('data-item-type');
+                const isDesign = item.getAttribute('data-is-design') === 'true';
+                const quantity = parseInt(item.getAttribute('data-quantity'));
+
+                const designLabel = isDesign ? ' Design' : ' Plain';
+                const key = workType + designLabel + ' (' + itemType + ')';
+
+                const currentQty = quantityMap.get(key) || 0;
+                quantityMap.set(key, currentQty + quantity);
+            });
+
+            // Display grouped items with styled badges
+            let html = '';
+            quantityMap.forEach((quantity, label) => {
+                // Determine color based on work type
+                let bgColor = '#e9ecef';
+                let textColor = '#495057';
+
+                if (label.includes('CUTTING')) {
+                    bgColor = '#e3f2fd';
+                    textColor = '#1565c0';
+                } else if (label.includes('STITCHING') && label.includes('Design')) {
+                    bgColor = '#fce4ec';
+                    textColor = '#c2185b';
+                } else if (label.includes('STITCHING') && label.includes('Plain')) {
+                    bgColor = '#e8f5e9';
+                    textColor = '#2e7d32';
+                } else if (label.includes('FINISHING')) {
+                    bgColor = '#f3e5f5';
+                    textColor = '#6a1b9a';
+                } else if (label.includes('EMBELLISHMENT')) {
+                    bgColor = '#fff3e0';
+                    textColor = '#e65100';
+                }
+
+                html += `<span style="background: ${bgColor}; color: ${textColor}; padding: 8px 14px; border-radius: 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                    ${label}: <span style="font-size: 16px; font-weight: 700;">${quantity}</span>
+                </span>`;
+            });
+
+            displayArea.innerHTML = html;
+        }
+    });
+
     // Delete confirmation modal handling
     document.getElementById('deletePaymentBtn').addEventListener('click', function(e) {
         e.preventDefault();
@@ -334,6 +464,29 @@
             this.style.display = 'none';
         }
     });
+
+    // Advance deduction checkbox toggle
+    const deductCheckbox = document.getElementById('deductAdvanceCheckbox');
+    const deductionSection = document.getElementById('advanceDeductionSection');
+    const deductionInput = document.getElementById('advanceDeductionAmount');
+
+    if (deductCheckbox && deductionSection && deductionInput) {
+        deductCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                deductionSection.style.display = 'block';
+                deductionInput.disabled = false;
+                // Optionally auto-fill with total outstanding
+                const maxValue = deductionInput.getAttribute('max');
+                if (maxValue && !deductionInput.value) {
+                    deductionInput.value = maxValue;
+                }
+            } else {
+                deductionSection.style.display = 'none';
+                deductionInput.disabled = true;
+                deductionInput.value = '';
+            }
+        });
+    }
 </script>
 </body>
 </html>
