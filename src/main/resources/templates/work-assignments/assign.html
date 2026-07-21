@@ -86,6 +86,9 @@
                     <span th:if="${payment.waistcoatCount != null && payment.waistcoatCount > 0}" style="margin-left: 12px;">
                         Waistcoat: <span th:text="${payment.waistcoatCount}"></span>
                     </span>
+                    <span th:if="${payment.trouserCount != null && payment.trouserCount > 0}" style="margin-left: 12px;">
+                        Trouser: <span th:text="${payment.trouserCount}"></span>
+                    </span>
                 </div>
                 <div th:if="${(payment.withMatel != null && payment.withMatel > 0) ||
                              (payment.withTich != null && payment.withTich > 0) ||
@@ -161,6 +164,7 @@
                             <option value="PAJAMA" th:selected="${editMode != null && editMode && assignment.itemType == 'PAJAMA'}">Pajama Only</option>
                             <option value="SHIRT" th:selected="${editMode != null && editMode && assignment.itemType == 'SHIRT'}">Shirt</option>
                             <option value="WAISTCOAT" th:selected="${editMode != null && editMode && assignment.itemType == 'WAISTCOAT'}">Waistcoat</option>
+                            <option value="TROUSER" th:selected="${editMode != null && editMode && assignment.itemType == 'TROUSER'}">Trouser</option>
                         </select>
                     </div>
 
@@ -187,9 +191,13 @@
                                 <input type="checkbox" name="itemTypes" value="SHIRT" class="form-check-input" id="itemShirt"/>
                                 <label for="itemShirt" class="form-check-label">Shirt</label>
                             </div>
-                            <div class="form-check">
+                            <div class="form-check" style="margin-bottom: 8px;">
                                 <input type="checkbox" name="itemTypes" value="WAISTCOAT" class="form-check-input" id="itemWaistcoat"/>
                                 <label for="itemWaistcoat" class="form-check-label">Waistcoat</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" name="itemTypes" value="TROUSER" class="form-check-input" id="itemTrouser"/>
+                                <label for="itemTrouser" class="form-check-label">Trouser</label>
                             </div>
                         </div>
                     </div>
@@ -324,10 +332,15 @@
                                                 <label for="cutting_shirt" style="font-size: 13px; margin: 0; flex: 1;">Shirt</label>
                                                 <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHIRT" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
-                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="WAISTCOAT" id="cutting_waistcoat" style="margin: 0;"/>
                                                 <label for="cutting_waistcoat" style="font-size: 13px; margin: 0; flex: 1;">Waistcoat</label>
                                                 <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="WAISTCOAT" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="CUTTING" value="TROUSER" id="cutting_trouser" style="margin: 0;"/>
+                                                <label for="cutting_trouser" style="font-size: 13px; margin: 0; flex: 1;">Trouser</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="TROUSER" data-work-type="CUTTING" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                         </div>
                                     </div>
@@ -364,10 +377,15 @@
                                                 <label for="stitching_plain_shirt" style="font-size: 13px; margin: 0; flex: 1;">Shirt</label>
                                                 <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHIRT" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
-                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="WAISTCOAT" id="stitching_plain_waistcoat" style="margin: 0;"/>
                                                 <label for="stitching_plain_waistcoat" style="font-size: 13px; margin: 0; flex: 1;">Waistcoat</label>
                                                 <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="WAISTCOAT" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_PLAIN" value="TROUSER" id="stitching_plain_trouser" style="margin: 0;"/>
+                                                <label for="stitching_plain_trouser" style="font-size: 13px; margin: 0; flex: 1;">Trouser</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="TROUSER" data-work-type="STITCHING_PLAIN" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                         </div>
                                     </div>
@@ -394,10 +412,25 @@
                                                 <label for="stitching_design_shalwar" style="font-size: 13px; margin: 0; flex: 1;">Shalwar</label>
                                                 <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHALWAR" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
-                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
                                                 <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="PAJAMA" id="stitching_design_pajama" style="margin: 0;"/>
                                                 <label for="stitching_design_pajama" style="font-size: 13px; margin: 0; flex: 1;">Pajama</label>
                                                 <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="PAJAMA" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="SHIRT" id="stitching_design_shirt" style="margin: 0;"/>
+                                                <label for="stitching_design_shirt" style="font-size: 13px; margin: 0; flex: 1;">Shirt</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="SHIRT" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; margin-bottom: 8px; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="WAISTCOAT" id="stitching_design_waistcoat" style="margin: 0;"/>
+                                                <label for="stitching_design_waistcoat" style="font-size: 13px; margin: 0; flex: 1;">Waistcoat</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="WAISTCOAT" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <input type="checkbox" class="form-check-input batch-item-checkbox" data-work-type="STITCHING_DESIGN" value="TROUSER" id="stitching_design_trouser" style="margin: 0;"/>
+                                                <label for="stitching_design_trouser" style="font-size: 13px; margin: 0; flex: 1;">Trouser</label>
+                                                <input type="number" class="form-control form-control-sm batch-item-quantity" data-item="TROUSER" data-work-type="STITCHING_DESIGN" min="1" value="1" style="width: 70px;" disabled/>
                                             </div>
                                         </div>
                                     </div>
@@ -687,6 +720,7 @@
         dressCount: /*[[${payment.dressCount != null ? payment.dressCount : 0}]]*/ 0,
         shirtCount: /*[[${payment.shirtCount != null ? payment.shirtCount : 0}]]*/ 0,
         waistcoatCount: /*[[${payment.waistcoatCount != null ? payment.waistcoatCount : 0}]]*/ 0,
+        trouserCount: /*[[${payment.trouserCount != null ? payment.trouserCount : 0}]]*/ 0,
         withMatel: /*[[${payment.withMatel != null ? payment.withMatel : 0}]]*/ 0,
         withTich: /*[[${payment.withTich != null ? payment.withTich : 0}]]*/ 0,
         withKanta: /*[[${payment.withKanta != null ? payment.withKanta : 0}]]*/ 0,
@@ -983,7 +1017,8 @@
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0
+            waistcoat: 0,
+            trouser: 0
         };
 
         const alreadyStitched = {
@@ -991,7 +1026,8 @@
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0
+            waistcoat: 0,
+            trouser: 0
         };
 
         const alreadyEmbellished = {
@@ -1063,6 +1099,14 @@
             </div>`);
         }
 
+        if (orderQuantities.trouserCount > 0) {
+            const availableCutTrouser = orderQuantities.trouserCount - alreadyCut.trouser;
+            const availableStitchTrouser = orderQuantities.trouserCount - alreadyStitched.trouser;
+            summaryHtml.push(`<div style="background: ${(availableCutTrouser > 0 || availableStitchTrouser > 0) ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${(availableCutTrouser > 0 || availableStitchTrouser > 0) ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Trouser:</strong> Cut: ${availableCutTrouser}/${orderQuantities.trouserCount} | Stitch: ${availableStitchTrouser}/${orderQuantities.trouserCount}
+            </div>`);
+        }
+
         // Embellishments
         if (orderQuantities.withMatel > 0) {
             const availableMatel = orderQuantities.withMatel - alreadyEmbellished.matel;
@@ -1117,7 +1161,8 @@
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0
+            waistcoat: 0,
+            trouser: 0
         };
 
         const alreadyStitched = {
@@ -1126,7 +1171,8 @@
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0
+            waistcoat: 0,
+            trouser: 0
         };
 
         const alreadyFinished = {
@@ -1134,7 +1180,8 @@
             shalwar: 0,
             pajama: 0,
             shirt: 0,
-            waistcoat: 0
+            waistcoat: 0,
+            trouser: 0
         };
 
         const alreadyEmbellished = {
@@ -1266,7 +1313,8 @@
             shalwar: Math.max(totalCut.shalwar, totalStitch.shalwar),
             pajama: Math.max(totalCut.pajama, totalStitch.pajama),
             shirt: Math.max(totalCut.shirt, totalStitch.shirt),
-            waistcoat: Math.max(totalCut.waistcoat, totalStitch.waistcoat)
+            waistcoat: Math.max(totalCut.waistcoat, totalStitch.waistcoat),
+            trouser: Math.max(totalCut.trouser, totalStitch.trouser)
         };
 
         const totalFinishing = {
@@ -1274,7 +1322,8 @@
             shalwar: alreadyFinished.shalwar + newFinishing.shalwar,
             pajama: alreadyFinished.pajama + newFinishing.pajama,
             shirt: alreadyFinished.shirt + newFinishing.shirt,
-            waistcoat: alreadyFinished.waistcoat + newFinishing.waistcoat
+            waistcoat: alreadyFinished.waistcoat + newFinishing.waistcoat,
+            trouser: alreadyFinished.trouser + newFinishing.trouser
         };
 
         const totalEmbellishment = {
@@ -1380,6 +1429,17 @@
             errors.push(`Cannot stitch ${newStitch.waistcoat} waistcoat(s). Only ${available} available (${alreadyStitched.waistcoat} already stitched, ${orderQuantities.waistcoatCount} in order).`);
         }
 
+        // Check TROUSER cutting
+        if (totalCut.trouser > orderQuantities.trouserCount) {
+            const available = orderQuantities.trouserCount - alreadyCut.trouser;
+            errors.push(`Cannot cut ${newCut.trouser} trouser(s). Only ${available} available (${alreadyCut.trouser} already cut, ${orderQuantities.trouserCount} in order).`);
+        }
+        // Check TROUSER stitching
+        if (totalStitch.trouser > orderQuantities.trouserCount) {
+            const available = orderQuantities.trouserCount - alreadyStitched.trouser;
+            errors.push(`Cannot stitch ${newStitch.trouser} trouser(s). Only ${available} available (${alreadyStitched.trouser} already stitched, ${orderQuantities.trouserCount} in order).`);
+        }
+
         // ============================================
         // PART 2: Validate FINISHING against CUT/STITCHED quantities
         // ============================================
@@ -1408,6 +1468,11 @@
         if (totalFinishing.waistcoat > totalCutOrStitched.waistcoat) {
             const available = totalCutOrStitched.waistcoat - alreadyFinished.waistcoat;
             errors.push(`Cannot finish ${newFinishing.waistcoat} waistcoat(s). Only ${available} available for finishing (${totalCutOrStitched.waistcoat} cut/stitched, ${alreadyFinished.waistcoat} already finished).`);
+        }
+
+        if (totalFinishing.trouser > totalCutOrStitched.trouser) {
+            const available = totalCutOrStitched.trouser - alreadyFinished.trouser;
+            errors.push(`Cannot finish ${newFinishing.trouser} trouser(s). Only ${available} available for finishing (${totalCutOrStitched.trouser} cut/stitched, ${alreadyFinished.trouser} already finished).`);
         }
 
         // ============================================

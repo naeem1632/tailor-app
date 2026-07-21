@@ -42,6 +42,9 @@ public class PieceRateSettings {
     @Min(value = 0, message = "Waistcoat cutting rate must be zero or positive")
     private Long waistcoatCuttingRate;
 
+    @Min(value = 0, message = "Trouser cutting rate must be zero or positive")
+    private Long trouserCuttingRate = 0L;
+
     // ===== STITCHING RATES - PLAIN =====
     @NotNull(message = "Kameez plain stitching rate is required")
     @Min(value = 0, message = "Kameez plain stitching rate must be zero or positive")
@@ -62,6 +65,9 @@ public class PieceRateSettings {
     @NotNull(message = "Waistcoat stitching rate is required")
     @Min(value = 0, message = "Waistcoat stitching rate must be zero or positive")
     private Long waistcoatStitchingRate;
+
+    @Min(value = 0, message = "Trouser stitching rate must be zero or positive")
+    private Long trouserStitchingRate = 0L;
 
     // ===== STITCHING RATES - WITH DESIGN =====
     @NotNull(message = "Kameez design stitching rate is required")

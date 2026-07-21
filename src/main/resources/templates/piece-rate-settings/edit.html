@@ -53,6 +53,10 @@
                         <label>Waistcoat</label>
                         <input type="number" th:field="*{waistcoatCuttingRate}" class="form-control" min="0" required/>
                     </div>
+                    <div class="form-group">
+                        <label>Trouser</label>
+                        <input type="number" th:field="*{trouserCuttingRate}" class="form-control" min="0" value="0"/>
+                    </div>
                 </div>
 
                 <!-- Plain Stitching Rates -->
@@ -78,6 +82,10 @@
                     <div class="form-group">
                         <label>Waistcoat</label>
                         <input type="number" th:field="*{waistcoatStitchingRate}" class="form-control" min="0" required/>
+                    </div>
+                    <div class="form-group">
+                        <label>Trouser</label>
+                        <input type="number" th:field="*{trouserStitchingRate}" class="form-control" min="0" value="0"/>
                     </div>
                 </div>
 

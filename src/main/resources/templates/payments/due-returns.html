@@ -178,6 +178,7 @@
         <th>Dress</th>
         <th>Waistcoat</th>
         <th>Shirt</th>
+        <th>Trouser</th>
         <th>Return Date</th>
         <th>Ready Status</th>
         <th>Actions</th>
@@ -207,6 +208,13 @@
                   th:text="${payment.shirtCount}"
                   class="badge bg-info"></span>
             <span th:unless="${payment.shirtCount != null and payment.shirtCount > 0}"
+                  style="color: #6c757d;">-</span>
+        </td>
+        <td>
+            <span th:if="${payment.trouserCount != null and payment.trouserCount > 0}"
+                  th:text="${payment.trouserCount}"
+                  class="badge bg-warning"></span>
+            <span th:unless="${payment.trouserCount != null and payment.trouserCount > 0}"
                   style="color: #6c757d;">-</span>
         </td>
         <td>

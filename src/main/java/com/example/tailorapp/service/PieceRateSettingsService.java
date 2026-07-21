@@ -102,6 +102,7 @@ public class PieceRateSettingsService {
             case "PAJAMA" -> settings.getPajamaCuttingRate();
             case "SHIRT" -> settings.getShirtCuttingRate();
             case "WAISTCOAT" -> settings.getWaistcoatCuttingRate();
+            case "TROUSER" -> settings.getTrouserCuttingRate();
             default -> 0L;
         };
     }
@@ -120,6 +121,7 @@ public class PieceRateSettingsService {
             case "PAJAMA" -> settings.getPajamaStitchingRate();
             case "SHIRT" -> settings.getShirtStitchingRate();
             case "WAISTCOAT" -> settings.getWaistcoatStitchingRate();
+            case "TROUSER" -> settings.getTrouserStitchingRate();
             default -> 0L;
         };
     }

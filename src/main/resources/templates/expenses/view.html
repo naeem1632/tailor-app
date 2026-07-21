@@ -40,6 +40,10 @@
                         <td style="padding: 6px; font-weight: 600;">Shirt:</td>
                         <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.shirtExpense}"></span></td>
                     </tr>
+                    <tr>
+                        <td style="padding: 6px; font-weight: 600;">Trouser:</td>
+                        <td style="padding: 6px; text-align: right;">Rs. <span th:text="${expenses.trouserExpense != null ? expenses.trouserExpense : 0}"></span></td>
+                    </tr>
                 </table>
             </div>
         </div>

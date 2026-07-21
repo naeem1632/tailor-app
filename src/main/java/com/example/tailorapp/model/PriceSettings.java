@@ -18,6 +18,7 @@ public class PriceSettings {
     Long dressRate;
     Long waistcoatRate;
     Long shirtRate;
+    Long trouserRate = 0L;
 
     Long matelRate;
     Long tichRate;
@@ -30,6 +31,7 @@ public class PriceSettings {
         this.dressRate = 0L;
         this.waistcoatRate = 0L;
         this.shirtRate = 0L;
+        this.trouserRate = 0L;
         this.matelRate = 0L;
         this.tichRate = 0L;
         this.kantaRate = 0L;

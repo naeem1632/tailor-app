@@ -46,6 +46,12 @@ public class Payments {
     @Min(value = 0, message = "Shirt rate must be zero or positive")
     Long shirtRate;
 
+    @Min(value = 0, message = "Trouser count must be zero or positive")
+    Long trouserCount;
+
+    @Min(value = 0, message = "Trouser rate must be zero or positive")
+    Long trouserRate;
+
     @NotNull(message = "Total amount is required")
     @Min(value = 0, message = "Total amount must be zero or positive")
     Long totalAmount;

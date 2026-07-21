@@ -422,6 +422,16 @@ public class PaymentsController {
                 }
             }
 
+            // For TROUSER
+            if (payment.getTrouserCount() != null && payment.getTrouserCount() > 0) {
+                hasItemsInOrder = true;
+                String trouserError = validateItemCompletion(assignments, payment.getTrouserCount(),
+                    new String[]{"TROUSER"}, "Trouser");
+                if (trouserError != null) {
+                    errorMsg.append(trouserError);
+                }
+            }
+
             // If order has items but validation failed
             if (hasItemsInOrder && errorMsg.length() > 0) {
                 ra.addFlashAttribute("error", "Cannot mark order as Ready:\n" + errorMsg.toString());

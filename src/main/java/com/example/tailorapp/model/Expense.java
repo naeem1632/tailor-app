@@ -24,6 +24,9 @@ public class Expense {
     @Min(value = 0, message = "Shirt expense must be zero or positive")
     Long shirtExpense;
 
+    @Min(value = 0, message = "Trouser expense must be zero or positive")
+    Long trouserExpense = 0L;
+
     @NotNull(message = "Matel expense is required")
     @Min(value = 0, message = "Matel expense must be zero or positive")
     Long matelExpense;
@@ -49,6 +52,7 @@ public class Expense {
         this.dressExpense = 0L;
         this.waistcoatExpense = 0L;
         this.shirtExpense = 0L;
+        this.trouserExpense = 0L;
         this.matelExpense = 0L;
         this.tichExpense = 0L;
         this.kantaExpense = 0L;

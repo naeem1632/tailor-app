@@ -33,6 +33,9 @@ public class ExpenseHistory {
     @Min(value = 0, message = "Shirt expense must be zero or positive")
     Long shirtExpense;
 
+    @Min(value = 0, message = "Trouser expense must be zero or positive")
+    Long trouserExpense = 0L;
+
     @NotNull(message = "Matel expense is required")
     @Min(value = 0, message = "Matel expense must be zero or positive")
     Long matelExpense;

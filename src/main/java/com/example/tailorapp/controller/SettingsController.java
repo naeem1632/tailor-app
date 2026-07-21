@@ -47,6 +47,7 @@ public class SettingsController {
             newSettings.setDressRate(currentSettings.getDressRate());
             newSettings.setWaistcoatRate(currentSettings.getWaistcoatRate());
             newSettings.setShirtRate(currentSettings.getShirtRate());
+            newSettings.setTrouserRate(currentSettings.getTrouserRate());
             newSettings.setMatelRate(currentSettings.getMatelRate());
             newSettings.setTichRate(currentSettings.getTichRate());
             newSettings.setKantaRate(currentSettings.getKantaRate());

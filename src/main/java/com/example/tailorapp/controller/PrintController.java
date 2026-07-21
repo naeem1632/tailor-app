@@ -5,12 +5,14 @@ import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.model.ShirtMeasurement;
+import com.example.tailorapp.model.TrouserMeasurement;
 import com.example.tailorapp.model.WaistcoatMeasurement;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.MeasurementService;
 import com.example.tailorapp.service.PaymentsService;
 import com.example.tailorapp.service.ShirtService;
 import com.example.tailorapp.service.StorageProperties;
+import com.example.tailorapp.service.TrouserService;
 import com.example.tailorapp.service.WaistcoatService;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
@@ -43,6 +45,7 @@ public class PrintController {
     private final StorageProperties storageProperties;
     private final WaistcoatService waistcoatService;
     private final ShirtService shirtService;
+    private final TrouserService trouserService;
     private final PaymentsService paymentsService;
 
     public PrintController(ClientService clientService,
@@ -50,12 +53,14 @@ public class PrintController {
                            StorageProperties storageProperties,
                            WaistcoatService waistcoatService,
                            ShirtService shirtService,
+                           TrouserService trouserService,
                            PaymentsService paymentsService) {
         this.clientService = clientService;
         this.measurementService = measurementService;
         this.storageProperties = storageProperties;
         this.waistcoatService = waistcoatService;
         this.shirtService = shirtService;
+        this.trouserService = trouserService;
         this.paymentsService = paymentsService;
     }
 
@@ -545,6 +550,15 @@ public class PrintController {
         addShirtMeasurementsSection(document, shirt);
         addShirtDesignSection(document, shirt);
 
+        // === Trouser measurements section (if exists) ===
+        Optional<TrouserMeasurement> latestTrouser = trouserService.findByClient(id)
+                .stream()
+                .max(Comparator.comparing(TrouserMeasurement::getDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        if (latestTrouser.isPresent()) {
+            addTrouserMeasurementsSection(document, latestTrouser.get());
+        }
+
         document.close();
     }
 
@@ -552,14 +566,17 @@ public class PrintController {
     private void addShirtMeasurementsSection(Document doc, ShirtMeasurement m) throws DocumentException {
         PdfPTable table = createSectionTable("Shirt Measurements");
 
+        // Ordered exactly like Kameez measurements:
+        // First column: Length, Terra, Terra Down, Chest, Chest Fitting, Waist, Hip, Bain Size
+        // Second column: Arm, Shoulder-arm, Upper arm, Center arm, Lower arm, Cuff length, Cuff width, Collar size
         addRow4IfNotNull(table, "Length", nvl(m.getKameezLength()), "Arm", nvl(m.getArm()));
-        addRow4IfNotNull(table, "Shoulder-arm", nvl(m.getShoulderArm()), "Upper arm", nvl(m.getUpperArm()));
-        addRow4IfNotNull(table, "Center arm", nvl(m.getCenterArm()), "Lower arm", nvl(m.getLowerArm()));
-        addRow4IfNotNull(table, "Cuff length", nvl(m.getCuffLength()), "Cuff width", nvl(m.getCuffWidth()));
-        addRow4IfNotNull(table, "Terra", nvl(m.getTerra()), "Terra down", nvl(m.getTerraDown()));
-        addRow4IfNotNull(table, "Collar size", nvl(m.getCollarSize()), "Bain size", nvl(m.getBainSize()));
-        addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Chest fitting", nvl(m.getChestFitting()));
-        addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Hip", nvl(m.getHip()));
+        addRow4IfNotNull(table, "Terra", nvl(m.getTerra()), "Shoulder-arm", nvl(m.getShoulderArm()));
+        addRow4IfNotNull(table, "Terra down", nvl(m.getTerraDown()), "Upper arm", nvl(m.getUpperArm()));
+        addRow4IfNotNull(table, "Chest", nvl(m.getChest()), "Center arm", nvl(m.getCenterArm()));
+        addRow4IfNotNull(table, "Chest fitting", nvl(m.getChestFitting()), "Lower arm", nvl(m.getLowerArm()));
+        addRow4IfNotNull(table, "Waist", nvl(m.getWaist()), "Cuff length", nvl(m.getCuffLength()));
+        addRow4IfNotNull(table, "Hip", nvl(m.getHip()), "Cuff width", nvl(m.getCuffWidth()));
+        addRow4IfNotNull(table, "Bain size", nvl(m.getBainSize()), "Collar size", nvl(m.getCollarSize()));
 
         doc.add(table);
         doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2)));
@@ -589,6 +606,19 @@ public class PrintController {
         addRow4IfNotNull(table, "Cuff type", nvl(m.getCuffType()), "Stitching", nvl(m.getStitchType()));
 
         doc.add(table);
+    }
+
+    // === Trouser Measurements Section (same as Pajama) ===
+    private void addTrouserMeasurementsSection(Document doc, TrouserMeasurement m) throws DocumentException {
+        PdfPTable table = createSectionTable("Trouser Measurements");
+
+        addRow4IfNotNull(table, "Length", nvl(m.getTrouserLength()), "Asan", nvl(m.getTrouserAsan()));
+        addRow4IfNotNull(table, "Payncha", nvl(m.getTrouserPayncha()), "Upper fitting", nvl(m.getUpperFitting()));
+        addRow4IfNotNull(table, "Middle fitting", nvl(m.getMiddleFitting()), "Lower fitting", nvl(m.getLowerFitting()));
+        addRow4IfNotNull(table, "Pocket", nvl(m.getTrouserPocket()), "Elastic", m.getTrouserElastic() != null && m.getTrouserElastic() ? "Yes" : "No");
+
+        doc.add(table);
+        doc.add(new Paragraph(" ", FontFactory.getFont(FontFactory.HELVETICA, 2)));
     }
 
     // Print Payment Invoice - Groups orders by same date

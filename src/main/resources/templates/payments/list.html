@@ -77,6 +77,7 @@
         <th>Dress</th>
         <th>Waistcoat</th>
         <th>Shirt</th>
+        <th>Trouser</th>
         <th>Matel</th>
         <th>Tich</th>
         <th>Kanta</th>
@@ -111,6 +112,9 @@
                 : ''}"></td>
             <td th:text="${(p.shirtCount != null and p.shirtCount > 0)
                 ? p.shirtCount + ' @ ' + p.shirtRate
+                : ''}"></td>
+            <td th:text="${(p.trouserCount != null and p.trouserCount > 0)
+                ? p.trouserCount + ' @ ' + p.trouserRate
                 : ''}"></td>
             <td th:text="${(p.withMatel != null and p.matelAmount != null)
                 ? p.withMatel + ' @ ' + p.matelAmount
@@ -197,6 +201,7 @@
                             data-dresscount=${p.dressCount}, data-dressrate=${p.dressRate},
                             data-waistcoatcount=${p.waistcoatCount}, data-waistcoatrate=${p.waistcoatRate},
                             data-shirtcount=${p.shirtCount}, data-shirtrate=${p.shirtRate},
+                            data-trousercount=${p.trouserCount}, data-trouserrate=${p.trouserRate},
                             data-discount=${p.discount},
                             data-total=${p.totalAmount}, data-remaining=${p.remainingAmount},
                             data-status=${p.paymentStatus}, data-returndate=${p.returnDate},
@@ -294,6 +299,10 @@
                 <tr>
                     <th>Shirt Qty</th><td><input type="number" name="shirtCount" id="shirtCount"/></td>
                     <th>Shirt Rate</th><td><input type="number" name="shirtRate" id="shirtRate"/></td>
+                </tr>
+                <tr>
+                    <th>Trouser Qty</th><td><input type="number" name="trouserCount" id="trouserCount"/></td>
+                    <th>Trouser Rate</th><td><input type="number" name="trouserRate" id="trouserRate"/></td>
                 </tr>
                 <tr>
                     <th>With Matel</th>
@@ -492,6 +501,7 @@
                     if (rates.dressRate)    document.getElementById("dressRate").value    = rates.dressRate;
                     if (rates.waistcoatRate) document.getElementById("waistcoatRate").value = rates.waistcoatRate;
                     if (rates.shirtRate)    document.getElementById("shirtRate").value    = rates.shirtRate;
+                    if (rates.trouserRate)  document.getElementById("trouserRate").value  = rates.trouserRate;
                     if (rates.matelRate)    document.getElementById("matelAmount").value  = rates.matelRate;
                     if (rates.tichRate)     document.getElementById("tichAmount").value   = rates.tichRate;
                     if (rates.kantaRate)    document.getElementById("kantaAmount").value  = rates.kantaRate;
@@ -517,6 +527,8 @@
             document.getElementById("waistcoatRate").value = el.dataset.waistcoatrate;
             document.getElementById("shirtCount").value = el.dataset.shirtcount || "";
             document.getElementById("shirtRate").value = el.dataset.shirtrate || "";
+            document.getElementById("trouserCount").value = el.dataset.trousercount || "";
+            document.getElementById("trouserRate").value = el.dataset.trouserrate || "";
             document.getElementById("discount").value = el.dataset.discount || "";
             document.getElementById("totalAmount").value = el.dataset.total;
             document.getElementById("remainingAmount").value = el.dataset.remaining;
@@ -590,8 +602,11 @@
             const sCount = parseFloat(document.getElementById("shirtCount").value) || 0;
             const sRate = parseFloat(document.getElementById("shirtRate").value) || 0;
 
-            // Calculate dress, waistcoat, and shirt totals
-            let total = (dCount * dRate) + (wCount * wRate) + (sCount * sRate);
+            const tCount = parseFloat(document.getElementById("trouserCount").value) || 0;
+            const tRate = parseFloat(document.getElementById("trouserRate").value) || 0;
+
+            // Calculate dress, waistcoat, shirt, and trouser totals
+            let total = (dCount * dRate) + (wCount * wRate) + (sCount * sRate) + (tCount * tRate);
 
             // Add Matel cost
             const matelAmount = parseFloat(document.getElementById("matelAmount").value) || 0;
@@ -715,6 +730,7 @@
 
         [dressCount, dressRate, waistcoatCount, waistcoatRate,
          document.getElementById("shirtCount"), document.getElementById("shirtRate"),
+         document.getElementById("trouserCount"), document.getElementById("trouserRate"),
          document.getElementById("discount"),
          document.getElementById("matelAmount"), document.getElementById("withMatel"),
          document.getElementById("tichAmount"), document.getElementById("withTich"),

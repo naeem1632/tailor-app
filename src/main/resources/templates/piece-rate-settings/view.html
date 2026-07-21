@@ -62,9 +62,15 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px;">Waistcoat</td>
-                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Waistcoat</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
                             Rs. <span th:text="${#numbers.formatInteger(settings.waistcoatCuttingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Trouser</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.trouserCuttingRate != null ? settings.trouserCuttingRate : 0, 0, 'COMMA')}"></span>
                         </td>
                     </tr>
                 </table>
@@ -99,9 +105,15 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px;">Waistcoat</td>
-                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                        <td style="padding: 8px; border-bottom: 1px solid #eee;">Waistcoat</td>
+                        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 700;">
                             Rs. <span th:text="${#numbers.formatInteger(settings.waistcoatStitchingRate, 0, 'COMMA')}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Trouser</td>
+                        <td style="padding: 8px; text-align: right; font-weight: 700;">
+                            Rs. <span th:text="${#numbers.formatInteger(settings.trouserStitchingRate != null ? settings.trouserStitchingRate : 0, 0, 'COMMA')}"></span>
                         </td>
                     </tr>
                 </table>

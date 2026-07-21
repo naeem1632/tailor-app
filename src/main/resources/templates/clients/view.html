@@ -48,6 +48,9 @@
   <button type="button" class="btn-success-custom" th:if="${#lists.isEmpty(shirtMeasurements)}" onclick="toggleForm('shirtForm')">
     <i class="fas fa-plus"></i> Add Shirt Measurement
   </button>
+  <button type="button" class="btn-warning-custom" th:if="${#lists.isEmpty(trouserMeasurements)}" onclick="toggleForm('trouserForm')">
+    <i class="fas fa-plus"></i> Add Trouser Measurement
+  </button>
 </div>
 
 <!-- ===================== DRESS LIST (Accordion + Edit/Delete) ===================== -->
@@ -922,6 +925,147 @@
 
   <div class="actions">
     <button type="submit">Save Shirt Measurement</button>
+    <a th:href="@{/clients/view/{id}(id=${client.id})}"
+       style="margin-left:10px; padding:10px 20px; background:#6c757d; color:#fff; border-radius:6px; font-weight:600; text-decoration:none;">
+      ✖ Cancel
+    </a>
+  </div>
+</form>
+
+<!-- ===================== TROUSER LIST (Accordion + Edit/Delete) ===================== -->
+
+<table>
+  <!-- ===== TABLE HEADER ===== -->
+  <thead>
+  <tr>
+    <th colspan="3" style="background:#8b4513; color:#fff; padding:10px; text-align:left; font-size:16px; font-weight:700;">
+      🧵 Trouser Measurements
+    </th>
+  </tr>
+  <tr class="sub-header">
+    <th>Date</th>
+    <th>Measurements</th>
+    <th>Actions</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <th:block th:each="t, iter : ${trouserMeasurements}">
+    <!-- MAIN ROW -->
+    <tr>
+      <td th:text="${#temporals.format(t.date, 'dd-MMM-yyyy')}" style="font-weight:600;"></td>
+
+      <td>
+        <div class="accordion-tabs">
+          <button class="accordion-btn" data-target="trouser-measurements">Measurements</button>
+          <button class="accordion-btn" data-target="trouser-quantity">Quantity</button>
+        </div>
+      </td>
+
+      <td th:if="${iter.index == 0}">
+        <a th:href="@{'/print/shirt/' + ${client.id}}" target="_blank">Print</a> |
+        <a th:href="@{/clients/view/{id}(id=${client.id}, editTrouser=${t.id})}" style="color:#0d6efd; font-weight:600;">Edit</a> |
+        <a th:href="@{/clients/deleteTrouserMeasurement/{id}(id=${t.id})}" style="color:#dc3545; font-weight:600;">Delete</a> |
+        <a th:href="@{/clients/copyTrouserMeasurement/{mid}(mid=${t.id})}" style="color:#28a745; font-weight:600;">Add new</a>
+      </td>
+      <td th:if="${iter.index != 0}"></td>
+    </tr>
+
+    <!-- ACCORDION SUB-ROW -->
+    <tr class="accordion-row">
+      <td colspan="3" class="accordion-cell">
+        <div class="accordion-content-group">
+
+          <!-- Measurements -->
+          <div class="accordion-content trouser-measurements">
+            <table>
+              <tr><th>Length</th><td th:text="${t.trouserLength}"></td></tr>
+              <tr><th>Asan</th><td th:text="${t.trouserAsan}"></td></tr>
+              <tr><th>Payncha</th><td th:text="${t.trouserPayncha}"></td></tr>
+              <tr><th>Upper Fitting</th><td th:text="${t.upperFitting}"></td></tr>
+              <tr><th>Middle Fitting</th><td th:text="${t.middleFitting}"></td></tr>
+              <tr><th>Lower Fitting</th><td th:text="${t.lowerFitting}"></td></tr>
+              <tr><th>Pocket</th><td th:text="${t.trouserPocket}"></td></tr>
+              <tr><th>Elastic</th><td th:text="${t.trouserElastic} ? 'Yes' : 'No'"></td></tr>
+              <tr><th>Notes</th><td th:text="${t.notes}"></td></tr>
+            </table>
+          </div>
+
+          <!-- Quantity -->
+          <div class="accordion-content trouser-quantity">
+            <table>
+              <tr><th>Trouser quantity</th><td th:text="${t.qty}"></td></tr>
+            </table>
+          </div>
+
+        </div>
+      </td>
+    </tr>
+  </th:block>
+  </tbody>
+</table>
+
+<!-- ===================== TROUSER FORM ===================== -->
+<form id="trouserForm"
+      class="measure-form"
+      th:action="@{${trouserFormAction}}"
+      method="post"
+      th:object="${trouserMeasurement}"
+      th:attr="data-open=${trouserMeasurement.id} != null ? 'true' : 'false'"
+      th:style="${trouserMeasurement.id} != null ? 'display:block;' : 'display:none;'">
+
+  <input type="hidden" th:field="*{id}"/>
+
+  <div class="grid-8">
+    <!-- Section: Trouser Measurements (same as Pajama) -->
+    <div class="section-title">Trouser Measurements</div>
+    <div><label>Length:</label><input type="text" th:field="*{trouserLength}"/></div>
+    <div><label>Asan:</label><input type="text" th:field="*{trouserAsan}"/></div>
+    <div><label>Payncha:</label><input type="text" th:field="*{trouserPayncha}"/></div>
+    <div><label>Upper Fitting:</label><input type="text" th:field="*{upperFitting}"/></div>
+    <div><label>Middle Fitting:</label><input type="text" th:field="*{middleFitting}"/></div>
+    <div><label>Lower Fitting:</label><input type="text" th:field="*{lowerFitting}"/></div>
+    <div>
+      <label>Pocket:</label>
+      <select th:field="*{trouserPocket}">
+        <option value="">Select</option>
+        <option value="No">No</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+    </div>
+    <div>
+      <label>Elastic:</label>
+      <input type="checkbox" th:field="*{trouserElastic}" style="width: auto;"/>
+    </div>
+
+    <div style="grid-column: span 8;">
+      <label>Notes:</label>
+      <textarea th:field="*{notes}"></textarea>
+    </div>
+  </div>
+
+  <!-- Section: Quantity -->
+  <div class="section-title">Trouser Quantity</div>
+  <div>
+    <label>Trouser quantity:</label>
+    <select th:field="*{qty}">
+      <option value="0">0</option>
+      <option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option>
+      <option value="5">5</option><option value="6">6</option>
+      <option value="7">7</option><option value="8">8</option>
+      <option value="9">9</option><option value="10">10</option>
+      <option value="11">11</option><option value="12">12</option>
+      <option value="13">13</option><option value="14">14</option>
+      <option value="15">15</option><option value="16">16</option>
+      <option value="17">17</option><option value="18">18</option>
+      <option value="19">19</option><option value="20">20</option>
+    </select>
+  </div>
+
+  <div class="actions">
+    <button type="submit">Save Trouser Measurement</button>
     <a th:href="@{/clients/view/{id}(id=${client.id})}"
        style="margin-left:10px; padding:10px 20px; background:#6c757d; color:#fff; border-radius:6px; font-weight:600; text-decoration:none;">
       ✖ Cancel

@@ -4,13 +4,14 @@ import com.example.tailorapp.model.Client;
 import com.example.tailorapp.model.DressMeasurement;
 import com.example.tailorapp.model.Payments;
 import com.example.tailorapp.model.ShirtMeasurement;
+import com.example.tailorapp.model.TrouserMeasurement;
 import com.example.tailorapp.model.WaistcoatMeasurement;
 import com.example.tailorapp.service.ClientService;
 import com.example.tailorapp.service.MeasurementService;
 import com.example.tailorapp.service.PaymentsService;
 import com.example.tailorapp.service.ShirtService;
 import com.example.tailorapp.service.StorageProperties;
-
+import com.example.tailorapp.service.TrouserService;
 import com.example.tailorapp.service.WaistcoatService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +39,7 @@ public class ClientController {
     private final StorageProperties storageProperties;
     private final WaistcoatService waistcoatService;
     private final ShirtService shirtService;
+    private final TrouserService trouserService;
     private final PaymentsService paymentsService;
 
     public ClientController(ClientService clientService,
@@ -45,12 +47,14 @@ public class ClientController {
                             StorageProperties storageProperties,
                             WaistcoatService waistcoatService,
                             ShirtService shirtService,
+                            TrouserService trouserService,
                             PaymentsService paymentsService) {
         this.clientService = clientService;
         this.measurementService = measurementService;
         this.storageProperties = storageProperties;
         this.waistcoatService = waistcoatService;
         this.shirtService = shirtService;
+        this.trouserService = trouserService;
         this.paymentsService = paymentsService;
     }
 
@@ -122,6 +126,7 @@ public class ClientController {
                        @RequestParam(required = false) Long edit,
                        @RequestParam(required = false) Long editWaistcoat,
                        @RequestParam(required = false) Long editShirt,
+                       @RequestParam(required = false) Long editTrouser,
                        Model model) {
         Optional<Client> c = clientService.findById(id);
         if (c.isEmpty()) return "redirect:/clients";
@@ -149,6 +154,13 @@ public class ClientController {
                 .toList();
         model.addAttribute("shirtMeasurements", shirtMeasurements);
 
+        // Trouser measurements
+        List<TrouserMeasurement> trouserMeasurements = trouserService.findByClient(id)
+                .stream()
+                .sorted(Comparator.comparing(TrouserMeasurement::getDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        model.addAttribute("trouserMeasurements", trouserMeasurements);
+
         // Form handling - Dress
         if (edit != null) {
             model.addAttribute("dressMeasurement", measurementService.findById(edit).orElse(new DressMeasurement()));
@@ -174,6 +186,15 @@ public class ClientController {
         } else {
             model.addAttribute("shirtMeasurement", new ShirtMeasurement());
             model.addAttribute("shirtFormAction", "/clients/addShirtMeasurement/" + client.getId());
+        }
+
+        // Form handling - Trouser
+        if (editTrouser != null) {
+            model.addAttribute("trouserMeasurement", trouserService.findById(editTrouser).orElse(new TrouserMeasurement()));
+            model.addAttribute("trouserFormAction", "/clients/updateTrouserMeasurement/" + editTrouser);
+        } else {
+            model.addAttribute("trouserMeasurement", new TrouserMeasurement());
+            model.addAttribute("trouserFormAction", "/clients/addTrouserMeasurement/" + client.getId());
         }
 
         model.addAttribute("client", client);
@@ -407,6 +428,74 @@ public class ClientController {
         copy.setDate(LocalDate.now());
         shirtService.save(copy);
         ra.addFlashAttribute("message", "Shirt measurement copied with today's date");
+        return "redirect:/clients/view/" + original.getClient().getId();
+    }
+
+    // ===================== TROUSER ENDPOINTS =====================
+
+    // Trouser Add
+    @PostMapping("/addTrouserMeasurement/{id}")
+    public String addTrouser(@PathVariable Long id,
+                             @ModelAttribute TrouserMeasurement trouserMeasurement,
+                             RedirectAttributes ra) {
+        Optional<Client> c = clientService.findById(id);
+        if (c.isEmpty()) {
+            ra.addFlashAttribute("error", "Client not found");
+            return "redirect:/clients";
+        }
+        trouserMeasurement.setClient(c.get());
+        trouserMeasurement.setDate(LocalDate.now());
+        trouserService.save(trouserMeasurement);
+        ra.addFlashAttribute("message", "Trouser Measurement added successfully");
+        return "redirect:/clients/view/" + id;
+    }
+
+    // Trouser Update
+    @PostMapping("/updateTrouserMeasurement/{id}")
+    public String updateTrouser(@PathVariable Long id,
+                                @ModelAttribute TrouserMeasurement trouserMeasurement,
+                                RedirectAttributes ra) {
+        Optional<TrouserMeasurement> existing = trouserService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+        TrouserMeasurement db = existing.get();
+        trouserMeasurement.setId(db.getId());
+        trouserMeasurement.setClient(db.getClient());
+        trouserMeasurement.setDate(db.getDate());
+        trouserService.save(trouserMeasurement);
+        ra.addFlashAttribute("message", "Trouser Measurement updated successfully");
+        return "redirect:/clients/view/" + db.getClient().getId();
+    }
+
+    // Trouser Delete
+    @GetMapping("/deleteTrouserMeasurement/{id}")
+    public String deleteTrouser(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<TrouserMeasurement> m = trouserService.findById(id);
+        if (m.isPresent()) {
+            Long clientId = m.get().getClient().getId();
+            trouserService.deleteById(id);
+            ra.addFlashAttribute("message", "Trouser Measurement deleted successfully");
+            return "redirect:/clients/view/" + clientId;
+        }
+        return "redirect:/clients";
+    }
+
+    // Trouser Copy
+    @GetMapping("/copyTrouserMeasurement/{id}")
+    public String copyTrouser(@PathVariable Long id, RedirectAttributes ra) {
+        Optional<TrouserMeasurement> existing = trouserService.findById(id);
+        if (existing.isEmpty()) {
+            ra.addFlashAttribute("error", "Measurement not found");
+            return "redirect:/clients";
+        }
+        TrouserMeasurement original = existing.get();
+        TrouserMeasurement copy = new TrouserMeasurement();
+        org.springframework.beans.BeanUtils.copyProperties(original, copy, "id", "date");
+        copy.setDate(LocalDate.now());
+        trouserService.save(copy);
+        ra.addFlashAttribute("message", "Trouser measurement copied with today's date");
         return "redirect:/clients/view/" + original.getClient().getId();
     }
 

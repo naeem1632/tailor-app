@@ -103,6 +103,8 @@
         <th>Date</th>
         <th>Dress</th>
         <th>Waistcoat</th>
+        <th>Shirt</th>
+        <th>Trouser</th>
         <th>Total Amount</th>
         <th>Paid Amount</th>
         <th>Remaining Amount</th>
@@ -119,6 +121,10 @@
             ? payment.dressCount + ' @ ' + payment.dressRate : '-'}"></td>
         <td th:text="${(payment.waistcoatCount != null and payment.waistcoatCount > 0)
             ? payment.waistcoatCount + ' @ ' + payment.waistcoatRate : '-'}"></td>
+        <td th:text="${(payment.shirtCount != null and payment.shirtCount > 0)
+            ? payment.shirtCount + ' @ ' + payment.shirtRate : '-'}"></td>
+        <td th:text="${(payment.trouserCount != null and payment.trouserCount > 0)
+            ? payment.trouserCount + ' @ ' + payment.trouserRate : '-'}"></td>
         <td th:text="${payment.totalAmount}"></td>
         <td th:text="${payment.paidAmount}" style="color: #28a745; font-weight: 600;"></td>
         <td th:text="${payment.remainingAmount}"
@@ -135,7 +141,7 @@
         </td>
     </tr>
     <tr th:if="${#lists.isEmpty(payments)}">
-        <td colspan="10" style="text-align: center; color: #6c757d; padding: 30px;">
+        <td colspan="12" style="text-align: center; color: #6c757d; padding: 30px;">
             <i class="fas fa-info-circle" style="font-size: 2rem;"></i><br>
             <strong>No payment records found for this client.</strong>
         </td>
