@@ -382,24 +382,62 @@ public class PaymentsController {
 
         Payments payment = paymentOpt.get();
 
-        // Validate: If marking as READY, NOTIFIED, or PICKED_UP, check if all work is completed
-        // Note: Orders without work assignments (legacy orders) can be marked as ready
+        // Validate: If marking as READY, NOTIFIED, or PICKED_UP, check if required work is completed
         if (readyStatus != null && !readyStatus.isEmpty()) {
             List<WorkAssignment> assignments = workAssignmentService.findByPayment(payment);
 
-            // Only validate if there ARE work assignments
-            // If no assignments exist, it's a legacy order and can be marked ready without validation
+            // Build a validation error message
+            StringBuilder errorMsg = new StringBuilder();
+
+            // Check if order has items that need work
+            boolean hasItemsInOrder = false;
+
+            // For DRESS items (Kameez, Shalwar, Pajama)
+            if (payment.getDressCount() != null && payment.getDressCount() > 0) {
+                hasItemsInOrder = true;
+                String dressError = validateItemCompletion(assignments, payment.getDressCount(),
+                    new String[]{"KAMEEZ", "SHALWAR", "PAJAMA", "DRESS"}, "Dress items");
+                if (dressError != null) {
+                    errorMsg.append(dressError);
+                }
+            }
+
+            // For SHIRT
+            if (payment.getShirtCount() != null && payment.getShirtCount() > 0) {
+                hasItemsInOrder = true;
+                String shirtError = validateItemCompletion(assignments, payment.getShirtCount(),
+                    new String[]{"SHIRT"}, "Shirt");
+                if (shirtError != null) {
+                    errorMsg.append(shirtError);
+                }
+            }
+
+            // For WAISTCOAT
+            if (payment.getWaistcoatCount() != null && payment.getWaistcoatCount() > 0) {
+                hasItemsInOrder = true;
+                String waistcoatError = validateItemCompletion(assignments, payment.getWaistcoatCount(),
+                    new String[]{"WAISTCOAT"}, "Waistcoat");
+                if (waistcoatError != null) {
+                    errorMsg.append(waistcoatError);
+                }
+            }
+
+            // If order has items but validation failed
+            if (hasItemsInOrder && errorMsg.length() > 0) {
+                ra.addFlashAttribute("error", "Cannot mark order as Ready:\n" + errorMsg.toString());
+                return "redirect:/payments/client/" + payment.getClient().getId();
+            }
+
+            // Also check if there are any incomplete assignments (additional safety check)
             if (!assignments.isEmpty()) {
-                // Check if there are any incomplete assignments
                 List<WorkAssignment> incompleteAssignments = assignments.stream()
                     .filter(a -> !"COMPLETED".equals(a.getStatus()))
                     .toList();
 
                 if (!incompleteAssignments.isEmpty()) {
-                    // Build error message showing incomplete work
-                    StringBuilder errorMsg = new StringBuilder("Cannot mark order as Ready. The following work is still pending:\n");
+                    StringBuilder incompleteMsg = new StringBuilder("Cannot mark order as Ready. The following work is still pending:\n");
                     for (WorkAssignment assignment : incompleteAssignments) {
-                        errorMsg.append("• ")
+                        incompleteMsg.append("• ")
                                .append(assignment.getEmployee().getName())
                                .append(" - ")
                                .append(assignment.getWorkType())
@@ -409,9 +447,9 @@ public class PaymentsController {
                                .append(assignment.getStatus())
                                .append("\n");
                     }
-                    errorMsg.append("Please complete all work assignments before marking the order as Ready.");
+                    incompleteMsg.append("Please complete all work assignments before marking the order as Ready.");
 
-                    ra.addFlashAttribute("error", errorMsg.toString());
+                    ra.addFlashAttribute("error", incompleteMsg.toString());
                     return "redirect:/payments/client/" + payment.getClient().getId();
                 }
             }
@@ -474,5 +512,85 @@ public class PaymentsController {
 
         // Redirect to WhatsApp link
         return "redirect:" + whatsappLink;
+    }
+
+    /**
+     * Validate that required work (cutting + stitching) is completed for item types
+     *
+     * @param assignments All work assignments for the order
+     * @param requiredQuantity Required quantity from order (e.g., shirtCount)
+     * @param itemTypes Item types to check (e.g., ["SHIRT"] or ["KAMEEZ", "SHALWAR", "PAJAMA"])
+     * @param itemLabel Label for error messages (e.g., "Shirt" or "Dress items")
+     * @return Error message if validation fails, null if passes
+     */
+    private String validateItemCompletion(List<WorkAssignment> assignments, Long requiredQuantity,
+                                          String[] itemTypes, String itemLabel) {
+        // Calculate completed cutting for these item types
+        long completedCutting = assignments.stream()
+            .filter(a -> "CUTTING".equals(a.getWorkType()))
+            .filter(a -> "COMPLETED".equals(a.getStatus()))
+            .filter(a -> containsItemType(itemTypes, a.getItemType()))
+            .mapToLong(WorkAssignment::getAssignedCount)
+            .sum();
+
+        // Calculate completed stitching (plain OR design) for these item types
+        long completedStitchingPlain = assignments.stream()
+            .filter(a -> "STITCHING".equals(a.getWorkType()))
+            .filter(a -> "COMPLETED".equals(a.getStatus()))
+            .filter(a -> a.getIsDesignWork() == null || !a.getIsDesignWork()) // Plain stitching
+            .filter(a -> containsItemType(itemTypes, a.getItemType()))
+            .mapToLong(WorkAssignment::getAssignedCount)
+            .sum();
+
+        long completedStitchingDesign = assignments.stream()
+            .filter(a -> "STITCHING".equals(a.getWorkType()))
+            .filter(a -> "COMPLETED".equals(a.getStatus()))
+            .filter(a -> a.getIsDesignWork() != null && a.getIsDesignWork()) // Design stitching
+            .filter(a -> containsItemType(itemTypes, a.getItemType()))
+            .mapToLong(WorkAssignment::getAssignedCount)
+            .sum();
+
+        // Total stitching = plain + design
+        long completedStitching = completedStitchingPlain + completedStitchingDesign;
+
+        // Validation: BOTH cutting AND stitching must be >= required quantity
+        boolean cuttingComplete = completedCutting >= requiredQuantity;
+        boolean stitchingComplete = completedStitching >= requiredQuantity;
+
+        if (!cuttingComplete || !stitchingComplete) {
+            StringBuilder error = new StringBuilder();
+            error.append("• ").append(itemLabel).append(" (").append(requiredQuantity).append(" in order):\n");
+
+            if (!cuttingComplete) {
+                error.append("  - Cutting: ").append(completedCutting).append("/").append(requiredQuantity)
+                     .append(" completed (").append(requiredQuantity - completedCutting).append(" remaining)\n");
+            }
+
+            if (!stitchingComplete) {
+                error.append("  - Stitching: ").append(completedStitching).append("/").append(requiredQuantity)
+                     .append(" completed (").append(requiredQuantity - completedStitching).append(" remaining)\n");
+                if (completedStitchingPlain > 0 || completedStitchingDesign > 0) {
+                    error.append("    (Plain: ").append(completedStitchingPlain)
+                         .append(", Design: ").append(completedStitchingDesign).append(")\n");
+                }
+            }
+
+            return error.toString();
+        }
+
+        return null; // Validation passed
+    }
+
+    /**
+     * Check if an item type matches any of the allowed types
+     */
+    private boolean containsItemType(String[] allowedTypes, String itemType) {
+        if (itemType == null) return false;
+        for (String allowed : allowedTypes) {
+            if (allowed.equalsIgnoreCase(itemType)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

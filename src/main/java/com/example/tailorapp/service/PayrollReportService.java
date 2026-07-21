@@ -51,6 +51,8 @@ public class PayrollReportService {
         Long grandTotalEarned = 0L;
         Long grandTotalAdvances = 0L;
         Long grandTotalPaid = 0L;
+        Long grandTotalAdvanceDeducted = 0L;
+        Long grandTotalActualCashPaid = 0L;
         Long grandTotalBalance = 0L;
 
         for (Employee employee : employees) {
@@ -60,6 +62,8 @@ public class PayrollReportService {
             grandTotalEarned += summary.getTotalEarned();
             grandTotalAdvances += summary.getTotalAdvances();
             grandTotalPaid += summary.getAmountPaid();
+            grandTotalAdvanceDeducted += summary.getAdvanceDeducted();
+            grandTotalActualCashPaid += summary.getActualCashPaid();
             grandTotalBalance += summary.getBalance();
         }
 
@@ -67,6 +71,8 @@ public class PayrollReportService {
         report.setGrandTotalEarned(grandTotalEarned);
         report.setGrandTotalAdvances(grandTotalAdvances);
         report.setGrandTotalPaid(grandTotalPaid);
+        report.setGrandTotalAdvanceDeducted(grandTotalAdvanceDeducted);
+        report.setGrandTotalActualCashPaid(grandTotalActualCashPaid);
         report.setGrandTotalBalance(grandTotalBalance);
 
         return report;
@@ -115,8 +121,21 @@ public class PayrollReportService {
                 .sum();
         summary.setAmountPaid(amountPaid);
 
-        // Calculate balance (Total Earned - Advances - Amount Paid)
-        Long balance = totalEarned - totalAdvances - amountPaid;
+        // Calculate total advance deductions from payment records
+        Long advanceDeducted = paymentRecords.stream()
+                .mapToLong(EmployeePayment::getTotalAdvanceDeduction)
+                .sum();
+        summary.setAdvanceDeducted(advanceDeducted);
+
+        // Calculate actual cash/transfer paid (excluding advance deductions)
+        Long actualCashPaid = amountPaid - advanceDeducted;
+        summary.setActualCashPaid(actualCashPaid);
+
+        // Calculate balance
+        // Total cash outflow = Advances Given + Actual Cash Paid
+        // Balance = Total Earned - (Advances Given + Actual Cash Paid)
+        // Simplified: Total Earned - Advances Given - (Amount Paid - Advance Deducted)
+        Long balance = totalEarned - totalAdvances - actualCashPaid;
         summary.setBalance(balance);
 
         // Determine status
@@ -142,6 +161,8 @@ public class PayrollReportService {
         private Long grandTotalEarned;
         private Long grandTotalAdvances;
         private Long grandTotalPaid;
+        private Long grandTotalAdvanceDeducted;
+        private Long grandTotalActualCashPaid;
         private Long grandTotalBalance;
 
         public LocalDate getStartDate() {
@@ -200,6 +221,22 @@ public class PayrollReportService {
             this.grandTotalPaid = grandTotalPaid;
         }
 
+        public Long getGrandTotalAdvanceDeducted() {
+            return grandTotalAdvanceDeducted;
+        }
+
+        public void setGrandTotalAdvanceDeducted(Long grandTotalAdvanceDeducted) {
+            this.grandTotalAdvanceDeducted = grandTotalAdvanceDeducted;
+        }
+
+        public Long getGrandTotalActualCashPaid() {
+            return grandTotalActualCashPaid;
+        }
+
+        public void setGrandTotalActualCashPaid(Long grandTotalActualCashPaid) {
+            this.grandTotalActualCashPaid = grandTotalActualCashPaid;
+        }
+
         public Long getGrandTotalBalance() {
             return grandTotalBalance;
         }
@@ -220,6 +257,8 @@ public class PayrollReportService {
         private Long totalEarned;
         private Long totalAdvances;
         private Long amountPaid;
+        private Long advanceDeducted;
+        private Long actualCashPaid;
         private Long balance;
         private String status; // PENDING, SETTLED, OVERPAID
         private List<EmployeePayment> paymentRecords;
@@ -278,6 +317,22 @@ public class PayrollReportService {
 
         public void setAmountPaid(Long amountPaid) {
             this.amountPaid = amountPaid;
+        }
+
+        public Long getAdvanceDeducted() {
+            return advanceDeducted;
+        }
+
+        public void setAdvanceDeducted(Long advanceDeducted) {
+            this.advanceDeducted = advanceDeducted;
+        }
+
+        public Long getActualCashPaid() {
+            return actualCashPaid;
+        }
+
+        public void setActualCashPaid(Long actualCashPaid) {
+            this.actualCashPaid = actualCashPaid;
         }
 
         public Long getBalance() {

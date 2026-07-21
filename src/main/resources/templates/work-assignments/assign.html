@@ -977,8 +977,16 @@
 
     // Update available quantities summary
     function updateAvailableQuantitiesSummary() {
-        // Calculate already assigned quantities - separate by work type
-        const alreadyCutStitched = {
+        // Calculate already assigned quantities - track cutting and stitching separately
+        const alreadyCut = {
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0
+        };
+
+        const alreadyStitched = {
             kameez: 0,
             shalwar: 0,
             pajama: 0,
@@ -1000,9 +1008,13 @@
             const count = assignment.assignedCount;
             const embType = assignment.embellishmentType ? assignment.embellishmentType.toLowerCase() : '';
 
-            if (workType === 'CUTTING' || workType === 'STITCHING') {
-                if (alreadyCutStitched[itemType] !== undefined) {
-                    alreadyCutStitched[itemType] += count;
+            if (workType === 'CUTTING') {
+                if (alreadyCut[itemType] !== undefined) {
+                    alreadyCut[itemType] += count;
+                }
+            } else if (workType === 'STITCHING') {
+                if (alreadyStitched[itemType] !== undefined) {
+                    alreadyStitched[itemType] += count;
                 }
             } else if (workType === 'EMBELLISHMENT' && embType) {
                 if (alreadyEmbellished[embType] !== undefined) {
@@ -1014,36 +1026,40 @@
         // Calculate available quantities
         const summaryHtml = [];
 
-        // Main items from order - show available for CUTTING/STITCHING
+        // Main items from order - show available for CUTTING and STITCHING separately
         if (orderQuantities.dressCount > 0) {
-            const availableKameez = orderQuantities.dressCount - alreadyCutStitched.kameez;
-            const availableShalwar = orderQuantities.dressCount - alreadyCutStitched.shalwar;
-            const availablePajama = orderQuantities.dressCount - alreadyCutStitched.pajama;
-
-            summaryHtml.push(`<div style="background: ${availableKameez > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableKameez > 0 ? '#c3e6cb' : '#f5c6cb'};">
-                <strong>Kameez (Cut/Stitch):</strong> ${availableKameez} / ${orderQuantities.dressCount}
+            const availableCutKameez = orderQuantities.dressCount - alreadyCut.kameez;
+            const availableStitchKameez = orderQuantities.dressCount - alreadyStitched.kameez;
+            summaryHtml.push(`<div style="background: ${(availableCutKameez > 0 || availableStitchKameez > 0) ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${(availableCutKameez > 0 || availableStitchKameez > 0) ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Kameez:</strong> Cut: ${availableCutKameez}/${orderQuantities.dressCount} | Stitch: ${availableStitchKameez}/${orderQuantities.dressCount}
             </div>`);
 
-            summaryHtml.push(`<div style="background: ${availableShalwar > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableShalwar > 0 ? '#c3e6cb' : '#f5c6cb'};">
-                <strong>Shalwar (Cut/Stitch):</strong> ${availableShalwar} / ${orderQuantities.dressCount}
+            const availableCutShalwar = orderQuantities.dressCount - alreadyCut.shalwar;
+            const availableStitchShalwar = orderQuantities.dressCount - alreadyStitched.shalwar;
+            summaryHtml.push(`<div style="background: ${(availableCutShalwar > 0 || availableStitchShalwar > 0) ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${(availableCutShalwar > 0 || availableStitchShalwar > 0) ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Shalwar:</strong> Cut: ${availableCutShalwar}/${orderQuantities.dressCount} | Stitch: ${availableStitchShalwar}/${orderQuantities.dressCount}
             </div>`);
 
-            summaryHtml.push(`<div style="background: ${availablePajama > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availablePajama > 0 ? '#c3e6cb' : '#f5c6cb'};">
-                <strong>Pajama (Cut/Stitch):</strong> ${availablePajama} / ${orderQuantities.dressCount}
+            const availableCutPajama = orderQuantities.dressCount - alreadyCut.pajama;
+            const availableStitchPajama = orderQuantities.dressCount - alreadyStitched.pajama;
+            summaryHtml.push(`<div style="background: ${(availableCutPajama > 0 || availableStitchPajama > 0) ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${(availableCutPajama > 0 || availableStitchPajama > 0) ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Pajama:</strong> Cut: ${availableCutPajama}/${orderQuantities.dressCount} | Stitch: ${availableStitchPajama}/${orderQuantities.dressCount}
             </div>`);
         }
 
         if (orderQuantities.shirtCount > 0) {
-            const availableShirt = orderQuantities.shirtCount - alreadyCutStitched.shirt;
-            summaryHtml.push(`<div style="background: ${availableShirt > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableShirt > 0 ? '#c3e6cb' : '#f5c6cb'};">
-                <strong>Shirt (Cut/Stitch):</strong> ${availableShirt} / ${orderQuantities.shirtCount}
+            const availableCutShirt = orderQuantities.shirtCount - alreadyCut.shirt;
+            const availableStitchShirt = orderQuantities.shirtCount - alreadyStitched.shirt;
+            summaryHtml.push(`<div style="background: ${(availableCutShirt > 0 || availableStitchShirt > 0) ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${(availableCutShirt > 0 || availableStitchShirt > 0) ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Shirt:</strong> Cut: ${availableCutShirt}/${orderQuantities.shirtCount} | Stitch: ${availableStitchShirt}/${orderQuantities.shirtCount}
             </div>`);
         }
 
         if (orderQuantities.waistcoatCount > 0) {
-            const availableWaistcoat = orderQuantities.waistcoatCount - alreadyCutStitched.waistcoat;
-            summaryHtml.push(`<div style="background: ${availableWaistcoat > 0 ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${availableWaistcoat > 0 ? '#c3e6cb' : '#f5c6cb'};">
-                <strong>Waistcoat (Cut/Stitch):</strong> ${availableWaistcoat} / ${orderQuantities.waistcoatCount}
+            const availableCutWaistcoat = orderQuantities.waistcoatCount - alreadyCut.waistcoat;
+            const availableStitchWaistcoat = orderQuantities.waistcoatCount - alreadyStitched.waistcoat;
+            summaryHtml.push(`<div style="background: ${(availableCutWaistcoat > 0 || availableStitchWaistcoat > 0) ? '#d4edda' : '#f8d7da'}; padding: 8px 12px; border-radius: 4px; border: 1px solid ${(availableCutWaistcoat > 0 || availableStitchWaistcoat > 0) ? '#c3e6cb' : '#f5c6cb'};">
+                <strong>Waistcoat:</strong> Cut: ${availableCutWaistcoat}/${orderQuantities.waistcoatCount} | Stitch: ${availableStitchWaistcoat}/${orderQuantities.waistcoatCount}
             </div>`);
         }
 
@@ -1092,10 +1108,19 @@
 
     // Validate quantities against order
     function validateQuantities(workTypes, itemTypes, quantities, embellishmentTypes) {
-        // Separate tracking for CUTTING/STITCHING vs FINISHING/EMBELLISHMENT
-        // CUTTING/STITCHING consume order quantities
+        // Separate tracking for CUTTING vs STITCHING vs FINISHING/EMBELLISHMENT
+        // CUTTING and STITCHING are separate operations - each can use up to the full order quantity
         // FINISHING/EMBELLISHMENT work on already cut/stitched items
-        const alreadyCutStitched = {
+        const alreadyCut = {
+            dress: 0,
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0
+        };
+
+        const alreadyStitched = {
             dress: 0,
             kameez: 0,
             shalwar: 0,
@@ -1127,10 +1152,15 @@
             const count = assignment.assignedCount;
             const embType = assignment.embellishmentType ? assignment.embellishmentType.toLowerCase() : '';
 
-            if (workType === 'CUTTING' || workType === 'STITCHING') {
-                // Cutting and stitching consume order quantities
-                if (alreadyCutStitched[itemType] !== undefined) {
-                    alreadyCutStitched[itemType] += count;
+            if (workType === 'CUTTING') {
+                // Track cutting separately
+                if (alreadyCut[itemType] !== undefined) {
+                    alreadyCut[itemType] += count;
+                }
+            } else if (workType === 'STITCHING') {
+                // Track stitching separately
+                if (alreadyStitched[itemType] !== undefined) {
+                    alreadyStitched[itemType] += count;
                 }
             } else if (workType === 'FINISHING') {
                 // Finishing works on cut/stitched items
@@ -1146,7 +1176,16 @@
         });
 
         // Calculate total quantities being assigned NOW (new assignments)
-        const newCutStitch = {
+        const newCut = {
+            dress: 0,
+            kameez: 0,
+            shalwar: 0,
+            pajama: 0,
+            shirt: 0,
+            waistcoat: 0
+        };
+
+        const newStitch = {
             dress: 0,
             kameez: 0,
             shalwar: 0,
@@ -1177,10 +1216,15 @@
             const quantity = quantities[i];
             const embellishmentType = embellishmentTypes[i];
 
-            if (workType === 'CUTTING' || workType === 'STITCHING') {
+            if (workType === 'CUTTING') {
                 const item = itemType.toLowerCase();
-                if (newCutStitch[item] !== undefined) {
-                    newCutStitch[item] += quantity;
+                if (newCut[item] !== undefined) {
+                    newCut[item] += quantity;
+                }
+            } else if (workType === 'STITCHING') {
+                const item = itemType.toLowerCase();
+                if (newStitch[item] !== undefined) {
+                    newStitch[item] += quantity;
                 }
             } else if (workType === 'FINISHING') {
                 const item = itemType.toLowerCase();
@@ -1195,14 +1239,34 @@
             }
         }
 
-        // Calculate combined totals
-        const totalCutStitch = {
-            dress: alreadyCutStitched.dress + newCutStitch.dress,
-            kameez: alreadyCutStitched.kameez + newCutStitch.kameez,
-            shalwar: alreadyCutStitched.shalwar + newCutStitch.shalwar,
-            pajama: alreadyCutStitched.pajama + newCutStitch.pajama,
-            shirt: alreadyCutStitched.shirt + newCutStitch.shirt,
-            waistcoat: alreadyCutStitched.waistcoat + newCutStitch.waistcoat
+        // Calculate combined totals for cutting
+        const totalCut = {
+            dress: alreadyCut.dress + newCut.dress,
+            kameez: alreadyCut.kameez + newCut.kameez,
+            shalwar: alreadyCut.shalwar + newCut.shalwar,
+            pajama: alreadyCut.pajama + newCut.pajama,
+            shirt: alreadyCut.shirt + newCut.shirt,
+            waistcoat: alreadyCut.waistcoat + newCut.waistcoat
+        };
+
+        // Calculate combined totals for stitching
+        const totalStitch = {
+            dress: alreadyStitched.dress + newStitch.dress,
+            kameez: alreadyStitched.kameez + newStitch.kameez,
+            shalwar: alreadyStitched.shalwar + newStitch.shalwar,
+            pajama: alreadyStitched.pajama + newStitch.pajama,
+            shirt: alreadyStitched.shirt + newStitch.shirt,
+            waistcoat: alreadyStitched.waistcoat + newStitch.waistcoat
+        };
+
+        // For finishing validation, we need to know total cut OR stitched items
+        const totalCutOrStitched = {
+            dress: Math.max(totalCut.dress, totalStitch.dress),
+            kameez: Math.max(totalCut.kameez, totalStitch.kameez),
+            shalwar: Math.max(totalCut.shalwar, totalStitch.shalwar),
+            pajama: Math.max(totalCut.pajama, totalStitch.pajama),
+            shirt: Math.max(totalCut.shirt, totalStitch.shirt),
+            waistcoat: Math.max(totalCut.waistcoat, totalStitch.waistcoat)
         };
 
         const totalFinishing = {
@@ -1225,7 +1289,7 @@
         const errors = [];
 
         // ============================================
-        // PART 1: Validate CUTTING/STITCHING against ORDER quantities
+        // PART 1: Validate CUTTING and STITCHING separately against ORDER quantities
         // ============================================
 
         // For dress: each dress = 1 kameez + 1 shalwar
@@ -1235,78 +1299,115 @@
             pajama: orderQuantities.dressCount  // pajama can substitute shalwar
         };
 
-        // Check DRESS cutting/stitching
-        if (totalCutStitch.dress > orderQuantities.dressCount) {
-            const available = orderQuantities.dressCount - alreadyCutStitched.dress;
-            errors.push(`Cannot cut/stitch ${newCutStitch.dress} dress(es). Only ${available} available (${alreadyCutStitched.dress} already cut/stitched, ${orderQuantities.dressCount} in order).`);
+        // Check DRESS cutting
+        if (totalCut.dress > orderQuantities.dressCount) {
+            const available = orderQuantities.dressCount - alreadyCut.dress;
+            errors.push(`Cannot cut ${newCut.dress} dress(es). Only ${available} available (${alreadyCut.dress} already cut, ${orderQuantities.dressCount} in order).`);
+        }
+        // Check DRESS stitching
+        if (totalStitch.dress > orderQuantities.dressCount) {
+            const available = orderQuantities.dressCount - alreadyStitched.dress;
+            errors.push(`Cannot stitch ${newStitch.dress} dress(es). Only ${available} available (${alreadyStitched.dress} already stitched, ${orderQuantities.dressCount} in order).`);
         }
 
-        // Check KAMEEZ cutting/stitching (from dress)
-        if (totalCutStitch.kameez > maxFromDress.kameez) {
-            const available = maxFromDress.kameez - alreadyCutStitched.kameez;
-            errors.push(`Cannot cut/stitch ${newCutStitch.kameez} kameez. Only ${available} available (${alreadyCutStitched.kameez} already cut/stitched, ${maxFromDress.kameez} in order).`);
+        // Check KAMEEZ cutting
+        if (totalCut.kameez > maxFromDress.kameez) {
+            const available = maxFromDress.kameez - alreadyCut.kameez;
+            errors.push(`Cannot cut ${newCut.kameez} kameez. Only ${available} available (${alreadyCut.kameez} already cut, ${maxFromDress.kameez} in order).`);
+        }
+        // Check KAMEEZ stitching
+        if (totalStitch.kameez > maxFromDress.kameez) {
+            const available = maxFromDress.kameez - alreadyStitched.kameez;
+            errors.push(`Cannot stitch ${newStitch.kameez} kameez. Only ${available} available (${alreadyStitched.kameez} already stitched, ${maxFromDress.kameez} in order).`);
         }
 
-        // Check SHALWAR cutting/stitching (from dress)
-        if (totalCutStitch.shalwar > maxFromDress.shalwar) {
-            const available = maxFromDress.shalwar - alreadyCutStitched.shalwar;
-            errors.push(`Cannot cut/stitch ${newCutStitch.shalwar} shalwar. Only ${available} available (${alreadyCutStitched.shalwar} already cut/stitched, ${maxFromDress.shalwar} in order).`);
+        // Check SHALWAR cutting
+        if (totalCut.shalwar > maxFromDress.shalwar) {
+            const available = maxFromDress.shalwar - alreadyCut.shalwar;
+            errors.push(`Cannot cut ${newCut.shalwar} shalwar. Only ${available} available (${alreadyCut.shalwar} already cut, ${maxFromDress.shalwar} in order).`);
+        }
+        // Check SHALWAR stitching
+        if (totalStitch.shalwar > maxFromDress.shalwar) {
+            const available = maxFromDress.shalwar - alreadyStitched.shalwar;
+            errors.push(`Cannot stitch ${newStitch.shalwar} shalwar. Only ${available} available (${alreadyStitched.shalwar} already stitched, ${maxFromDress.shalwar} in order).`);
         }
 
-        // Check PAJAMA cutting/stitching (from dress)
-        if (totalCutStitch.pajama > maxFromDress.pajama) {
-            const available = maxFromDress.pajama - alreadyCutStitched.pajama;
-            errors.push(`Cannot cut/stitch ${newCutStitch.pajama} pajama. Only ${available} available (${alreadyCutStitched.pajama} already cut/stitched, ${maxFromDress.pajama} in order).`);
+        // Check PAJAMA cutting
+        if (totalCut.pajama > maxFromDress.pajama) {
+            const available = maxFromDress.pajama - alreadyCut.pajama;
+            errors.push(`Cannot cut ${newCut.pajama} pajama. Only ${available} available (${alreadyCut.pajama} already cut, ${maxFromDress.pajama} in order).`);
+        }
+        // Check PAJAMA stitching
+        if (totalStitch.pajama > maxFromDress.pajama) {
+            const available = maxFromDress.pajama - alreadyStitched.pajama;
+            errors.push(`Cannot stitch ${newStitch.pajama} pajama. Only ${available} available (${alreadyStitched.pajama} already stitched, ${maxFromDress.pajama} in order).`);
         }
 
-        // Check SHALWAR + PAJAMA combined (both come from dress, cannot exceed dress count)
-        const totalShalwarPajama = totalCutStitch.shalwar + totalCutStitch.pajama;
-        if (totalShalwarPajama > orderQuantities.dressCount) {
-            const alreadyAssignedShalwarPajama = alreadyCutStitched.shalwar + alreadyCutStitched.pajama;
-            const available = orderQuantities.dressCount - alreadyAssignedShalwarPajama;
-            errors.push(`Cannot assign ${newCutStitch.shalwar} shalwar + ${newCutStitch.pajama} pajama. Combined total (${totalShalwarPajama}) exceeds dress count. Only ${available} available for shalwar/pajama combined (${alreadyAssignedShalwarPajama} already assigned, ${orderQuantities.dressCount} dresses in order).`);
+        // Check SHALWAR + PAJAMA combined for cutting
+        const totalCutShalwarPajama = totalCut.shalwar + totalCut.pajama;
+        if (totalCutShalwarPajama > orderQuantities.dressCount) {
+            const alreadyCutShalwarPajama = alreadyCut.shalwar + alreadyCut.pajama;
+            const available = orderQuantities.dressCount - alreadyCutShalwarPajama;
+            errors.push(`Cannot cut ${newCut.shalwar} shalwar + ${newCut.pajama} pajama. Combined total (${totalCutShalwarPajama}) exceeds dress count. Only ${available} available for cutting shalwar/pajama combined (${alreadyCutShalwarPajama} already cut, ${orderQuantities.dressCount} dresses in order).`);
+        }
+        // Check SHALWAR + PAJAMA combined for stitching
+        const totalStitchShalwarPajama = totalStitch.shalwar + totalStitch.pajama;
+        if (totalStitchShalwarPajama > orderQuantities.dressCount) {
+            const alreadyStitchedShalwarPajama = alreadyStitched.shalwar + alreadyStitched.pajama;
+            const available = orderQuantities.dressCount - alreadyStitchedShalwarPajama;
+            errors.push(`Cannot stitch ${newStitch.shalwar} shalwar + ${newStitch.pajama} pajama. Combined total (${totalStitchShalwarPajama}) exceeds dress count. Only ${available} available for stitching shalwar/pajama combined (${alreadyStitchedShalwarPajama} already stitched, ${orderQuantities.dressCount} dresses in order).`);
         }
 
-        // Check SHIRT cutting/stitching
-        if (totalCutStitch.shirt > orderQuantities.shirtCount) {
-            const available = orderQuantities.shirtCount - alreadyCutStitched.shirt;
-            errors.push(`Cannot cut/stitch ${newCutStitch.shirt} shirt(s). Only ${available} available (${alreadyCutStitched.shirt} already cut/stitched, ${orderQuantities.shirtCount} in order).`);
+        // Check SHIRT cutting
+        if (totalCut.shirt > orderQuantities.shirtCount) {
+            const available = orderQuantities.shirtCount - alreadyCut.shirt;
+            errors.push(`Cannot cut ${newCut.shirt} shirt(s). Only ${available} available (${alreadyCut.shirt} already cut, ${orderQuantities.shirtCount} in order).`);
+        }
+        // Check SHIRT stitching
+        if (totalStitch.shirt > orderQuantities.shirtCount) {
+            const available = orderQuantities.shirtCount - alreadyStitched.shirt;
+            errors.push(`Cannot stitch ${newStitch.shirt} shirt(s). Only ${available} available (${alreadyStitched.shirt} already stitched, ${orderQuantities.shirtCount} in order).`);
         }
 
-        // Check WAISTCOAT cutting/stitching
-        if (totalCutStitch.waistcoat > orderQuantities.waistcoatCount) {
-            const available = orderQuantities.waistcoatCount - alreadyCutStitched.waistcoat;
-            errors.push(`Cannot cut/stitch ${newCutStitch.waistcoat} waistcoat(s). Only ${available} available (${alreadyCutStitched.waistcoat} already cut/stitched, ${orderQuantities.waistcoatCount} in order).`);
+        // Check WAISTCOAT cutting
+        if (totalCut.waistcoat > orderQuantities.waistcoatCount) {
+            const available = orderQuantities.waistcoatCount - alreadyCut.waistcoat;
+            errors.push(`Cannot cut ${newCut.waistcoat} waistcoat(s). Only ${available} available (${alreadyCut.waistcoat} already cut, ${orderQuantities.waistcoatCount} in order).`);
+        }
+        // Check WAISTCOAT stitching
+        if (totalStitch.waistcoat > orderQuantities.waistcoatCount) {
+            const available = orderQuantities.waistcoatCount - alreadyStitched.waistcoat;
+            errors.push(`Cannot stitch ${newStitch.waistcoat} waistcoat(s). Only ${available} available (${alreadyStitched.waistcoat} already stitched, ${orderQuantities.waistcoatCount} in order).`);
         }
 
         // ============================================
         // PART 2: Validate FINISHING against CUT/STITCHED quantities
         // ============================================
 
-        // Finishing can only be done on items that have been cut/stitched
-        if (totalFinishing.kameez > totalCutStitch.kameez) {
-            const available = totalCutStitch.kameez - alreadyFinished.kameez;
-            errors.push(`Cannot finish ${newFinishing.kameez} kameez. Only ${available} available for finishing (${totalCutStitch.kameez} cut/stitched, ${alreadyFinished.kameez} already finished).`);
+        // Finishing can only be done on items that have been cut OR stitched
+        if (totalFinishing.kameez > totalCutOrStitched.kameez) {
+            const available = totalCutOrStitched.kameez - alreadyFinished.kameez;
+            errors.push(`Cannot finish ${newFinishing.kameez} kameez. Only ${available} available for finishing (${totalCutOrStitched.kameez} cut/stitched, ${alreadyFinished.kameez} already finished).`);
         }
 
-        if (totalFinishing.shalwar > totalCutStitch.shalwar) {
-            const available = totalCutStitch.shalwar - alreadyFinished.shalwar;
-            errors.push(`Cannot finish ${newFinishing.shalwar} shalwar. Only ${available} available for finishing (${totalCutStitch.shalwar} cut/stitched, ${alreadyFinished.shalwar} already finished).`);
+        if (totalFinishing.shalwar > totalCutOrStitched.shalwar) {
+            const available = totalCutOrStitched.shalwar - alreadyFinished.shalwar;
+            errors.push(`Cannot finish ${newFinishing.shalwar} shalwar. Only ${available} available for finishing (${totalCutOrStitched.shalwar} cut/stitched, ${alreadyFinished.shalwar} already finished).`);
         }
 
-        if (totalFinishing.pajama > totalCutStitch.pajama) {
-            const available = totalCutStitch.pajama - alreadyFinished.pajama;
-            errors.push(`Cannot finish ${newFinishing.pajama} pajama. Only ${available} available for finishing (${totalCutStitch.pajama} cut/stitched, ${alreadyFinished.pajama} already finished).`);
+        if (totalFinishing.pajama > totalCutOrStitched.pajama) {
+            const available = totalCutOrStitched.pajama - alreadyFinished.pajama;
+            errors.push(`Cannot finish ${newFinishing.pajama} pajama. Only ${available} available for finishing (${totalCutOrStitched.pajama} cut/stitched, ${alreadyFinished.pajama} already finished).`);
         }
 
-        if (totalFinishing.shirt > totalCutStitch.shirt) {
-            const available = totalCutStitch.shirt - alreadyFinished.shirt;
-            errors.push(`Cannot finish ${newFinishing.shirt} shirt(s). Only ${available} available for finishing (${totalCutStitch.shirt} cut/stitched, ${alreadyFinished.shirt} already finished).`);
+        if (totalFinishing.shirt > totalCutOrStitched.shirt) {
+            const available = totalCutOrStitched.shirt - alreadyFinished.shirt;
+            errors.push(`Cannot finish ${newFinishing.shirt} shirt(s). Only ${available} available for finishing (${totalCutOrStitched.shirt} cut/stitched, ${alreadyFinished.shirt} already finished).`);
         }
 
-        if (totalFinishing.waistcoat > totalCutStitch.waistcoat) {
-            const available = totalCutStitch.waistcoat - alreadyFinished.waistcoat;
-            errors.push(`Cannot finish ${newFinishing.waistcoat} waistcoat(s). Only ${available} available for finishing (${totalCutStitch.waistcoat} cut/stitched, ${alreadyFinished.waistcoat} already finished).`);
+        if (totalFinishing.waistcoat > totalCutOrStitched.waistcoat) {
+            const available = totalCutOrStitched.waistcoat - alreadyFinished.waistcoat;
+            errors.push(`Cannot finish ${newFinishing.waistcoat} waistcoat(s). Only ${available} available for finishing (${totalCutOrStitched.waistcoat} cut/stitched, ${alreadyFinished.waistcoat} already finished).`);
         }
 
         // ============================================

@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <div th:if="${!expense.description && !expense.notes}" style="text-align: center; padding: 20px; color: #999;">
+        <div th:if="${(expense.description == null || #strings.isEmpty(expense.description)) && (expense.notes == null || #strings.isEmpty(expense.notes))}" style="text-align: center; padding: 20px; color: #999;">
             <i>No additional details provided</i>
         </div>
     </div>

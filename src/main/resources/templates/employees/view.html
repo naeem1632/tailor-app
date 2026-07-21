@@ -99,7 +99,7 @@
                     </span>
                 </div>
 
-                <div th:if="${!employee.canCut && !employee.canStitchPlain && !employee.canStitchDesign && !employee.canDoFinishing && !employee.canDoEmbellishment}"
+                <div th:if="${(employee.canCut == null || !employee.canCut) && (employee.canStitchPlain == null || !employee.canStitchPlain) && (employee.canStitchDesign == null || !employee.canStitchDesign) && (employee.canDoFinishing == null || !employee.canDoFinishing) && (employee.canDoEmbellishment == null || !employee.canDoEmbellishment)}"
                      style="color: #999; font-style: italic;">
                     No skills assigned
                 </div>

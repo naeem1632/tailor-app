@@ -39,7 +39,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Total Amount</div>
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Total Earned</div>
                 <div style="font-size: 24px; font-weight: 700;">
                     Rs. <span th:text="${#numbers.formatInteger(payment.totalAmount, 0, 'COMMA')}"></span>
                 </div>
@@ -61,19 +61,28 @@
         </div>
 
         <div class="row" style="margin-top: 20px;">
-            <div class="col-md-4">
-                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Amount Paid</div>
-                <div style="font-size: 20px; font-weight: 700; color: #a8ff78;">
-                    Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid, 0, 'COMMA')}"></span>
+            <div class="col-md-3">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Advance Deducted</div>
+                <div style="font-size: 20px; font-weight: 700; color: #ffc107;">
+                    <span th:if="${payment.getTotalAdvanceDeduction() > 0}">
+                        Rs. <span th:text="${#numbers.formatInteger(payment.getTotalAdvanceDeduction(), 0, 'COMMA')}"></span>
+                    </span>
+                    <span th:if="${payment.getTotalAdvanceDeduction() == 0}">-</span>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Actual Cash Paid</div>
+                <div style="font-size: 20px; font-weight: 700; color: #64b5f6;">
+                    Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid - payment.getTotalAdvanceDeduction(), 0, 'COMMA')}"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Amount Remaining</div>
                 <div style="font-size: 20px; font-weight: 700; color: #ff6b6b;">
                     Rs. <span th:text="${#numbers.formatInteger(payment.amountRemaining, 0, 'COMMA')}"></span>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">Work Items</div>
                 <div style="font-size: 20px; font-weight: 700;">
                     <span th:text="${#lists.size(payment.workAssignments)}"></span> items
@@ -109,7 +118,8 @@
                               th:attr="data-work-type=${assignment.workType},
                                        data-item-type=${assignment.itemType},
                                        data-is-design=${assignment.isDesignWork},
-                                       data-quantity=${assignment.assignedCount}">
+                                       data-quantity=${assignment.assignedCount},
+                                       data-rate=${assignment.ratePerPiece}">
                         </span>
                     </div>
                     <!-- Display area -->
@@ -173,8 +183,9 @@
                 <th>#</th>
                 <th>Payment Date</th>
                 <th>Payment Time</th>
-                <th>Amount Paid</th>
+                <th>Total Earned</th>
                 <th>Advance Deducted</th>
+                <th>Actual Cash/Transfer</th>
                 <th>Payment Method</th>
                 <th>Notes</th>
             </tr>
@@ -184,7 +195,7 @@
                 <td th:text="${iterStat.count}"></td>
                 <td th:text="${#temporals.format(transaction.paymentDate, 'dd MMM yyyy')}"></td>
                 <td th:text="${transaction.paymentTime != null ? #temporals.format(transaction.paymentTime, 'hh:mm a') : '-'}"></td>
-                <td style="font-weight: 700; color: #28a745;">
+                <td style="font-weight: 700; color: #007bff;">
                     Rs. <span th:text="${#numbers.formatInteger(transaction.amountPaid, 0, 'COMMA')}"></span>
                 </td>
                 <td>
@@ -200,6 +211,19 @@
                         </span>
                     </span>
                     <span th:if="${transaction.advanceDeductions == null || transaction.advanceDeductions.isEmpty()}" style="color: #999; font-size: 12px;">-</span>
+                </td>
+                <td>
+                    <span th:with="actualPaid=${transaction.amountPaid - transaction.getTotalAdvanceDeduction()}">
+                        <span style="font-weight: 700; color: #007bff;">
+                            Rs. <span th:text="${#numbers.formatInteger(actualPaid, 0, 'COMMA')}"></span>
+                        </span>
+                        <span th:if="${transaction.getTotalAdvanceDeduction() > 0}">
+                            <br/>
+                            <small style="font-size: 10px; color: #666;">
+                                (<span th:text="${#numbers.formatInteger(transaction.amountPaid, 0, 'COMMA')}"></span> - <span th:text="${#numbers.formatInteger(transaction.getTotalAdvanceDeduction(), 0, 'COMMA')}"></span>)
+                            </small>
+                        </span>
+                    </span>
                 </td>
                 <td>
                     <span th:if="${transaction.paymentMethod == 'CASH'}" style="background: #d4edda; padding: 2px 8px; border-radius: 8px; font-size: 11px;">
@@ -220,7 +244,18 @@
             <tr style="background: #d4edda; font-weight: 700;">
                 <td colspan="3" style="text-align: right; padding: 12px;">Total Paid:</td>
                 <td style="padding: 12px;">Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid, 0, 'COMMA')}"></span></td>
-                <td colspan="3"></td>
+                <td style="padding: 12px;" th:with="totalAdvDeducted=${payment.getTotalAdvanceDeduction()}">
+                    <span th:if="${totalAdvDeducted > 0}" style="color: #ffc107;">
+                        Rs. <span th:text="${#numbers.formatInteger(totalAdvDeducted, 0, 'COMMA')}"></span>
+                    </span>
+                    <span th:if="${totalAdvDeducted == 0}">-</span>
+                </td>
+                <td style="padding: 12px;" th:with="actualTotal=${payment.amountPaid - payment.getTotalAdvanceDeduction()}">
+                    <span style="color: #007bff;">
+                        Rs. <span th:text="${#numbers.formatInteger(actualTotal, 0, 'COMMA')}"></span>
+                    </span>
+                </td>
+                <td colspan="2"></td>
             </tr>
             </tbody>
         </table>
@@ -395,25 +430,31 @@
             const displayArea = document.querySelector('.work-items-display');
             const workItems = workDataContainer.querySelectorAll('span[data-work-type]');
 
-            // Build quantity map
-            const quantityMap = new Map();
+            // Build quantity and rate map
+            const workMap = new Map();
 
             workItems.forEach(item => {
                 const workType = item.getAttribute('data-work-type');
                 const itemType = item.getAttribute('data-item-type');
                 const isDesign = item.getAttribute('data-is-design') === 'true';
                 const quantity = parseInt(item.getAttribute('data-quantity'));
+                const rate = parseInt(item.getAttribute('data-rate'));
 
                 const designLabel = isDesign ? ' Design' : ' Plain';
                 const key = workType + designLabel + ' (' + itemType + ')';
 
-                const currentQty = quantityMap.get(key) || 0;
-                quantityMap.set(key, currentQty + quantity);
+                if (workMap.has(key)) {
+                    const existing = workMap.get(key);
+                    existing.quantity += quantity;
+                    // Keep the rate (should be same for same work type)
+                } else {
+                    workMap.set(key, { quantity: quantity, rate: rate });
+                }
             });
 
             // Display grouped items with styled badges
             let html = '';
-            quantityMap.forEach((quantity, label) => {
+            workMap.forEach((data, label) => {
                 // Determine color based on work type
                 let bgColor = '#e9ecef';
                 let textColor = '#495057';
@@ -436,7 +477,7 @@
                 }
 
                 html += `<span style="background: ${bgColor}; color: ${textColor}; padding: 8px 14px; border-radius: 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
-                    ${label}: <span style="font-size: 16px; font-weight: 700;">${quantity}</span>
+                    ${label}: <span style="font-size: 16px; font-weight: 700;">${data.quantity}</span> @ Rs. ${data.rate}
                 </span>`;
             });
 

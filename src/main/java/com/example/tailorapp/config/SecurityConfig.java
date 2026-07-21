@@ -78,13 +78,17 @@ public class SecurityConfig {
                 .permitAll()
             )
             .rememberMe(remember -> remember
-                .key("uniqueAndSecretKey")
-                .tokenValiditySeconds(86400) // 24 hours
+                .key("uniqueAndSecretKey123456789") // Unique key for remember-me token
+                .tokenValiditySeconds(2592000) // 30 days (matches application.properties)
+                .rememberMeParameter("remember-me") // Checkbox name in login form
+                .rememberMeCookieName("tailor-remember-me") // Cookie name
                 .userDetailsService(userService)
+                .useSecureCookie(false) // Set to true if using HTTPS in production
             )
             .sessionManagement(session -> session
-                .maximumSessions(1)
-                .maxSessionsPreventsLogin(false)
+                .maximumSessions(5) // Allow up to 5 concurrent sessions per user
+                .maxSessionsPreventsLogin(false) // New login invalidates oldest session
+                .expiredUrl("/login?expired=true")
             );
 
         return http.build();

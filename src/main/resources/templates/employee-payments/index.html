@@ -65,8 +65,8 @@
             <th>Work Period</th>
             <th>Work Items</th>
             <th>Total Amount</th>
-            <th>Amount Paid</th>
             <th>Advance Deducted</th>
+            <th>Actual Cash/Transfer</th>
             <th>Remaining</th>
             <th>Status</th>
             <th>Actions</th>
@@ -100,7 +100,8 @@
                               th:attr="data-work-type=${assignment.workType},
                                        data-item-type=${assignment.itemType},
                                        data-is-design=${assignment.isDesignWork},
-                                       data-quantity=${assignment.assignedCount}">
+                                       data-quantity=${assignment.assignedCount},
+                                       data-rate=${assignment.ratePerPiece}">
                         </span>
                     </div>
                     <!-- Display area -->
@@ -110,14 +111,18 @@
             <td style="font-weight: 700;">
                 Rs. <span th:text="${#numbers.formatInteger(payment.totalAmount, 0, 'COMMA')}"></span>
             </td>
-            <td style="font-weight: 600; color: #28a745;">
-                Rs. <span th:text="${#numbers.formatInteger(payment.amountPaid, 0, 'COMMA')}"></span>
-            </td>
             <td>
                 <span th:if="${payment.getTotalAdvanceDeduction() > 0}" style="font-weight: 600; color: #ffc107;">
                     Rs. <span th:text="${#numbers.formatInteger(payment.getTotalAdvanceDeduction(), 0, 'COMMA')}"></span>
                 </span>
                 <span th:if="${payment.getTotalAdvanceDeduction() == 0}" style="color: #999; font-size: 12px;">-</span>
+            </td>
+            <td>
+                <span th:with="actualPaid=${payment.amountPaid - payment.getTotalAdvanceDeduction()}">
+                    <span style="font-weight: 600; color: #007bff;">
+                        Rs. <span th:text="${#numbers.formatInteger(actualPaid, 0, 'COMMA')}"></span>
+                    </span>
+                </span>
             </td>
             <td style="font-weight: 600; color: #dc3545;">
                 Rs. <span th:text="${#numbers.formatInteger(payment.amountRemaining, 0, 'COMMA')}"></span>
@@ -142,6 +147,29 @@
                 </a>
             </td>
         </tr>
+        <tr th:if="${!#lists.isEmpty(payments)}" style="background: #e9ecef; font-weight: 700; font-size: 14px;">
+            <td colspan="5" style="text-align: right; padding: 12px;">GRAND TOTAL:</td>
+            <td style="padding: 12px; color: #000;">
+                Rs. <span th:text="${#numbers.formatInteger(#aggregates.sum(payments.![totalAmount]), 0, 'COMMA')}"></span>
+            </td>
+            <td style="padding: 12px; color: #ffc107;">
+                <span th:with="totalAdvDeducted=${#aggregates.sum(payments.![getTotalAdvanceDeduction()])}">
+                    <span th:if="${totalAdvDeducted > 0}">
+                        Rs. <span th:text="${#numbers.formatInteger(totalAdvDeducted, 0, 'COMMA')}"></span>
+                    </span>
+                    <span th:if="${totalAdvDeducted == 0}">-</span>
+                </span>
+            </td>
+            <td style="padding: 12px; color: #007bff;">
+                <span th:with="totalActualPaid=${#aggregates.sum(payments.![amountPaid - getTotalAdvanceDeduction()])}">
+                    Rs. <span th:text="${#numbers.formatInteger(totalActualPaid, 0, 'COMMA')}"></span>
+                </span>
+            </td>
+            <td style="padding: 12px; color: #dc3545;">
+                Rs. <span th:text="${#numbers.formatInteger(#aggregates.sum(payments.![amountRemaining]), 0, 'COMMA')}"></span>
+            </td>
+            <td colspan="2"></td>
+        </tr>
         </tbody>
     </table>
 
@@ -155,25 +183,31 @@
             const displayArea = workDataContainer.parentElement.querySelector('.work-items-display');
             const workItems = workDataContainer.querySelectorAll('span[data-work-type]');
 
-            // Build quantity map
-            const quantityMap = new Map();
+            // Build quantity and rate map
+            const workMap = new Map();
 
             workItems.forEach(item => {
                 const workType = item.getAttribute('data-work-type');
                 const itemType = item.getAttribute('data-item-type');
                 const isDesign = item.getAttribute('data-is-design') === 'true';
                 const quantity = parseInt(item.getAttribute('data-quantity'));
+                const rate = parseInt(item.getAttribute('data-rate'));
 
                 const designLabel = isDesign ? ' Design' : ' Plain';
                 const key = workType + designLabel + ' (' + itemType + ')';
 
-                const currentQty = quantityMap.get(key) || 0;
-                quantityMap.set(key, currentQty + quantity);
+                if (workMap.has(key)) {
+                    const existing = workMap.get(key);
+                    existing.quantity += quantity;
+                    // Keep the rate (should be same for same work type)
+                } else {
+                    workMap.set(key, { quantity: quantity, rate: rate });
+                }
             });
 
-            // Display grouped items
+            // Display grouped items with rates
             let html = '';
-            quantityMap.forEach((quantity, label) => {
+            workMap.forEach((data, label) => {
                 // Determine color based on work type
                 let color = '#666';
                 if (label.includes('CUTTING')) color = '#007bff';
@@ -182,7 +216,7 @@
                 else if (label.includes('FINISHING')) color = '#6f42c1';
                 else if (label.includes('EMBELLISHMENT')) color = '#fd7e14';
 
-                html += `<div style="color: ${color}; font-weight: 600;">${label}: ${quantity}</div>`;
+                html += `<div style="color: ${color}; font-weight: 600;">${label}: ${data.quantity} @ Rs. ${data.rate}</div>`;
             });
 
             displayArea.innerHTML = html;
